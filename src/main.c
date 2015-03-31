@@ -2,7 +2,6 @@
 #include <stdio.h>
 #include <time.h>
 #include <stdlib.h>
-#include <sys/param.h>
 #include "util.h"
 #include "parseVCF.h"
 //#include "sort.h"
@@ -73,18 +72,11 @@ int isSameChr(char* chr, char* chr0){
     return 1;
 }
 
-void usage(char* argv0){
-	char* filename; filename = (char*)calloc(1000,sizeof(char));
-	//getcwd(filename,1000);
-	sprintf(filename, "%s", argv0);
-	int i;
-	for(i=strlen(argv0)-1; i>=0; i--){if(filename[i]=='/'){break;}}
-	char usagefile[] = "/usage.txt";
-	sprintf(filename+i, "%s", usagefile);
+void usage(){
 	FILE *f;
-	int flag=0;
+	int flag;
 	char ch;
-	f = fopen(filename,"r");
+	f = fopen("usage.txt","r");
 	while (( ch = getc(f)) != EOF ) {
 		if(ch=='#'){flag=1;}
 		if(flag==0){
@@ -123,7 +115,7 @@ int main(int argc, char** argv){
 	}
     
     // usage
-    if(argc==1){usage(argv[0]); return -1;}//else{for(i=0;i<argc;i++){fprintf(stderr, "%s.", argv[i]);}}
+    if(argc==1){usage(); return -1;}//else{for(i=0;i<argc;i++){fprintf(stderr, "%s.", argv[i]);}}
     
 	
     

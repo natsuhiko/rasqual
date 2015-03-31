@@ -1,4 +1,4 @@
-Usage:
+age:
   stdin | ./rasqual [OPTIONS] -i <Y.bin> -N <sample size> -M <#fSNPs> -L <#test SNPs>
   
   Data options:
