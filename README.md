@@ -1,2 +1,2 @@
-# rasqual2
+# rasqual
 Robust Allele Specific Quantification and quality controL
