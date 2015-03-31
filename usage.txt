@@ -1,0 +1,78 @@
+age:
+  stdin | ./rasqual [OPTIONS] -i <Y.bin> -N <sample size> -M <#fSNPs> -L <#test SNPs>
+  
+  Data options:
+  
+  -i/--input
+  -k/--offset
+  -x/--covariates
+  -N/--sample-size
+  -M/--number-of-fsnps
+  -L/--number-of-test-snps
+  -P/--number-of-covariates
+  
+  Model fitting options:
+  
+  --population-only
+  --as-only
+  --null
+  --randamise
+  --force
+  
+  Output options:
+  
+  --output-vcf        <file_name>
+  --output-all-qtls
+  
+  Model parameter options:
+  
+  --fix-delta         Fixing sequencing/mapping error parameter (Delta)
+  --fix-phi           Fixing reference allele mapping parameter (Phi)
+  --fix-theta         Fixing overdispersion parameter (Theta)
+
+  Genotype likelihood options:
+  
+  --allelic-probability-estimated-by-genotype-error-rate 
+  --relax-genotype-likelihood <double>
+  --population-allele-frequency 
+  --fixed-genotype
+  --no-posterior-update
+  
+  Feature options:
+  
+  --feature-id/-K
+  --reference-position
+  --feature-id
+  --reference-proximity
+  --feature-starts <string>
+  --feature-ends   <string>
+  
+  --number-of-significant-loci <int>
+  
+  SNPs filter options:
+
+  -MAF/--minor-allele-frequency   <double>
+  -HWE/--hardy-weinberg-pvalue  <double>
+  -RSQ/--imputation-rsquare   <double>
+  --min-coverage-depth <double>
+  --eature-length    <int>  Length of features 
+
+  Other options:
+
+  -v/-V         Print verbose output (for debugging). 
+
+  Hyperparameter options (modification unrecomended):
+
+  -SIGMA  <double>    Variance parameter for Normal gamma distribution on Lambda (default: 10000)
+  -BETA   <double>    Mean parameter for Normal-gamma distribution on Lambda (default: sample mean)
+  -AB     <double>    Shape parameters (identical) for Beta distribution on Pi (default:10)
+  -ABPHI  <double>    Shape parameters (identical) for Beta distribution on Phi (default:10)
+  -ADELTA <double>    1st shape parameter for Beta distribution on Delta (default: 1.01)
+  -BDELTA <double>    2nd shape parameter for Beta distribution on Delta (default: 1.99) 
+  -KAPPA  <double>    Shape parameter for Gamma distribution on Theta (default: 2.02)
+  -OMEGA  <double>    Rate parameter for Gamma distribution on Theta (default: 0.2)
+#
+# not implemented
+#  -hetType
+#  -trans
+#
