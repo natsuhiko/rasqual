@@ -1,67 +1,69 @@
-age:
-  stdin | ./rasqual [OPTIONS] -i <Y.bin> -N <sample size> -M <#fSNPs> -L <#test SNPs>
-  
-  Data options:
-  
-  -i/--input
-  -k/--offset
-  -x/--covariates
-  -N/--sample-size
-  -M/--number-of-fsnps
-  -L/--number-of-test-snps
-  -P/--number-of-covariates
-  
-  Model fitting options:
-  
-  --population-only
-  --as-only
-  --null
-  --randamise
-  --force
-  
-  Output options:
-  
-  --output-vcf        <file_name>
-  --output-all-qtls
-  
-  Model parameter options:
-  
-  --fix-delta         Fixing sequencing/mapping error parameter (Delta)
-  --fix-phi           Fixing reference allele mapping parameter (Phi)
-  --fix-theta         Fixing overdispersion parameter (Theta)
+rasqual:
+  RASQUAL (Robust Allele Specific Quantitation and quality controL) maps QTLs
+  using population and AS signals for any sequenced based cellular tratis.
 
-  Genotype likelihood options:
-  
-  --allelic-probability-estimated-by-genotype-error-rate 
-  --relax-genotype-likelihood <double>
-  --population-allele-frequency 
-  --fixed-genotype
-  --no-posterior-update
-  
-  Feature options:
-  
-  --feature-id/-K
-  --reference-position
-  --feature-id
-  --reference-proximity
-  --feature-starts <string>
-  --feature-ends   <string>
-  
-  --number-of-significant-loci <int>
-  
-  SNPs filter options:
+Usage:
+  VCF as stdin | ./rasqual [OPTIONS] -y <counts.bin> -k <offsets.bin> -a <start(s)> -b <end(s)> \
+                                     -j <feature_id> -l <#tested SNPs> -m <#fSNPs> -n <sample size>
 
-  -MAF/--minor-allele-frequency   <double>
-  -HWE/--hardy-weinberg-pvalue  <double>
-  -RSQ/--imputation-rsquare   <double>
-  --min-coverage-depth <double>
-  --eature-length    <int>  Length of features 
+Output:
+  Tested SNPs in stdout and posterior genotype in VCF file
 
-  Other options:
+Mandatory arguments:
 
-  -v/-V         Print verbose output (for debugging). 
+  -y/--feature-counts   <string>  File name of total feature counts in binary double
+  -k/--sample-offsets   <string>  File name of sample specific offset terms in binary double
+  -a/--feature-starts   <string>  Feature start position(s) in comma separated value (e.g., 100,300,500)
+  -b/--feature-ends     <string>  Feature end position(s) in comma separated value (e.g., 150,350,450)
+  -j/--feature-id       <int>     Row number of target feature in original count table
+  -l/--number-of-snps   <int>     Number of tested SNPs in VCF (candidates of a rSNP)
+  -m/--number-of-fsnps  <int>     Number of feature SNPs in VCF
+  -n/--sample-size      <int>     Sample size
+  
+Output options:
+  
+  --lead-snp                      Output only the lead QTL SNP
+  --imprint                       Output imprinted/RAI feature result
+  --posterior-genotype  <string>  Output posterior genotypes as VCF format
+  -f/--feature-name     <string>  Feature name printed on the result (default: feature ID number)
 
-  Hyperparameter options (modification unrecomended):
+SNP filter options:
+
+  -c/--cis-midpoint            <int>     Midpoint of cis window, e.g., TSS, center of peak etc. (default: midpoint of feature start and end)
+  -w/--cis-window-size         <int>     Cis regulatory window size centered at the midpoint (default: 27e7)
+  -a/--minor-allele-frequency  <double>  Minor allele frequency cutoff (default: 0.05)
+  -h/--hardy-weinberg-pvalue   <double>  Hardy-Weinberg equiliblium P-value cutoff (default: 1e-8)
+  -q/--imputation-rsquare      <double>  Genome imputation quality score cutoff, e.g., R^2 (MaCH/Beagle) or I^2 (IMPUTE) (default: 0.7)
+  -d/--min-coverage-depth      <double>  Minimum depth to filter out low coverage fSNPs (default: 0.1)
+  --effective-feature-length   <int>     Effective length of feature to calculate average depth (default: length of union features)
+
+Model fitting options:
+
+  -x/--covariates              <string>  File name of covariates in bianary double
+  -c/--number-of-covariates    <int>     Number of covariates used for adjustment
+  -p/--permutation                       Permute data
+  --population-only                      Only total feature counts are modelled
+  --as-only                              Only AS counts are modelled
+  --null                                 Fitting null model only
+  --force                                Fitting model even if counts are 0
+  --fix-delta                            Fix sequencing/mapping error parameter (Delta=0.01)
+  --fix-phi                              Fix reference allele mapping parameter (Phi=0.5)
+  --fix-theta                            Fix overdispersion parameter (Theta=10000)
+  --number-of-significant-loci  <int>    Average number of SNPs tested by joint model (default: number of tested SNPs)
+
+Genotype likelihood options:
+  
+  -e/--imputation-error-rate             Estimating allelic probability from the genome imputation quality score
+  --relax-genotype-likelihood  <double>  Relax allelic probability to allow uncertainty (default:0.001)
+  --allele-frequency                     Using population allele frequency as allelic probablity
+  --fix-genotype                         Using fix genotype (GT field in VCF)
+  --no-posterior-update                  Posterior probability is fixed to be prior probability and not updated
+  
+Other options:
+
+  -v/-V   Print verbose output (for debugging). 
+
+Hyperparameter options (modification unrecomended):
 
   -SIGMA  <double>    Variance parameter for Normal gamma distribution on Lambda (default: 10000)
   -BETA   <double>    Mean parameter for Normal-gamma distribution on Lambda (default: sample mean)
@@ -71,6 +73,7 @@ age:
   -BDELTA <double>    2nd shape parameter for Beta distribution on Delta (default: 1.99) 
   -KAPPA  <double>    Shape parameter for Gamma distribution on Theta (default: 2.02)
   -OMEGA  <double>    Rate parameter for Gamma distribution on Theta (default: 0.2)
+
 #
 # not implemented
 #  -hetType
