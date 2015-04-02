@@ -477,8 +477,8 @@ int main(int argc, char** argv){
     
     // average number of joint tests
     NOfSigLoci=(double)numOfLoci;
-	for(i=0; i<argc-1; i++){if(strcmp(argv[i],"--number-of-significant-loci")==0){NOfSigLoci=(double)atof(argv[i+1]);break;}}
-   fprintf(stderr, "num of sig=%lf\n", NOfSigLoci); 
+	for(i=0; i<argc-1; i++){if(strcmp(argv[i],"--number-of-significant-loci")==0){NOfSigLoci=(double)atof(argv[i+1]);break;}} 
+    //fprintf(stderr, "num of sig=%lf\n", NOfSigLoci); 
     
     
     
