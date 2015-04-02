@@ -1,7 +1,7 @@
 # rasqual development
 Robust Allele Specific Quantification and quality controL
 
-# How to build & install
+## How to build & install
 
 	RASQUALDIR=/path/to/rasqualdir/
 	cd $RASQUALDIR/src
@@ -10,7 +10,7 @@ Robust Allele Specific Quantification and quality controL
 	make
 	make install
 
-# Getting started
+## Getting started
 
 	cd $RASQUALDIR
 	
