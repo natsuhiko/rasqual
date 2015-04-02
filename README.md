@@ -1,7 +1,11 @@
-# rasqual development
-Robust Allele Specific Quantification and quality controL
+# RASQUAL
+RASQUAL (Robust Allele Specific Quantification and quality controL) maps QTLs using population and AS signals for any sequenced based cellular tratis.
 
 ## How to build & install
+
+Please make sure CLAPACK is installed in your environment.  Otherwise you can get the library at http://www.netlib.org/clapack/.  
+To build and install RASQUAL, firstly go to the source directory, then set environment variables appropriately to point the CLAPACK library as follows.  
+Finally use "make" to build and install RASQUAL which will be installed in "$RASQUALDIR/bin".
 
 	RASQUALDIR=/path/to/rasqualdir/
 	cd $RASQUALDIR/src
@@ -10,9 +14,17 @@ Robust Allele Specific Quantification and quality controL
 	make
 	make install
 
-## Preparing data
+## Data preparation
 
 	cd $RASQUALDIR
 	export RHOME=/software/R-3.0.0/bin/
-	sh test.sh 
-	
+	$RHOME/R --vanilla --quiet --args data/Y.txt data/K.txt < R/txt2bin.R > log
+
+## Mapping eQTLs
+
+	tabix data/chr11.gz 11 | bin/rasqual -y data/Y.bin -k data/K.bin -n 24 -j 1 -l 409 -m 63 \
+                   -s 2316875,2320655,2321750,2321914,2324112 -e 2319151,2320937,2321843,2323290,2324279 -z -t -f C11orf21
+	tabix data/chr11.gz 11 | bin/rasqual -y data/Y.bin -k data/K.bin -n 24 -j 1 -l 409 -m 61 \
+                   -s 2323227,2323938,2324640,2325337,2328175,2329966,2330551,2331219,2334884,2335715,2338574,2339093 \
+                   -e 2323452,2324188,2324711,2325434,2328220,2330040,2330740,2331248,2334985,2337897,2338755,2339430 \
+                   -z -t -f C11orf21
