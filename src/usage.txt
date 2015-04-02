@@ -3,49 +3,49 @@ rasqual:
   using population and AS signals for any sequenced based cellular tratis.
 
 Usage:
-  VCF as stdin | ./rasqual [OPTIONS] -y <counts.bin> -k <offsets.bin> -a <start(s)> -b <end(s)> \
-                                     -j <feature_id> -l <#tested SNPs> -m <#fSNPs> -n <sample size>
-
+  VCF as stdin | ./rasqual [OPTIONS] -y <counts.bin> -k <offsets.bin> -n <sample_size> -j <feature_id> \
+                                     -l <#tested_SNPs> -m <#feature_SNPs> -s <feature_start(s)> -e <feature_end(s)>
+									 
 Output:
   Tested SNPs in stdout and posterior genotype in VCF file
 
 Mandatory arguments:
 
-  -y/--feature-counts   <string>  File name of total feature counts in binary double
-  -k/--sample-offsets   <string>  File name of sample specific offset terms in binary double
-  -a/--feature-starts   <string>  Feature start position(s) in comma separated value (e.g., 100,300,500)
-  -b/--feature-ends     <string>  Feature end position(s) in comma separated value (e.g., 150,350,450)
-  -j/--feature-id       <int>     Row number of target feature in original count table
-  -l/--number-of-snps   <int>     Number of tested SNPs in VCF (candidates of a rSNP)
-  -m/--number-of-fsnps  <int>     Number of feature SNPs in VCF
-  -n/--sample-size      <int>     Sample size
+  -y/--feature-counts          <string>  File name of total feature counts in binary double
+  -k/--sample-offsets          <string>  File name of sample specific offset terms in binary double
+  -s/--feature-starts          <string>  Feature start position(s) in comma separated value (e.g., 100,300,500)
+  -e/--feature-ends            <string>  Feature end position(s) in comma separated value (e.g., 150,350,450)
+  -j/--feature-id              <int>     Row number of target feature in original count table
+  -l/--number-of-testing-snps  <int>     Number of testing SNPs in VCF (candidates of a rSNP)
+  -m/--number-of-fsnps         <int>     Number of feature SNPs (fSNPs) in VCF
+  -n/--sample-size             <int>     Sample size
   
 Output options:
   
-  --lead-snp                      Output only the lead QTL SNP
-  --imprint                       Output imprinted/RAI feature result
-  --posterior-genotype  <string>  Output posterior genotypes as VCF format
-  -f/--feature-name     <string>  Feature name printed on the result (default: feature ID number)
+  -t/--lead-snp                          Output only the lead QTL SNP
+  -i/--imprint                           Output imprinted (or randomly allelicly inactivated) feature result
+  -g/--posterior-genotype      <string>  Output posterior genotypes as VCF format
+  -f/--feature-name            <string>  Feature name printed on the result (default: feature ID number)
 
 SNP filter options:
 
-  -c/--cis-midpoint            <int>     Midpoint of cis window, e.g., TSS, center of peak etc. (default: midpoint of feature start and end)
-  -w/--cis-window-size         <int>     Cis regulatory window size centered at the midpoint (default: 27e7)
+  -c/--cis-midpoint            <int>     Midpoint of cis regulatory window, e.g., TSS (default: midpoint of feature start and end)
+  -w/--cis-window-size         <int>     Cis regulatory window size centered at the midpoint (default: 54e7)
   -a/--minor-allele-frequency  <double>  Minor allele frequency cutoff (default: 0.05)
-  -h/--hardy-weinberg-pvalue   <double>  Hardy-Weinberg equiliblium P-value cutoff (default: 1e-8)
-  -q/--imputation-rsquare      <double>  Genome imputation quality score cutoff, e.g., R^2 (MaCH/Beagle) or I^2 (IMPUTE) (default: 0.7)
-  -d/--min-coverage-depth      <double>  Minimum depth to filter out low coverage fSNPs (default: 0.1)
+  -h/--hardy-weinberg-pvalue   <double>  Hardy-Weinberg equiliblium P-value cutoff (default: 1.0e-8)
+  -q/--imputation-quality      <double>  Genome imputation quality score cutoff, e.g., R^2 (MaCH/Beagle) or I^2 (IMPUTE) (default: 0.7)
+  -d/--min-coverage-depth      <double>  Minimum depth to filter out low coverage fSNPs (default: 0.05)
   --effective-feature-length   <int>     Effective length of feature to calculate average depth (default: length of union features)
 
 Model fitting options:
 
   -x/--covariates              <string>  File name of covariates in bianary double
-  -c/--number-of-covariates    <int>     Number of covariates used for adjustment
-  -p/--permutation                       Permute data
+  -p/--number-of-covariates    <int>     Number of covariates used for adjustment
+  -r/--random-permutation                Randomly permute samples
   --population-only                      Only total feature counts are modelled
   --as-only                              Only AS counts are modelled
   --null                                 Fitting null model only
-  --force                                Fitting model even if counts are 0
+#  --force                                Fitting model even if AS counts are 0
   --fix-delta                            Fix sequencing/mapping error parameter (Delta=0.01)
   --fix-phi                              Fix reference allele mapping parameter (Phi=0.5)
   --fix-theta                            Fix overdispersion parameter (Theta=10000)
@@ -53,11 +53,11 @@ Model fitting options:
 
 Genotype likelihood options:
   
-  -e/--imputation-error-rate             Estimating allelic probability from the genome imputation quality score
-  --relax-genotype-likelihood  <double>  Relax allelic probability to allow uncertainty (default:0.001)
-  --allele-frequency                     Using population allele frequency as allelic probablity
-  --fix-genotype                         Using fix genotype (GT field in VCF)
-  --no-posterior-update                  Posterior probability is fixed to be prior probability and not updated
+  -z/--convert-imputation-score          Convert genome imputation quality score (R^2 or I^2) into allelic probability (AP)
+  --nominal-allelic-probability          Use nomial AP (default: AP is truncated in [0.001, 0.999] to allow uncertainty)
+  --population-allele-frequency          Use population allele frequency as AP
+  --fix-genotype                         Use fix genotype (in GT field)
+  --no-posterior-update                  Not updating posterior probability
   
 Other options:
 
@@ -67,7 +67,7 @@ Hyperparameter options (modification unrecomended):
 
   -SIGMA  <double>    Variance parameter for Normal gamma distribution on Lambda (default: 10000)
   -BETA   <double>    Mean parameter for Normal-gamma distribution on Lambda (default: sample mean)
-  -AB     <double>    Shape parameters (identical) for Beta distribution on Pi (default:10)
+  -ABPI   <double>    Shape parameters (identical) for Beta distribution on Pi (default:10)
   -ABPHI  <double>    Shape parameters (identical) for Beta distribution on Phi (default:10)
   -ADELTA <double>    1st shape parameter for Beta distribution on Delta (default: 1.01)
   -BDELTA <double>    2nd shape parameter for Beta distribution on Delta (default: 1.99) 

@@ -35,17 +35,19 @@ long countFields(char* posStr){
             n++;
         }
     }
-    return n;
+    return n+1;
 }
 long splitCSV(char* posStr, long n, long* pos){
     long i;
     long offset=0;
     char posChar[100];
-    for(i=0; i<n; i++){
+    for(i=0; i<n-1; i++){
         sscanf(posStr+offset, "%ld,", pos+i);
         sprintf(posChar, "%ld", pos[i]);
         offset += strlen(posChar)+1;
     }
+    sscanf(posStr+offset, "%ld", pos+i);
+    sprintf(posChar, "%ld", pos[i]);
     return 0;
 }
 
@@ -55,7 +57,7 @@ int isTestReg(char* chr, char* chr0, long TSS, long TSSPROX, long pos){// chr: c
             return 1;
         }
     }else{
-        if(pos >= TSS-TSSPROX || pos <= TSS+TSSPROX){
+        if(pos >= TSS-TSSPROX && pos <= TSS+TSSPROX){
             return 1;
         }
     }
@@ -72,7 +74,8 @@ int isSameChr(char* chr, char* chr0){
     return 1;
 }
 
-void usage(){
+void usage();
+/*void usage(){
 	FILE *f;
 	int flag;
 	char ch;
@@ -85,7 +88,7 @@ void usage(){
 			flag=0;
 		}
 	}   
-}
+}*/
 
 int main(int argc, char** argv){
         
@@ -129,12 +132,14 @@ int main(int argc, char** argv){
 	omega = 0.1*2.0; 
 	sigma2 = 10000.0;
     
-	for(i=0; i<argc-1; i++){if(strcmp(argv[i],"-PHIAB")==0 && atof(argv[i+1])>0.){phiab=(double)atof(argv[i+1]);break;}}	
-	for(i=0; i<argc-1; i++){if(strcmp(argv[i],"-AB")==0    && atof(argv[i+1])>0.){ab   =(double)atof(argv[i+1]);break;}}	
+    for(i=0; i<argc-1; i++){if(strcmp(argv[i],"-SIGMA")==0 && atof(argv[i+1])>0.){sigma2=(double)atof(argv[i+1]);break;}}	
+	for(i=0; i<argc-1; i++){if(strcmp(argv[i],"-BETA")==0  && atof(argv[i+1])>0.){beta0 =(double)atof(argv[i+1]);break;}}
+	for(i=0; i<argc-1; i++){if(strcmp(argv[i],"-ABPHI")==0 && atof(argv[i+1])>0.){phiab=(double)atof(argv[i+1]);break;}}	
+	for(i=0; i<argc-1; i++){if(strcmp(argv[i],"-ABPI")==0  && atof(argv[i+1])>0.){ab   =(double)atof(argv[i+1]);break;}}	
 	for(i=0; i<argc-1; i++){if(strcmp(argv[i],"-KAPPA")==0 && atof(argv[i+1])>0.){kappa=(double)atof(argv[i+1]);break;}}	
 	for(i=0; i<argc-1; i++){if(strcmp(argv[i],"-OMEGA")==0 && atof(argv[i+1])>0.){omega=(double)atof(argv[i+1]);break;}}	
-	for(i=0; i<argc-1; i++){if(strcmp(argv[i],"-AD")==0 && atof(argv[i+1])>0.){ad=(double)atof(argv[i+1]);break;}}	
-	for(i=0; i<argc-1; i++){if(strcmp(argv[i],"-BD")==0 && atof(argv[i+1])>0.){bd=(double)atof(argv[i+1]);break;}}	
+	for(i=0; i<argc-1; i++){if(strcmp(argv[i],"-ADELTA")==0 && atof(argv[i+1])>0.){ad=(double)atof(argv[i+1]);break;}}	
+	for(i=0; i<argc-1; i++){if(strcmp(argv[i],"-BDELTA")==0 && atof(argv[i+1])>0.){bd=(double)atof(argv[i+1]);break;}}	
     
 	if(verbose3>0){
 		fprintf(stderr, "Hyper-parameters :\n");
@@ -147,11 +152,9 @@ int main(int argc, char** argv){
     
     // fix parameters
 	fixParam=(int*)calloc(10,sizeof(int)); for(i=0; i<10; i++){fixParam[i]=0;}
-	for(i=0; i<argc; i++){if(strcmp(argv[i],"-fixErrorRate")==0){fixParam[1]=1; break;}}
-	for(i=0; i<argc; i++){if(strcmp(argv[i],"-fixMappingBias")==0){fixParam[2]=1; break;}}
-	for(i=0; i<argc; i++){if(strcmp(argv[i],"-fixOverdisp")==0){fixParam[4]=1; break;}}
-    
-    
+	for(i=0; i<argc; i++){if(strcmp(argv[i],"--fix-delta")==0){fixParam[1]=1; break;}}
+	for(i=0; i<argc; i++){if(strcmp(argv[i],"--fix-phi")==0){fixParam[2]=1; break;}}
+	for(i=0; i<argc; i++){if(strcmp(argv[i],"--fix-theta")==0){fixParam[4]=1; break;}}
     
     //
     // program arguments
@@ -161,66 +164,59 @@ int main(int argc, char** argv){
     for(i=0; i<argc-1; i++){if(strcmp(argv[i],"-hetType")==0){hetType=atoi(argv[i+1]);}}
     // force to fit model
 	int forced=0;
-	for(i=0; i<argc; i++){if(strcmp(argv[i],"-f")==0){forced=1;}}//atoi(argv[i+1]);}}
+	for(i=0; i<argc; i++){if(strcmp(argv[i],"--force")==0){forced=1;}}//atoi(argv[i+1]);}}
     // print result
-    int printAll=0;
-	for(i=0; i<argc; i++){if(strcmp(argv[i],"-printAll")==0){printAll=1; break;}}
+    int printAll=1;
+	for(i=0; i<argc; i++){if(strcmp(argv[i],"--lead-snp")==0 || strcmp(argv[i],"-t")==0){printAll=0; break;}}
+    int printImprint=0;
+	for(i=0; i<argc; i++){if(strcmp(argv[i],"--imprint")==0  || strcmp(argv[i],"-i")==0){printImprint=1; break;}}
     // print VCF
     int printVCF=0;
-	for(i=0; i<argc; i++){if(strcmp(argv[i],"-printVCF")==0){printVCF=1; break;}}
+    gzFile postVCF=NULL;
+	for(i=0; i<argc-1; i++){if(strcmp(argv[i],"--posterior-genotype")==0  || strcmp(argv[i],"-g")==0){printVCF=1; postVCF=gzopen(argv[i+1], "ab6f");break;}}
     // for likelihood ratio ties
 	srand((unsigned)(time(NULL)+getpid()));
 	int rand0=rand(), rand1=0;
     randomize=0;
-	for(i=0; i<argc; i++){if(strcmp(argv[i],"-r")==0){randomize=1;}}
+	for(i=0; i<argc; i++){if(strcmp(argv[i],"-r")==0 || strcmp(argv[i],"--random-permutation")==0){randomize=1;}}
     // Usse ASE or not
     ASE=1;
-	for(i=0; i<argc; i++){if(strcmp(argv[i],"-NOASE")==0){ASE=0;}}
-	for(i=0; i<argc; i++){if(strcmp(argv[i],"-ONLYASE")==0){ASE=2;}}
+	for(i=0; i<argc; i++){if(strcmp(argv[i],"--population-only")==0){ASE=0;}}
+	for(i=0; i<argc; i++){if(strcmp(argv[i],"--as-only")==0){ASE=2;}}
     // fit Null model only
 	Null=0;
-	for(i=0; i<argc; i++){if(strcmp(argv[i],"-NULL")==0){Null=1;}}
+	for(i=0; i<argc; i++){if(strcmp(argv[i],"--null")==0){Null=1;}}
     // trans QTL mapping
     transQTL=0;
     char* chr0;
     for(i=0; i<argc-1; i++){if(strcmp(argv[i],"-trans")==0){transQTL=1; chr0=argv[i+1]; if(verbose3>0){fprintf(stderr, "Trans QTL Mapping\nChromosome=%s\n\n", chr0);} break;}}
     // allelic prob from RSQ
     allelicProbEstByErrorRate=0;
-    for(i=0; i<argc; i++){if(strcmp(argv[i],"-allelicProbEstByErrorRate")==0){allelicProbEstByErrorRate=1; break;}}
+    for(i=0; i<argc; i++){if(strcmp(argv[i],"-z")==0 || strcmp(argv[i],"--convert-imputation-score")==0){allelicProbEstByErrorRate=1; break;}}
     // GL relaxation
-    double relaxGL=0.0;
-    for(i=0; i<argc; i++){if(strcmp(argv[i],"-relaxGL")==0){relaxGL=0.001; break;}}
+    double relaxGL=0.001;
+    for(i=0; i<argc; i++){if(strcmp(argv[i],"--nominal-allelic-probability")==0){relaxGL=0.0; break;}}
     // No prior genotype
     int noPriorGenotype=0;
-    for(i=0; i<argc; i++){if(strcmp(argv[i],"-noPriorGenotype")==0){noPriorGenotype=1; break;}}
+    for(i=0; i<argc; i++){if(strcmp(argv[i],"--population-allele-frequency")==0){noPriorGenotype=1; break;}}
     // No genotype likelihood
     noGL=0;
-    for(i=0; i<argc; i++){if(strcmp(argv[i],"-noGL")==0){noGL=1; break;}}
+    for(i=0; i<argc; i++){if(strcmp(argv[i],"--fix-genotype")==0){noGL=1; break;}}
     // posterior update
 	noPosteriorUpdate=0;
-	for(i=0; i<argc; i++){if(strcmp(argv[i],"-noPosteriorUpdate")==0){noPosteriorUpdate=1; break;}}
+	for(i=0; i<argc; i++){if(strcmp(argv[i],"--no-posterior-update")==0){noPosteriorUpdate=1; break;}}
 	if(verbose2>10){
 		if(noPosteriorUpdate>0)fprintf(stderr, "No posterior probability update\n");
 		if(allelicProbEstByErrorRate>0)fprintf(stderr, "Allelic probability has been estimated by error rate\n\n");
 	}
-    // TSS
-    long TSS=0;
-	for(i=0; i<argc-1; i++){if(strcmp(argv[i],"-TSS")==0){TSS=atol(argv[i+1]);}}
-	char* gid;
-	for(i=0; i<argc-1; i++){if(strcmp(argv[i],"-GID")==0){gid=argv[i+1];}}
 	
-	long TSSPROX=270000000;
-	for(i=0; i<argc-1; i++){if(strcmp(argv[i],"-TSSPROX")==0){TSSPROX=atol(argv[i+1]);}}
-    
-    
-    
     
     
     
 	
 	// data loading
     long N=0;
-    for(i=0; i<argc-1; i++){if(strcmp(argv[i],"-N")==0){N=atoi(argv[i+1]);}}
+    for(i=0; i<argc-1; i++){if(strcmp(argv[i],"-n")==0 || strcmp(argv[i],"--sample-size")==0){N=atoi(argv[i+1]); break;}}
     if(N==0){fprintf(stderr, "Sample size is inappropriate\n"); return -1;}
     
     // Sample weights
@@ -232,29 +228,32 @@ int main(int argc, char** argv){
     
     // initial #snps
 	long M=0, L=0, K=0;
-	for(i=0; i<argc-1; i++){if(strcmp(argv[i],"-M")==0){M=atoi(argv[i+1]);}} // # of exon SNPs
-	for(i=0; i<argc-1; i++){if(strcmp(argv[i],"-L")==0){L=atoi(argv[i+1]);}} // # of Test SNPs
-	for(i=0; i<argc-1; i++){if(strcmp(argv[i],"-K")==0){K=atoi(argv[i+1]);}} // Region ID {1..50K}
+	for(i=0; i<argc-1; i++){if(strcmp(argv[i],"-m")==0 || strcmp(argv[i],"--number-of-fsnps")==0){M=atoi(argv[i+1]); break;}} // # of exon SNPs
+	for(i=0; i<argc-1; i++){if(strcmp(argv[i],"-l")==0 || strcmp(argv[i],"--number-of-testing-snps")==0){L=atoi(argv[i+1]); break;}} // # of Test SNPs
+	for(i=0; i<argc-1; i++){if(strcmp(argv[i],"-j")==0 || strcmp(argv[i],"--feature-id")==0){K=atoi(argv[i+1]); break;}} // Region ID {1..50K}
+    char* gid=NULL;
+	for(i=0; i<argc-1; i++){if(strcmp(argv[i],"-f")==0 || strcmp(argv[i],"--feature-name")==0){gid=argv[i+1];}}
+	if(gid==NULL){gid=(char*)calloc(100,sizeof(char)); sprintf(gid, "%ld", K);}
     
 	//if(M==0 || L==0 || K==0){fprintf(stderr, "%s Numbers are inappropriate M=%ld L=%ld K=%ld!", gid, M, L, K); if(forced==0){fprintf(stderr, "\n"); return -1;}}
     
 	if(verbose2>10){
-		fprintf(stderr, "Sample Size           : %ld\n", N);
-		fprintf(stderr, "Init No. eSNPs        : %ld\n", M);
-		fprintf(stderr, "Init No. Flanking SNPs: %ld\n", L);
-		fprintf(stderr, "Kth gene              : %ld\n\n", K);
+		fprintf(stderr, "Sample Size          : %ld\n", N);
+		fprintf(stderr, "Init No. fSNPs       : %ld\n", M);
+		fprintf(stderr, "Init No. tested SNPs : %ld\n", L);
+		fprintf(stderr, "Kth feature          : %ld\n\n", K);
 	}
     
 	FILE* fy=NULL; // total fragment counts
 	FILE* fk=NULL; // offset for Negative Binomial
 	FILE* fx=NULL; // covariates
 	
-	for(i=0; i<argc-1; i++){if(strcmp(argv[i],"-i")==0){fy=fopen(argv[i+1],"rb"); break;}}
-	for(i=0; i<argc-1; i++){if(strcmp(argv[i],"-k")==0){fk=fopen(argv[i+1],"rb"); break;}}
-	for(i=0; i<argc-1; i++){if(strcmp(argv[i],"-x")==0){fx=fopen(argv[i+1],"rb"); break;}}
+	for(i=0; i<argc-1; i++){if(strcmp(argv[i],"-y")==0 || strcmp(argv[i],"--feature-counts")==0){fy=fopen(argv[i+1],"rb"); break;}}
+	for(i=0; i<argc-1; i++){if(strcmp(argv[i],"-k")==0 || strcmp(argv[i],"--sample-offsets")==0){fk=fopen(argv[i+1],"rb"); break;}}
+	for(i=0; i<argc-1; i++){if(strcmp(argv[i],"-x")==0 || strcmp(argv[i],"--covariates")==0){fx=fopen(argv[i+1],"rb"); break;}}
 	
 	if(fy==NULL || fk==NULL){fprintf(stderr, "imput files are not specified!\n"); return -1;}
-	
+	int freadres;
     long P=1;
 	double* X;
     double tmp;
@@ -263,7 +262,7 @@ int main(int argc, char** argv){
 	}else{
 		P = ncol(fx, N)+1;
 		X = (double*)calloc(N*P, sizeof(double));
-        fread(X+N, sizeof(double), N*(P-1), fx);
+        freadres = fread(X+N, sizeof(double), N*(P-1), fx);
 		for(i=1; i<P; i++){
 			double m = mean(X+N*i, N);
 			//double ss = sd(X+N*i, N);
@@ -274,18 +273,18 @@ int main(int argc, char** argv){
 		}
 	}
 	for(i=0; i<N; i++){ X[i] = 1.0; }
-    for(i=0; i<argc-1; i++){if(strcmp(argv[i],"-P")==0){P=atoi(argv[i+1]);}} // # of covs after change
+    for(i=0; i<argc-1; i++){if(strcmp(argv[i],"-p")==0 || strcmp(argv[i],"--number-of-covariates")==0){P=atoi(argv[i+1])+1;}} // # of covs after change
     
     double* y;
     y = (double*)calloc(N, sizeof(double));
     fseek(fy, N*(K-1)*sizeof(double), SEEK_SET);
-    fread(y, sizeof(double), N, fy);
+    freadres = fread(y, sizeof(double), N, fy);
     
 	
 	double* ki;
 	ki= (double*)calloc(N, sizeof(double));
 	fseek(fk, N*(K-1)*sizeof(double), SEEK_SET);
-	fread(ki, sizeof(double), N, fk);
+	freadres = fread(ki, sizeof(double), N, fk);
     
 	double totki = sum(ki, N)/(double)N;
 	for(i=0; i<N; i++){ki[i] /= totki;}
@@ -293,42 +292,47 @@ int main(int argc, char** argv){
     
 	
 	
-	
 	// feature region(s)
 	char* sa=NULL;
 	char* sb=NULL;
-	for(i=0; i<argc-1; i++){if(strcmp(argv[i],"-a")==0){sa=argv[i+1];}}
-	for(i=0; i<argc-1; i++){if(strcmp(argv[i],"-b")==0){sb=argv[i+1];}}
+	for(i=0; i<argc-1; i++){if(strcmp(argv[i],"-s")==0 || strcmp(argv[i],"--feature-starts")==0){sa=argv[i+1];}}
+	for(i=0; i<argc-1; i++){if(strcmp(argv[i],"-e")==0 || strcmp(argv[i],"--feature-ends")==0){sb=argv[i+1];}}
 	int nexon=0;
 	long* starts;
 	long* ends;
 	double cdnLen=0.0;
 	if(sa!=NULL){
 		nexon=countFields(sa);
-	}
-	if(nexon>0){
-		starts = (long*)calloc(nexon, sizeof(long));
-		ends   = (long*)calloc(nexon, sizeof(long));
-		splitCSV(sa, nexon, starts);
-		splitCSV(sb, nexon, ends);
-		for(i=0;i<nexon;i++){ cdnLen+=(double)(ends[i]-starts[i]); }
-		//if(verbose>0)printLong(starts, nexon);
-		//if(verbose>0)printLong(ends, nexon);
-	}
-	for(i=0; i<argc-1; i++){if(strcmp(argv[i],"-CDNLen")==0){cdnLen = (double)atol(argv[i+1]);}}
-	if(verbose2>10){fprintf(stderr, "CDN length            : %.0lf\n\n", cdnLen);}
+	}else{fprintf(stderr, "no feature region specified\n"); return -1;}
+	
+    starts = (long*)calloc(nexon, sizeof(long));
+    ends   = (long*)calloc(nexon, sizeof(long));
+    splitCSV(sa, nexon, starts);
+    splitCSV(sb, nexon, ends);
+    for(i=0;i<nexon;i++){ cdnLen+=(double)(ends[i]-starts[i]); }
+    if(verbose3>0)printLong(starts, nexon);
+    if(verbose3>0)printLong(ends, nexon);
+	
+    // TSS
+    long TSS = (starts[0]+ends[nexon-1])/2;
+	for(i=0; i<argc-1; i++){if(strcmp(argv[i],"-c")==0 || strcmp(argv[i],"--cis-midpoint")==0){TSS=atol(argv[i+1]);}}
+    long TSSPROX=270000000*2;
+	for(i=0; i<argc-1; i++){if(strcmp(argv[i],"-w")==0 || strcmp(argv[i],"--cis-window-size")==0){TSSPROX=atol(argv[i+1])/2;}}
+    
+        
+	for(i=0; i<argc-1; i++){if(strcmp(argv[i],"--effective-feature-length")==0){cdnLen = (double)atol(argv[i+1]);}}
+	if(verbose2>10){fprintf(stderr, "Effective feature length            : %.0lf\n\n", cdnLen);}
     
     // SNP filter
-	double MAF=-1.0;
-	double HWE=1000.0;
-	double RSQ=0.0;
-	for(i=0; i<argc-1; i++){if(strcmp(argv[i],"-MAF")==0){MAF=(double)atof(argv[i+1]);break;}}
-	for(i=0; i<argc-1; i++){if(strcmp(argv[i],"-HWE")==0){HWE=(double)atof(argv[i+1]);break;}}
-	for(i=0; i<argc-1; i++){if(strcmp(argv[i],"-RSQ")==0){RSQ=(double)atof(argv[i+1]);break;}}
+	double MAF=0.05;
+	double HWE=Qchisq(1.0e-8, 1.0);
+	double RSQ=0.7;
+	for(i=0; i<argc-1; i++){if(strcmp(argv[i],"-a")==0 || strcmp(argv[i],"--minor-allele-frequency")==0){MAF=(double)atof(argv[i+1]); break;}}
+	for(i=0; i<argc-1; i++){if(strcmp(argv[i],"-h")==0 || strcmp(argv[i],"--hardy-weinberg-pvalue")==0){HWE=Qchisq((double)atof(argv[i+1]), 1.0); break;}}
+	for(i=0; i<argc-1; i++){if(strcmp(argv[i],"-q")==0 || strcmp(argv[i],"--imputation-quality")==0){RSQ=(double)atof(argv[i+1]); break;}}
 	double coverageDepth=0.05;
-	for(i=0; i<argc-1; i++){if(strcmp(argv[i],"-coverageDepth")==0){coverageDepth=(double)atof(argv[i+1]);break;}}
-	NOfSigLoci=500.0;
-	for(i=0; i<argc-1; i++){if(strcmp(argv[i],"-NOfSigLoci")==0){NOfSigLoci=(double)atof(argv[i+1]);break;}}
+	for(i=0; i<argc-1; i++){if(strcmp(argv[i],"-d")==0 || strcmp(argv[i],"--min-coverage-depth")==0){coverageDepth=(double)atof(argv[i+1]);break;}}
+	
 	
 	// loading VCF files
 	VCF_info vinfo;
@@ -380,7 +384,7 @@ int main(int argc, char** argv){
 	if(verbose2>10)fprintf(stderr, "\nMemory has been allocated...\n");
 	
 	m=l=0;
-	long numOfLoci=0;
+	numOfLoci=0;
 	double asgaf[2];
 	double asaf[2];
 	double Y1=0.0;
@@ -463,17 +467,18 @@ int main(int argc, char** argv){
 	//m = 1;
 	if(verbose2>10){
 		fprintf(stderr, "\nData has been loaded...\n\n\n");
-        fprintf(stderr, "No. eSNPs        : %ld\n", m);
-		fprintf(stderr, "No. Flanking SNPs: %ld\n", numOfLoci);
+        fprintf(stderr, "No. fSNPs       : %ld\n", m);
+		fprintf(stderr, "No. testing SNPs: %ld\n", numOfLoci);
 		fprintf(stderr, "No ase/ase ratio: %lf\n", asNonasRatio0);
 		//fprintf(stderr, "Effective no of eSNPs: %lf\n", hoge);
 	}//fprintf(stderr, "No. eSNPs : %d\n\n", m);
 	if(tot<=0.0){ printf("%s\trs\t%s\t0\tX\tX\t-1.0\t-1.0\t-1.0\t-1.0\t-1.0\t-1.0\t-1.0\t-1.0\t-1.0\t0\t%ld\t%ld\t-1\t-1\t-1\t-1\t-1\t0\t0.0\n", gid, "0", m,numOfLoci); return 0;}
 	if(numOfLoci==0){printf("%s\trs\t%s\t0\tX\tX\t-1.0\t-1.0\t-1.0\t-1.0\t-1.0\t-1.0\t-1.0\t-1.0\t-1.0\t0\t%ld\t%ld\t-1\t-1\t-1\t-1\t-1\t0\t0.0\n", gid, "0", m,numOfLoci); return 0;}
     
-    
-    
-    
+    // average number of joint tests
+    NOfSigLoci=(double)numOfLoci;
+	for(i=0; i<argc-1; i++){if(strcmp(argv[i],"--number-of-significant-loci")==0){NOfSigLoci=(double)atof(argv[i+1]);break;}}
+   fprintf(stderr, "num of sig=%lf\n", NOfSigLoci); 
     
     
     
@@ -505,52 +510,52 @@ int main(int argc, char** argv){
 	pkld   = (double*)calloc(2*(L+2)+1, sizeof(double));
 	pitr     = (int*)calloc(L+2, sizeof(int));
 	pbound   = (int*)calloc(L+2, sizeof(int));
-	fprintf(stderr,"%s ", gid);
+	//fprintf(stderr,"%s ", gid);
 	ones = (double*)calloc(m, sizeof(double)); for(i=0; i<m; i++){ ones[i]=1.0; }
 	//if(randomize>0){randomise4(y, Y, ki, X, N, m, P);}
 	
-	if(m>0 || forced>0){
-		ASEQTLALL(y, Y, Z, X, P, ki, w, km, exon, L, N, m, rss, lkhdDiff, ppi, pdelta, pphi, pbeta, ptheta, pasr, pitr, pbound, ptval, pkld);
-        fprintf(stderr,"\n");
-		if(verbose3>0){fprintf(stderr, "ASEQTLALL finished.\n");}
-	}else{fprintf(stderr,"No marker tested.\n"); return -1;}
+	//if(m>0 || forced>0){
+    ASEQTLALL(y, Y, Z, X, P, ki, w, km, exon, L, N, m, rss, lkhdDiff, ppi, pdelta, pphi, pbeta, ptheta, pasr, pitr, pbound, ptval, pkld);
+	if(verbose3>0){fprintf(stderr, "ASEQTLALL finished.\n");}
+	//}else{fprintf(stderr,"No marker tested.\n"); return -1;}
     
     
     //-------------- VCF start --------------
     if(printVCF>0){
-        double *yx, *zx, *z2, *zc;
+        double *yx, *zx, *zc;
         double *Zx;
         Zx = Z+N*L*2;
         zc = Zx+N*m*2;
         
         l=maxCsnp;
-        if(fabs(exon[l])<1.5){
-            z2=Z+N*2*l;
-            printf("%s\t%ld\t%s\t%c\t%c\t.\t.\t%s\tGT:GL:AP:AP2:AS\t", chrs[l], poss[l], rss[l], als[l][0], als[l][1], gid);
-            for(i=0; i<N; i++){
-                printf("%d|%d:%lf,%lf,%lf:%lf,%lf:%lf,%lf:%.0lf,%.0lf", zc[i*2]>0.5?1:0, zc[i*2+1]>0.5?1:0 , (1.0-zc[i*2])*(1.0-zc[i*2+1]), zc[i*2]*(1.0-zc[i*2+1])+(1.0-zc[i*2])*zc[i*2+1], zc[i*2]*zc[i*2+1], zc[i*2], zc[i*2+1], z2[i*2], z2[i*2+1], 0.0, 0.0); 
-                //printf("%d|%d:%lf,%lf,%lf:%lf,%lf:%.0lf,%.0lf", z2[i*2]>0.5?1:0, z2[i*2+1]>0.5?1:0 , (1.0-z2[i*2])*(1.0-z2[i*2+1]), z2[i*2]*(1.0-z2[i*2+1])+(1.0-z2[i*2])*z2[i*2+1], z2[i*2]*z2[i*2+1], z2[i*2], z2[i*2+1], 0.0, 0.0); // orig
-                if(i<N-1){printf("\t");}else{printf("\n");}
-            }
-        }
+        
         
         int ll=0;
         for(l=0;l<L;l++){
-            z2=Z+N*2*l;  // feature snp
-            if(fabs(exon[l])>1.5){
-                printf("%s\t%ld\t%s\t%c\t%c\t.\t.\t%s\tGT:GL:AP:AP2:AS\t", chrs[l], poss[l], rss[l], als[l][0], als[l][1], gid);
+            if(fabs(exon[l])>1.5){// feature snp
+                gzprintf(postVCF, "%s\t%ld\t%s\t%c\t%c\t.\t.\t%s\tGT:GL:AP:AS\t", chrs[l], poss[l], rss[l], als[l][0], als[l][1], gid);
                 zx = Zx+N*2*ll;
                 yx = Y+N*2*ll;
                 for(i=0; i<N; i++){
-                    //printf("%lf,%lf:%lf,%lf:%lf,%.0lf", z2[i*2], z2[i*2+1], zx[i*2], zx[i*2+1], yx[i*2], yx[i*2+1]);// comp
-                    printf("%d|%d:%lf,%lf,%lf:%lf,%lf:%lf,%lf:%.0lf,%.0lf", zx[i*2]>0.5?1:0, zx[i*2+1]>0.5?1:0 , (1.0-zx[i*2])*(1.0-zx[i*2+1]), zx[i*2]*(1.0-zx[i*2+1])+(1.0-zx[i*2])*zx[i*2+1], zx[i*2]*zx[i*2+1], zx[i*2], zx[i*2+1], z2[i*2], z2[i*2+1], yx[i*2], yx[i*2+1]);
-                    //printf("%d|%d:%lf,%lf,%lf:%lf,%lf:%.0lf,%.0lf", z2[i*2]>0.5?1:0, z2[i*2+1]>0.5?1:0 , (1.0-z2[i*2])*(1.0-z2[i*2+1]), z2[i*2]*(1.0-z2[i*2+1])+(1.0-z2[i*2])*z2[i*2+1], z2[i*2]*z2[i*2+1], z2[i*2], z2[i*2+1], yx[i*2], yx[i*2+1]); // orig
-                    if(i<N-1){printf("\t");}else{printf("\n");}
+                    gzprintf(postVCF, "%d|%d:%lf,%lf,%lf:%lf,%lf:%.0lf,%.0lf", 
+                             zx[i*2]>0.5?1:0, zx[i*2+1]>0.5?1:0 , 
+                             (1.0-zx[i*2])*(1.0-zx[i*2+1]), zx[i*2]*(1.0-zx[i*2+1])+(1.0-zx[i*2])*zx[i*2+1], zx[i*2]*zx[i*2+1], 
+                             zx[i*2], zx[i*2+1], yx[i*2], yx[i*2+1]);
+                    if(i<N-1){gzprintf(postVCF, "\t");}else{gzprintf(postVCF, "\n");}
                 }
                 ll++;
+            }else if(l=maxCsnp){
+                gzprintf(postVCF, "%s\t%ld\t%s\t%c\t%c\t.\tLEAD_QTL_SNP\t%s\tGT:GL:AP:AS\t", chrs[l], poss[l], rss[l], als[l][0], als[l][1], gid);
+                for(i=0; i<N; i++){
+                    gzprintf(postVCF, "%d|%d:%lf,%lf,%lf:%lf,%lf:%.0lf,%.0lf", 
+                             zc[i*2]>0.5?1:0, zc[i*2+1]>0.5?1:0 , 
+                             (1.0-zc[i*2])*(1.0-zc[i*2+1]), zc[i*2]*(1.0-zc[i*2+1])+(1.0-zc[i*2])*zc[i*2+1], zc[i*2]*zc[i*2+1], 
+                             zc[i*2], zc[i*2+1], 0.0, 0.0); 
+                    if(i<N-1){gzprintf(postVCF, "\t");}else{gzprintf(postVCF, "\n");}
+                }
             }
         }
-        return 0;
+        gzclose(postVCF);
     }
     //--------------- VCF end ---------------
     
@@ -598,7 +603,6 @@ int main(int argc, char** argv){
 				l++;
 			}
 		}
-		printf("%s\tIMP\t%s\t-1\tN\tN\t-1.0\t-1.0\t-1.0\t-1.0\t%.10lf\t%lf\t%lf\t%lf\t%lf\t%ld\t%ld\t%ld\t%d\t%d\t%ld\t%lf\t%d\t%lf\t%lf\n", gid, chrs[0], lkhdDiff[L+1], ppi[L+1], pdelta[L+1], pphi[L+1], ptheta[L+1], l, m, numOfLoci, pitr[L+1], pitr[L+1], maxlr<0?-1:poss[maxlr], ptheta[L+1], pbound[L+1]+pbound[L], pkld[L+1], pkld[2*L+3]);
 	}else{
 
         if(l<0){// no max lkhd
@@ -611,26 +615,12 @@ int main(int argc, char** argv){
         }else if(l==L){// null lkhd
             printf("%s\tAI\t%s\t-1\tN\tN\t-1.0\t-1.0\t-1.0\t%lf\t%.10lf\t%lf\t%lf\t%lf\t%lf\t%ld\t%ld\t%ld\t%d\t%d\t%ld\t%lf\t%d\t%lf\t%lf\t%lf\n", gid, chrs[l], asNonasRatio0, lkhdDiff[L], ppi[L], pdelta[L], pphi[L], ptheta[L], l, m, numOfLoci, pitr[L], pitr[L], maxlr<0?-1:poss[maxlr], lkhdDiff[L+1], pbound[L], pkld[L], theta2, pkld[2*L+2]);
         }
-        // imprinted
-		printf("%s\tIMP\t%s\t-1\tN\tN\t-1.0\t-1.0\t-1.0\t-1.0\t%.10lf\t%lf\t%lf\t%lf\t%lf\t%ld\t%ld\t%ld\t%d\t%d\t%ld\t%lf\t%d\t%lf\t%lf\n", gid, chrs[l], lkhdDiff[L+1], ppi[L+1], pdelta[L+1], pphi[L+1], ptheta[L+1], l, m, numOfLoci, pitr[L+1], pitr[L+1], maxlr<0?-1:poss[maxlr], ptheta[L+1], pbound[L+1]+pbound[L], pkld[L+1], pkld[2*L+3]);
 	}
+    if(printImprint>0){
+        printf("%s\tIMP\t%s\t-1\tN\tN\t-1.0\t-1.0\t-1.0\t-1.0\t%.10lf\t%lf\t%lf\t%lf\t%lf\t%ld\t%ld\t%ld\t%d\t%d\t%ld\t%lf\t%d\t%lf\t%lf\n", gid, chrs[0], lkhdDiff[L+1], ppi[L+1], pdelta[L+1], pphi[L+1], ptheta[L+1], l, m, numOfLoci, pitr[L+1], pitr[L+1], maxlr<0?-1:poss[maxlr], ptheta[L+1], pbound[L+1]+pbound[L], pkld[L+1], pkld[2*L+3]);
+    }
 	return 1;
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
