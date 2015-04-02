@@ -10,7 +10,9 @@ Robust Allele Specific Quantification and quality controL
 	make
 	make install
 
-## Getting started
+## Preparing data
 
 	cd $RASQUALDIR
+	export RHOME=/software/R-3.0.0/bin/
+	sh test.sh 
 	

@@ -25,8 +25,10 @@ $(PROGRAM): main.c $(OBJS)
 usage.c:
 	sh makeUsage.sh
 
-convert:
-	/software/R-3.0.0/bin/R --vanilla --quiet --args test/Y.txt test/K.txt < R/txt2bin.R
+install:
+	mkdir ../bin
+	mv rasqual ../bin
 
 clean:
-	rm *.o usage.c rasqual
+	rm *.o usage.c
+	rm -rf ../bin
