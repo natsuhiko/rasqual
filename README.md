@@ -37,9 +37,9 @@ You also need to prepare custom VCF files containing the allele specific counts 
 
 To maximize the ability of RASQUAL, we recommend to incorporate uncertainty in imputed genotypes.  There are three options using 
 
-*allelic probability (AP) 
-*genotype likelihood (GL)
-*imputation quality scoare (R^2)
+1. allelic probability (AP) 
+2. genotype likelihood (GL)
+3. imputation quality scoare (R^2)
 
 ## Mapping example eQTLs
 
