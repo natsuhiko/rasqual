@@ -63,10 +63,12 @@ To maximize the ability of RASQUAL, we recommend to incorporate uncertainty in i
         ... FORMAT    ... Sample_i     ...
         ... GT:DS:AS  ... 0|1:1.1:1,10 ...
 
-4. **Imputation quality scoare** (R squre value)
+4. **Imputation quality scoare** (R squre value; RSQ)
 
-    Imputation methods often provid a quality score for each SNP locus that approximates squared correlation between true and observed genotypes (*e.g.*, R^2 from MaCH or Beagle; I^2 from IMPUTE2 ).  RASQUAL can convert the score into genotyping error rate to handle uncertainly:
+    Imputation methods often provid a quality score for each SNP locus that approximates squared correlation between true and observed genotypes (*e.g.*, *R*^2 from MaCH or Beagle; *I*^2 from IMPUTE2 ).  RASQUAL can convert the score into genotyping error rate to handle uncertainly:
 
         ... INFO            FORMAT ... Sample_i ...
         ... ...;RSQ=0.9;... GL:AS  ... 0|1:1,10 ...
+
+We strongly recommend to use AP for QTL mapping.  If there are multiple subfield of AP, GL, DS, AP is prioritized than GL and DS and GL is prioritized than DS.  If you want to prioritize RSQ, you need to specify (-z) option for RASQUAL (see above example).
 
