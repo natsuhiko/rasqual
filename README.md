@@ -42,22 +42,25 @@ You can find the example VCF (chr11.gz) in the _data_ directory.
 
 To maximize the ability of RASQUAL, we recommend to incorporate uncertainty in imputed genotypes.  There are 4 options using 
 
-1. allelic probability (AP) 
+1. *Allelic probability* (AP) 
+
+Allelic probability can be obtained from the standard 2-step imputation scheme, where genotypes are first phased then imputed on haplotype-by-haplotype basis.
 
 	... FORMAT ... Sample_i      ...
 	... AP:AS  ... 0.0,-5.0:1,10 ...
 
-2. genotype likelihood (GL)
+2. Genotype likelihood (GL)
 
 	... FORMAT    ... Sample_i                  ...
 	... GT:GL:AS  ... 0|1:-4.0,-0.1,-0.6:1,10 ...
 
-3. genotype dosage (DS)
+3. Dosage (DS)
 
 	... FORMAT    ... Sample_i                  ...
 	... GT:DS:AS  ... 0|1:1.1:1,10 ...
 
-3. imputation quality scoare (R^2)
+3. Imputation quality scoare (R^2)
+
 	... INFO            FORMAT ... Sample_i ...
 	... ...;RSQ=0.9;... GL:AS  ... 0|1:1,10 ...
 
