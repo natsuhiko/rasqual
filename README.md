@@ -70,5 +70,5 @@ To maximize the ability of RASQUAL, we recommend to incorporate uncertainty in i
         ... INFO            FORMAT ... Sample_i ...
         ... ...;RSQ=0.9;... GL:AS  ... 0|1:1,10 ...
 
-We strongly recommend to use AP for QTL mapping.  If there are multiple subfield of AP, GL, DS, AP is prioritized than GL and DS and GL is prioritized than DS.  If you want to prioritize RSQ, you need to specify (-z) option for RASQUAL (see above example).
+We strongly recommend to use AP for QTL mapping.  If there are multiple subfields of AP, GL and DS, then AP is prioritized than GL and DS and GL is prioritized than DS.  If you want to prioritize RSQ, you need to specify **-z** option for RASQUAL (see above example).
 
