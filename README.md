@@ -23,7 +23,7 @@ Mapping QTLs with RASQUAL is very straightforward.  You just need to prepare two
                    -e 2323452,2324188,2324711,2325434,2328220,2330040,2330740,2331248,2334985,2337897,2338755,2339430 \
                    -z -t -f TSPAN32
 
-## Count data preparation
+## Data preparation
 
 You can find an example expression data for C11orf21 and TSPAN32 genes in the _data_ directory.  There are two files: read count table (Y.txt) and sample specific offset data (K.txt), both has to be organized feature by sample format (i.e., row: gene; col: sample).  The following R script allows you to convert the count and offset files (text) into binary format used in RASQUAL software.  The script essentially converts a table data into a vector of values (double precision).
 
