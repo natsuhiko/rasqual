@@ -29,7 +29,7 @@ For example, the following commands give you the first expression QTL mapping fo
         -e 2323452,2324188,2324711,2325434,2328220,2330040,2330740,2331248,2334985,2337897,2338755,2339430 \
         -z -t -f TSPAN32
 
-Here RASQUAL requies SNP information in the VCF file as standard input and the count table and sample specific offset as binary files (Y.bin and K.bin, respectively).  Sample size (*N*=24) is given by **-n** option and the feature ID is given by **-j** option (only two genes exist in this example, thereby j=1,2).  To save memory usage, you are also required to count the numbers of testing SNPs and feature SNPs a priori (**-l** and **-m**, respectively).  RASQUAL also requires feature start(s) and end(s) positions (i.e., union of exons in this example) as inputs (**-s** and **-e**, respectively).  To take account of genotype uncertainty, imputation quality score (R square value) is used (**-z** option) in this example.  As a default, RASQUAL outputs QTL mappint results for all tested SNPs, but you can specify to get only the lead QTL SNP (**-t** option).  In the output, you can also specify the feature name by **-f** option.
+Here RASQUAL requies SNP information in the VCF file as standard input and the count table and sample specific offset as binary files (Y.bin and K.bin, respectively).  Sample size (*N*=24) is given by **-n** option and the feature ID is given by **-j** option (only two genes exist in this example, thereby j=1,2).  To save memory usage, you are also required to count the numbers of testing SNPs and feature SNPs a priori (**-l** and **-m**, respectively).  RASQUAL also requires feature start and end positions (i.e., union of exons in this example) as inputs (**-s** and **-e**, respectively).  To take account of genotype uncertainty, imputation quality score (R square value) is used (**-z** option) in this example (see the section below).  As a default, RASQUAL outputs QTL mappint results for all tested SNPs, but you can specify to get only the lead QTL SNP (**-t** option).  In the output, you can also specify the feature name by **-f** option.
 
 ## Data preparation
 
@@ -73,10 +73,19 @@ To maximize the ability of RASQUAL, we recommend to incorporate uncertainty in i
 
 4. **Imputation quality scoare** (R squre value; RSQ)
 
-    Imputation methods often provid a quality score for each SNP locus that approximates squared correlation between true and observed genotypes (*e.g.*, *R*^2 from MaCH or Beagle; *I*^2 from IMPUTE2 ).  RASQUAL can convert the score into genotyping error rate to handle uncertainly:
+    Imputation methods often provide a quality score for each SNP locus that approximates squared correlation coefficient between true and observed genotypes (*e.g.*, *R*^2 from MaCH or Beagle; *I*^2 from IMPUTE2 ).  RASQUAL can convert the score into genotyping error rate to handle uncertainly:
 
         ... INFO            FORMAT ... Sample_i ...
         ... ...;RSQ=0.9;... GL:AS  ... 0|1:1,10 ...
 
 We strongly recommend to use AP for QTL mapping.  If there are multiple subfields of AP, GL and DS, then AP is prioritized than GL and DS and GL is prioritized than DS.  If you want to prioritize RSQ, you need to specify **-z** option for RASQUAL (see above example).
+
+## Covariates
+
+There are usually several confounding factors in the real data, which affects count data and reduces power to detect QTLs (such as sequencing batch, sample preparation date etc.).  RASQUAL can handle covariates as an input (**-x**).  The following is the same eQTL mapping example above, but with covariates:
+
+    tabix data/chr11.gz 11 | bin/rasqual -y data/Y.bin -k data/K.bin -n 24 -j 1 -l 409 -m 63 \
+        -s 2316875,2320655,2321750,2321914,2324112 -e 2319151,2320937,2321843,2323290,2324279 -z -t -f C11orf21 -x data/X.bin
+
+Those confunding factors are not often observed but can be captured by principal component analysis (PCA).  We applied PCA onto log FPKMs with and without permutation and picked up the first several components whose contribution rates are greater than those from permutation result as covariates for subsequent analyses.
 
