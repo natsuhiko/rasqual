@@ -40,23 +40,24 @@ You can find the example VCF (chr11.gz) in the _data_ directory.
 
 ## Genotype likelihood
 
-To maximize the ability of RASQUAL, we recommend to incorporate uncertainty in imputed genotypes.  There are three options using 
+To maximize the ability of RASQUAL, we recommend to incorporate uncertainty in imputed genotypes.  There are 4 options using 
 
 1. allelic probability (AP) 
 
-	... FORMAT ... Sample_i
-	... AP:AS  ... 0.0,-5.0:1,10
+	... FORMAT ... Sample_i      ...
+	... AP:AS  ... 0.0,-5.0:1,10 ...
 
 2. genotype likelihood (GL)
+
+	... FORMAT    ... Sample_i                  ...
+	... GT:GL:AS  ... 0|1:-4.0,-0.1,-0.6:1,10 ...
+
+3. genotype dosage (DS)
+
+	... FORMAT    ... Sample_i                  ...
+	... GT:DS:AS  ... 0|1:1.1:1,10 ...
+
 3. imputation quality scoare (R^2)
+	... INFO            FORMAT ... Sample_i ...
+	... ...;RSQ=0.9;... GL:AS  ... 0|1:1,10 ...
 
-## Mapping example eQTLs
-
-Mapping QTLs is very straightforward.  You just need to prepare a VCF file with AS counts at all SNP loci as standard input for RASQUAL.  RASQUAL also requires feature start(s) and end(s) (i.e., union of exons in this example) as inputs (-s and -e respectively).  To save memory usage, you are also required to count the number of tested SNPs (-l) and feature SNPs (-m) a priori.
-
-	tabix data/chr11.gz 11 | bin/rasqual -y data/Y.bin -k data/K.bin -n 24 -j 1 -l 409 -m 63 \
-                   -s 2316875,2320655,2321750,2321914,2324112 -e 2319151,2320937,2321843,2323290,2324279 -z -t -f C11orf21
-	tabix data/chr11.gz 11 | bin/rasqual -y data/Y.bin -k data/K.bin -n 24 -j 2 -l 409 -m 61 \
-                   -s 2323227,2323938,2324640,2325337,2328175,2329966,2330551,2331219,2334884,2335715,2338574,2339093 \
-                   -e 2323452,2324188,2324711,2325434,2328220,2330040,2330740,2331248,2334985,2337897,2338755,2339430 \
-                   -z -t -f TSPAN32
