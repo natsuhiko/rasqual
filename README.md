@@ -38,7 +38,7 @@ You also need to prepare custom VCF files containing the allele specific counts 
 
 You can find the example VCF (chr11.gz) in the _data_ directory.
 
-## Genotype likelihood
+## Genotype uncertainty
 
 To maximize the ability of RASQUAL, we recommend to incorporate uncertainty in imputed genotypes.  There are 4 options: 
 
@@ -51,15 +51,21 @@ To maximize the ability of RASQUAL, we recommend to incorporate uncertainty in i
 
 2. **Genotype likelihood** (GL)
 
-        ... FORMAT    ... Sample_i                  ...
+    You may also use genotype likelihood from conventional genotype imputation in conjunction with phased genotype data:
+
+        ... FORMAT    ... Sample_i                ...
         ... GT:GL:AS  ... 0|1:-4.0,-0.1,-0.6:1,10 ...
 
 3. **Dosage** (DS)
 
-        ... FORMAT    ... Sample_i                  ...
+    Genotype dosage can also be utilized to take account of genotype uncertainty:
+
+        ... FORMAT    ... Sample_i     ...
         ... GT:DS:AS  ... 0|1:1.1:1,10 ...
 
-4. **Imputation quality scoare** (R^2)
+4. **Imputation quality scoare** (R squre value)
+
+    Imputation methods often provid a quality score for each SNP locus that approximates squared correlation between true and observed genotypes (*e.g.*, R^2 from MaCH or Beagle; I^2 from IMPUTE2 ).  RASQUAL can convert the score into genotyping error rate to handle uncertainly:
 
         ... INFO            FORMAT ... Sample_i ...
         ... ...;RSQ=0.9;... GL:AS  ... 0|1:1,10 ...
