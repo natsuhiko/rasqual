@@ -31,13 +31,22 @@ You can find an example expression data for C11orf21 and TSPAN32 genes in the _d
 	export RHOME=/software/R-3.0.0/bin/
 	$RHOME/R --vanilla --quiet --args data/Y.txt data/K.txt < R/txt2bin.R > log
 
-You also need to prepare custom VCF files containing the allele specific counts at all SNPs.  The files have to contain an additional subfield, "AS", located within the genotype field consisting of two integers, the reference and alternative allele counts, separated by a comma.  You can find the example (chr11.gz) in the _data_ directory.
+You also need to prepare custom VCF files containing the allele specific counts at all SNPs.  The files have to contain an additional subfield, "AS", located within the genotype field consisting of two integers, the reference and alternative allele counts, separated by a comma.  For example, sample **_i_** is heterozygous at a SNP and has 1 and 10 reads overlapping with the reference and alternative alleles respectively, the genotype field for the sample becomes
+
+	... FORMAT ... Sample_i ...
+	... GL:AS  ... 0|1:1,10 ...
+
+You can find the example VCF (chr11.gz) in the _data_ directory.
 
 ## Genotype likelihood
 
 To maximize the ability of RASQUAL, we recommend to incorporate uncertainty in imputed genotypes.  There are three options using 
 
 1. allelic probability (AP) 
+
+	... FORMAT ... Sample_i
+	... AP:AS  ... 0.0,-5.0:1,10
+
 2. genotype likelihood (GL)
 3. imputation quality scoare (R^2)
 
