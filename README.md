@@ -44,7 +44,7 @@ To maximize the ability of RASQUAL, we recommend to incorporate uncertainty in i
 
 1. **Allelic probability** (AP) 
 
-    Allelic probability can be obtained from the standard 2-step imputation scheme, where genotypes are first phased then imputed on haplotype-by-haplotype basis.
+    Allelic probability can be obtained from the standard 2-step imputation scheme, where genotypes are first phased then imputed on haplotype-by-haplotype basis.  The custom AP field consists of the allelic probabilities (in Log 10 scale) of two haplotypes from one individual, separated by a comma:
 
         ... FORMAT ... Sample_i      ...
         ... AP:AS  ... 0.0,-5.0:1,10 ...
