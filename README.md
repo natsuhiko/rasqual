@@ -12,16 +12,24 @@ Please make sure CLAPACK is installed in your environment.  Otherwise you can ge
 	make
 	make install
 
-## First eQTL mapping with RASQUAL
+## First QTL mapping with RASQUAL
 
-Mapping QTLs with RASQUAL is very straightforward.  You just need to prepare two data files (1) a fragment (read) count table and (2) a VCF file with imputed SNP genotypes and allele-specific counts at all SNP loci as standard input for RASQUAL.  RASQUAL also requires feature start(s) and end(s) (i.e., union of exons in this example) as inputs (-s and -e respectively).  To save memory usage, you are also required to count the number of testing SNPs (-l) and feature SNPs (-m) a priori.  Here are a couple of commands to map eQTLs (C11orf21 and TSPAN32 genes) to get the lead QTL SNP for each gene: 
+Mapping QTLs with RASQUAL is straightforward.  You just need to prepare two data files:
 
-        tabix data/chr11.gz 11 | bin/rasqual -y data/Y.bin -k data/K.bin -n 24 -j 1 -l 409 -m 63 \
-                   -s 2316875,2320655,2321750,2321914,2324112 -e 2319151,2320937,2321843,2323290,2324279 -z -t -f C11orf21
-        tabix data/chr11.gz 11 | bin/rasqual -y data/Y.bin -k data/K.bin -n 24 -j 2 -l 409 -m 61 \
-                   -s 2323227,2323938,2324640,2325337,2328175,2329966,2330551,2331219,2334884,2335715,2338574,2339093 \
-                   -e 2323452,2324188,2324711,2325434,2328220,2330040,2330740,2331248,2334985,2337897,2338755,2339430 \
-                   -z -t -f TSPAN32
+1. fragment (read) count table
+2. VCF file with imputed SNP genotypes and allele-specific counts
+
+For example, the following commands give you the first expression QTL mapping for two genes (C11orf21 and TSPAN32) with RASQUAL:
+
+    # make sure tabix is installed in your environment
+    tabix data/chr11.gz 11 | bin/rasqual -y data/Y.bin -k data/K.bin -n 24 -j 1 -l 409 -m 63 \
+        -s 2316875,2320655,2321750,2321914,2324112 -e 2319151,2320937,2321843,2323290,2324279 -z -t -f C11orf21
+    tabix data/chr11.gz 11 | bin/rasqual -y data/Y.bin -k data/K.bin -n 24 -j 2 -l 409 -m 61 \
+        -s 2323227,2323938,2324640,2325337,2328175,2329966,2330551,2331219,2334884,2335715,2338574,2339093 \
+        -e 2323452,2324188,2324711,2325434,2328220,2330040,2330740,2331248,2334985,2337897,2338755,2339430 \
+        -z -t -f TSPAN32
+
+Here RASQUAL requies SNP information in the VCF file as standard input and the count table and sample specific offset as binary files (Y.bin and K.bin, respectively).  Sample size (*N*=24) is given by **-n** option and the feature ID is given by **-j** option (only two genes exist in this example, thereby j=1,2).  To save memory usage, you are also required to count the numbers of testing SNPs and feature SNPs a priori (**-l** and **-m**, respectively).  RASQUAL also requires feature start(s) and end(s) positions (i.e., union of exons in this example) as inputs (**-s** and **-e**, respectively).  To take account of genotype uncertainty, imputation quality score (R square value) is used (**-z** option) in this example.  As a default, RASQUAL outputs QTL mappint results for all tested SNPs, but you can specify to get only the lead QTL SNP (**-t** option).  In the output, you can also specify the feature name by **-f** option.
 
 ## Data preparation
 
