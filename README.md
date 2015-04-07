@@ -44,7 +44,7 @@ You also need to prepare custom VCF files containing the allele specific counts 
 	... FORMAT ... Sample_i ...
 	... GL:AS  ... 0|1:1,10 ...
 
-You can find the example VCF (chr11.gz) in the _data_ directory.
+You can find the example VCF (chr11.gz) in the _data_ directory.  Note that, genotypes have to be phased for QTL mapping with RASQUAL.  Currently, SNP genotypes are only used to map QTLs, but short INDELs and some form of structural variations will be able to use shortly.
 
 ## Genotype uncertainty
 
@@ -52,7 +52,7 @@ To maximize the ability of RASQUAL, we recommend to incorporate uncertainty in i
 
 1. **Allelic probability** (AP) 
 
-    Allelic probability can be obtained from the standard 2-step imputation scheme, where genotypes are first phased then imputed on haplotype-by-haplotype basis.  The custom AP field consists of the allelic probabilities (in Log 10 scale) of two haplotypes from one individual, separated by a comma:
+    Allelic probability can be obtained from the standard 2-step imputation scheme, where genotypes are first phased then imputed on haplotype-by-haplotype basis.  The custom AP field consists of the allelic probabilities (in Log10 scale) of two haplotypes from one individual, separated by a comma:
 
         ... FORMAT ... Sample_i      ...
         ... AP:AS  ... 0.0,-5.0:1,10 ...
@@ -82,10 +82,11 @@ We strongly recommend to use AP for QTL mapping.  If there are multiple subfield
 
 ## Covariates
 
-There are usually several confounding factors in the real data, which affects count data and reduces power to detect QTLs (such as sequencing batch, sample preparation date etc.).  RASQUAL can handle covariates as an input (**-x**).  The following is the same eQTL mapping example above, but with covariates:
+There are usually several confounding factors in the real data, which affects count data and reduces power to detect QTLs (such as sequencing batch, sample preparation date etc.).  RASQUAL can handle covariates as an input (**-x** option).  The following is the same eQTL mapping example above, but with covariates:
 
     tabix data/chr11.gz 11 | bin/rasqual -y data/Y.bin -k data/K.bin -n 24 -j 1 -l 409 -m 63 \
-        -s 2316875,2320655,2321750,2321914,2324112 -e 2319151,2320937,2321843,2323290,2324279 -z -t -f C11orf21 -x data/X.bin
+        -s 2316875,2320655,2321750,2321914,2324112 -e 2319151,2320937,2321843,2323290,2324279 -z -t -f C11orf21 \
+        -x data/X.bin
 
 Those confunding factors are not often observed but can be captured by principal component analysis (PCA).  We applied PCA onto log FPKMs with and without permutation and picked up the first several components whose contribution rates are greater than those from permutation result as covariates for subsequent analyses.
 
