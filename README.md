@@ -22,6 +22,7 @@ Mapping QTLs with RASQUAL is straightforward.  You just need to prepare two data
 For example, the following commands give you the first expression QTL mapping for two genes (C11orf21 and TSPAN32) with RASQUAL:
 
     # make sure tabix is installed in your environment
+    cd $RASQUALDIR
     tabix data/chr11.gz 11 | bin/rasqual -y data/Y.bin -k data/K.bin -n 24 -j 1 -l 409 -m 63 \
         -s 2316875,2320655,2321750,2321914,2324112 -e 2319151,2320937,2321843,2323290,2324279 
         -t -f C11orf21 -z
