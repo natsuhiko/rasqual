@@ -94,9 +94,9 @@ We strongly recommend to use AP for QTL mapping.  If there are multiple subfield
 
 Sample specific offset terms can be calculated from the count table.  See the script makeOffset.R in the *R* directory.  The usage is:
 
-	# Does not work!
+	# Not run!
 	$RHOME/R --vanilla --quiet --args data/your.Y.txt < R/makeOffset.R > log
-	# With GC content; not work!
+	# With GC content; not run!
 	$RHOME/R --vanilla --quiet --args data/your.Y.txt data/gcc.txt < R/makeOffset.R > log
 
 Note that you need to prepare a GC content file (gcc.txt in this example) to apply GC correction for the read count.  The file is a vector of GC% values as a text file.
@@ -116,7 +116,7 @@ The covariate file is based on a sample-by-variable table (see X.txt in the *dat
 
 Those confunding factors are not often observed but can be captured by principal component analysis (PCA).  We applied PCA onto log FPKMs with and without permutation and picked up the first several components whose contribution rates are greater than those from permutation result as covariates for subsequent analyses.  A sample code is also available in the *R* directory:
 
-	# Does not work!
+	# Not run!
 	$RHOME/R --vanilla --quiet --args data/your.Y.txt data/your.K.txt data/flen.txt < R/makeCovariates.R > log
 
 Note that you need to prepare a feature length file (flen.txt in this example) which is a vector of values in a text.
