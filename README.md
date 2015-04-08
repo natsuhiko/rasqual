@@ -99,12 +99,15 @@ Sample specific offset terms can be calculated from the count table.  See the sc
 	# With GC content; not work!
 	$RHOME/R --vanilla --quiet --args data/your.Y.txt data/gcc.txt < R/makeOffset.R > log
 
+Note that you need to prepare a GC content file (gcc.txt in this example) to apply GC correction for the read count.  The file is a vector of GC% values as a text file.
+
 ## Covariates
 
 There are usually several confounding factors in the real data, which affects count data and reduces power to detect QTLs (such as sequencing batch, sample preparation date etc.).  RASQUAL can handle covariates as an input (**-x** option).  The following is the same eQTL mapping example above, but with covariates:
 
     tabix data/chr11.gz 11 | bin/rasqual -y data/Y.bin -k data/K.bin -n 24 -j 1 -l 409 -m 63 \
-        -s 2316875,2320655,2321750,2321914,2324112 -e 2319151,2320937,2321843,2323290,2324279 -z -t -f C11orf21 \
+        -s 2316875,2320655,2321750,2321914,2324112 -e 2319151,2320937,2321843,2323290,2324279 \
+        -z -t -f C11orf21 \
         -x data/X.bin
 
 The covariate file is based on a sample-by-variable table (see X.txt in the *data* directory).  You can convert the file into binary format by using the same R script:
@@ -116,4 +119,5 @@ Those confunding factors are not often observed but can be captured by principal
 	# Does not work!
 	$RHOME/R --vanilla --quiet --args data/your.Y.txt data/your.K.txt data/flen.txt < R/makeCovariates.R > log
 
+Note that you need to prepare a feature length file (flen.txt in this example) which is a vector of values in a text.
 
