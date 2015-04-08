@@ -37,7 +37,7 @@ Here RASQUAL requies SNP information in the VCF file as standard input and the c
 You can find an example expression data for C11orf21 and TSPAN32 genes in the _data_ directory.  There are two files: read count table (Y.txt) and sample specific offset data (K.txt), both has to be organized feature by sample format (i.e., row: gene; col: sample).  The following R script allows you to convert the count and offset files (text) into binary format used in RASQUAL software.  The script essentially converts a table data into a vector of values (double precision).
 
 	cd $RASQUALDIR
-	export RHOME=/software/R-3.0.0/bin/
+	RHOME=/software/R-3.0.0/bin/
 	$RHOME/R --vanilla --quiet --args data/Y.txt data/K.txt < R/txt2bin.R > log
 
 You also need to prepare custom VCF files containing the allele specific counts at all SNPs.  The files have to contain an additional subfield, "AS", located within the genotype field consisting of two integers, the reference and alternative allele counts, separated by a comma.  For example, sample **_i_** is heterozygous at a SNP and has 1 and 10 reads overlapping with the reference and alternative alleles respectively, the genotype field for the sample becomes
@@ -96,6 +96,8 @@ Sample specific offset terms can be calculated from the count table.  See the sc
 
 	# Does not work!
 	$RHOME/R --vanilla --quiet --args data/your.Y.txt < R/makeOffset.R > log
+	# With GC content; not work!
+	$RHOME/R --vanilla --quiet --args data/your.Y.txt data/gcc.txt < R/makeOffset.R > log
 
 ## Covariates
 
@@ -112,6 +114,6 @@ The covariate file is based on a sample-by-variable table (see X.txt in the *dat
 Those confunding factors are not often observed but can be captured by principal component analysis (PCA).  We applied PCA onto log FPKMs with and without permutation and picked up the first several components whose contribution rates are greater than those from permutation result as covariates for subsequent analyses.  A sample code is also available in the *R* directory:
 
 	# Does not work!
-	$RHOME/R --vanilla --quiet --args data/your.Y.txt < R/makeCovariates.R > log
+	$RHOME/R --vanilla --quiet --args data/your.Y.txt data/your.K.txt data/flen.txt < R/makeCovariates.R > log
 
 
