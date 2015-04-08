@@ -78,7 +78,7 @@ To maximize the ability of RASQUAL, we recommend to incorporate uncertainty in i
         ... INFO            FORMAT ... Sample_i ...
         ... ...;RSQ=0.9;... GL:AS  ... 0|1:1,10 ...
 
-If you want to prioritize RSQ, you need to specify **-z** option for RASQUAL (see above example).
+    If you want to prioritize RSQ, you need to specify **-z** option for RASQUAL (see above example).
 
 5. **Population allele frequency**
 
