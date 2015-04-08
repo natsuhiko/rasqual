@@ -78,6 +78,8 @@ To maximize the ability of RASQUAL, we recommend to incorporate uncertainty in i
         ... INFO            FORMAT ... Sample_i ...
         ... ...;RSQ=0.9;... GL:AS  ... 0|1:1,10 ...
 
+If you want to prioritize RSQ, you need to specify **-z** option for RASQUAL (see above example).
+
 5. **Population allele frequency**
 
     Even if genotype information is not available, RASQUAL can run in the SNP free mode (**--population-allele-frequency** option).  In this case, you just need to provide the population allele frequency (not minor allele frequency!) for the SNP in VCF files.  Note that, this mode is only feasible when the causal SNP is feature SNP (*e.g.*, ChIP-seq QTL).
@@ -85,7 +87,7 @@ To maximize the ability of RASQUAL, we recommend to incorporate uncertainty in i
         ... INFO           FORMAT ... Sample_i ...
         ... ...;AF=0.4;... AS     ... 1,10     ...
 
-We strongly recommend to use AP for QTL mapping.  If there are multiple subfields of AP, GL and DS, then AP is prioritized than GL and DS and GL is prioritized than DS.  If you want to prioritize RSQ, you need to specify **-z** option for RASQUAL (see above example).
+We strongly recommend to use AP for QTL mapping.  If there are multiple subfields of AP, GL and DS, then AP is prioritized than GL and DS and GL is prioritized than DS.  If neither of GL, DS nor AP is provided, GL is used as AP.
 
 ## Covariates
 
