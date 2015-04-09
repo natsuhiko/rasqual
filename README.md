@@ -120,6 +120,3 @@ Those confounding factors are not often observed but can be captured by principa
 
 	# Not run!
 	$RHOME/R --vanilla --quiet --args data/your.Y.txt data/your.K.txt < R/makeCovariates.R > log
-#
-#Note that you need to prepare a feature length file (fealen.txt in this example) which is a vector of values in a text (separated by either, a comma, a tab or a line break).
-#
