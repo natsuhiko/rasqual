@@ -3,7 +3,7 @@ RASQUAL (Robust Allele Specific QUAntification and quality controL) maps QTLs fo
 
 ## How to build & install
 
-Please make sure CLAPACK is installed in your environment.  Otherwise you can get the library at http://www.netlib.org/clapack/.  To build and install RASQUAL, firstly go to the _source_ directory (src), then set environment variables appropriately to point to the CLAPACK library.  Finally use "make" to build and install RASQUAL which will be installed in "$RASQUALDIR/bin".
+Please make sure CLAPACK is installed in your environment.  Otherwise you can get the library at http://www.netlib.org/clapack/.  To build and install RASQUAL, firstly go to the _source_ directory (*src*), then set environment variables appropriately to point to the CLAPACK library.  Finally use "make" to build and install RASQUAL which will be installed in "$RASQUALDIR/bin".
 
 	RASQUALDIR=/path/to/rasqualdir/
 	cd $RASQUALDIR/src
@@ -17,17 +17,17 @@ Please make sure CLAPACK is installed in your environment.  Otherwise you can ge
 RASQUAL needs two input data files:
 
 1. A fragment (read) count table, with sample specific offsets (such as library size)
-2. A VCF file with imputed SNP genotypes and allele-specific counts. 
+2. A VCF file with phased SNP genotypes and allele-specific counts. 
 
 An example of each of these files can be found in the data directory. In the usage example below, RASQUAL takes SNP information from a tabix-indexed VCF file as standard input, while the count table and sample specific offsets are binary files (Y.bin and K.bin, respectively). Tabix-indexing is not strictly necessary but allows for genotype and allelic count information to be accessed quickly from the command line.
 Using the example data files, you can use the following commands to map expression QTLs for two genes (C11orf21 and TSPAN32) using RASQUAL:
 
     # make sure tabix is installed in your environment
     cd $RASQUALDIR
-    tabix data/chr11.gz 11 | bin/rasqual -y data/Y.bin -k data/K.bin -n 24 -j 1 -l 409 -m 63 \
+    tabix data/chr11.gz 11:2315000-2340000 | bin/rasqual -y data/Y.bin -k data/K.bin -n 24 -j 1 -l 409 -m 63 \
         -s 2316875,2320655,2321750,2321914,2324112 -e 2319151,2320937,2321843,2323290,2324279 \
         -t -f C11orf21 -z
-    tabix data/chr11.gz 11 | bin/rasqual -y data/Y.bin -k data/K.bin -n 24 -j 2 -l 409 -m 61 \
+    tabix data/chr11.gz 11:2315000-2340000 | bin/rasqual -y data/Y.bin -k data/K.bin -n 24 -j 2 -l 409 -m 61 \
         -s 2323227,2323938,2324640,2325337,2328175,2329966,2330551,2331219,2334884,2335715,2338574,2339093 \
         -e 2323452,2324188,2324711,2325434,2328220,2330040,2330740,2331248,2334985,2337897,2338755,2339430 \
         -t -f TSPAN32 -z
@@ -36,13 +36,13 @@ Sample size (in this example, *N*=24) is given by **-n** option, the feature ID 
 
 ## Data preparation
 
-You can find an example expression data for C11orf21 and TSPAN32 genes in the _data_ directory.  There are two files: a read/fragment count table (Y.txt) and sample specific offset data (K.txt), both have to be organised in feature by sample format (i.e., row: gene; col: sample).  We have included an R script to allow you to convert the count and offset files (text) into binary format for us by RASQUAL.  The script converts a table data into a vector of double precision values.
+You can find an example expression data for C11orf21 and TSPAN32 genes in the _data_ directory.  There are two files: a read/fragment count table (Y.txt) and sample specific offset data (K.txt), both have to be organised in feature by sample format (*i.e.*, row: gene; col: sample).  We have included an R script to allow you to convert the count and offset files (text) into binary format for us by RASQUAL.  The script converts a table data into a vector of double precision values.
 
 	cd $RASQUALDIR
 	RHOME=/software/R-3.0.0/bin/
 	$RHOME/R --vanilla --quiet --args data/Y.txt data/K.txt < R/txt2bin.R > log
 
-You will also need to prepare custom VCF files containing the allele specific counts at all SNPs.  The files have to contain an additional subfield, "AS", located within the genotype field consisting of two integers, the reference and alternative allele counts, separated by a comma.  For example, sample **_i_** is heterozygous at a SNP and has 1 and 10 reads overlapping the reference and alternative alleles respectively, the genotype field for the sample becomes
+You will also need to prepare custom VCF files containing the allele specific counts of your target cellular trait at all SNPs.  The files have to contain an additional subfield, "AS", located within the genotype field consisting of two integers, the reference and alternative allele counts, separated by a comma.  For example, sample **_i_** is heterozygous at a SNP and has 1 and 10 reads overlapping the reference and alternative alleles respectively, the genotype field for the sample becomes
 
 	... FORMAT ... Sample_i ...
 	... GL:AS  ... 0|1:1,10 ...
@@ -101,25 +101,25 @@ Sample specific offset terms can be calculated from the count table.  See the sc
 	# With GC content; not run!
 	$RHOME/R --vanilla --quiet --args data/your.Y.txt data/gcc.txt < R/makeOffset.R > log
 
-Note that you need to prepare a GC content file (gcc.txt in this example) to apply GC correction for the read count.  The file is a vector of GC% values as a text file.
+Note that you need to prepare a GC content file (gcc.txt in this example) to apply GC correction for the read count.  The file is a vector of GC% values as a text file (separated by either, a comma, a tab or a line break).
 
 ## Covariates
 
 Real data is usually affected by hidden confounding factors, such as sequencing batch, sample preparation date etc, that can reduce power to detect QTLs. RASQUAL handles covariates as an input (**-x** option).  The following is the same eQTL mapping example above, but with covariates:
 
-    tabix data/chr11.gz 11 | bin/rasqual -y data/Y.bin -k data/K.bin -n 24 -j 1 -l 409 -m 63 \
+    tabix data/chr11.gz 11:2315000-2340000 | bin/rasqual -y data/Y.bin -k data/K.bin -n 24 -j 1 -l 409 -m 63 \
         -s 2316875,2320655,2321750,2321914,2324112 -e 2319151,2320937,2321843,2323290,2324279 \
         -z -t -f C11orf21 \
         -x data/X.bin
 
-The covariate file is based on a sample-by-variable table (see X.txt in the *data* directory).  You can convert the file into binary format by using the same R script:
+The covariate file is based on a sample-by-variable table (see X.txt in the *data* directory).  You can convert the file into binary format for RASQUAL by using the same R script:
 
 	$RHOME/R --vanilla --quiet --args data/Y.txt data/K.txt data/X.txt < R/txt2bin.R > log
 
-Those confounding factors are not often observed but can be captured by principal component analysis (PCA).  In our example, we applied PCA onto log FPKMs with and without permutation and picked the first N components whose contribution rates are greater than those from permutation result as covariates for subsequent analyses.  A sample code is also available in the *R* directory:
+Those confounding factors are not often observed but can be captured by principal component analysis (PCA).  In our example, we applied PCA onto log FPKMs with and without permutation and picked the first N components whose explained variances are greater than those from permutation result as covariates for subsequent analyses.  A sample code is also available in the *R* directory:
 
 	# Not run!
-	$RHOME/R --vanilla --quiet --args data/your.Y.txt data/your.K.txt data/flen.txt < R/makeCovariates.R > log
+	$RHOME/R --vanilla --quiet --args data/your.Y.txt data/your.K.txt data/fealen.txt < R/makeCovariates.R > log
 
-Note that you need to prepare a feature length file (flen.txt in this example) which is a vector of values in a text.
+Note that you need to prepare a feature length file (fealen.txt in this example) which is a vector of values in a text (separated by either, a comma, a tab or a line break).
 
