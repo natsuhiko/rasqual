@@ -26,7 +26,7 @@ usage.c:
 	sh makeUsage.sh
 
 install:
-	mkdir ../bin
+	mkdir -p ../bin
 	mv rasqual ../bin
 
 clean:
