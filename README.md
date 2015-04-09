@@ -1,5 +1,5 @@
 # RASQUAL
-RASQUAL (Robust Allele Specific QUAntification and quality controL) maps QTLs using population and allele-specific signals for sequenced based cellular traits.
+RASQUAL (Robust Allele Specific QUAntification and quality controL) maps QTLs for sequenced based cellular traits using population and allele-specific signals.
 
 ## How to build & install
 
@@ -90,7 +90,7 @@ To maximise the ability of RASQUAL, we recommend to incorporate uncertainty in i
         ... INFO           FORMAT ... Sample_i ...
         ... ...;AF=0.4;... AS     ... 1,10     ...
 
-We strongly recommend to use AP for QTL mapping.  If there are multiple subfields of AP, GL and DS, then AP is prioritised than GL and DS and GL is prioritised than DS.  If neither of GL, DS nor AP is provided, GL is used as AP.
+We strongly recommend using the AP field for QTL mapping.  If there are multiple subfields of AP, GL and DS, AP is prioritised over both GL and DS, and GL is prioritised over DS.  If neither of GL, DS nor AP is provided, GL is used as AP.
 
 ## Offset calculation
 
