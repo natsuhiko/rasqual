@@ -120,3 +120,5 @@ Those confounding factors are not often observed but can be captured by principa
 
 	# Not run!
 	$RHOME/R --vanilla --quiet --args data/your.Y.txt data/your.K.txt < R/makeCovariates.R > log
+
+Note that, the result of PCA is always sensitive to few outliers (just one or two), which explain almost all variance in the data.  Using those PCs as covariates hurts your QTL mapping result.  We strongly recommend to spend some time to explore and clean up your data first.
