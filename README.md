@@ -105,7 +105,7 @@ Note that you need to prepare a GC content file (gcc.txt in this example) to app
 
 ## Covariates
 
-There are usually several confounding factors in the real data, which affects count data and reduces power to detect QTLs (such as sequencing batch, sample preparation date etc.).  RASQUAL can handle covariates as an input (**-x** option).  The following is the same eQTL mapping example above, but with covariates:
+Real data is usually affected by hidden confounding factors, such as sequencing batch, sample preparation date etc, that can reduce power to detect QTLs. RASQUAL handles covariates as an input (**-x** option).  The following is the same eQTL mapping example above, but with covariates:
 
     tabix data/chr11.gz 11 | bin/rasqual -y data/Y.bin -k data/K.bin -n 24 -j 1 -l 409 -m 63 \
         -s 2316875,2320655,2321750,2321914,2324112 -e 2319151,2320937,2321843,2323290,2324279 \
