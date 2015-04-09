@@ -391,9 +391,12 @@ int main(int argc, char** argv){
 	double ep;
     while(parseLine(chrs[l], &pos, rss[l], als[l], &vinfo, dip, gen, gl, ap, ase, N, genType)>0){
 		afs[l] = getAF(gen,w,N);//      fprintf(stderr,"%lf ",afs[l]);
-		hwes[l] = getHWE(dip,w,N);//    fprintf(stderr,"%lf ",hwes[l]);
-		ias[l] = getIA(gl,w,N); //      fprintf(stderr,"%lf ",ias[l]);
+		//hwes[l] = getHWE(dip,w,N);//    fprintf(stderr,"%lf ",hwes[l]);
+		hwes[l] = getHWEfromAP(ap, dip, w, N);//    fprintf(stderr,"%lf ",hwes[l]);
+		//ias[l] = getIA(gl,w,N); //      fprintf(stderr,"%lf ",ias[l]);
+		ias[l] = getIAfromAP(ap, gl, w, N); //      fprintf(stderr,"%lf ",ias[l]);
 		rsq[l] = vinfo.RSQ;    //       fprintf(stderr,"%lf ",rsq[l]);
+		if(rsq[l]<0.0){rsq[l]=ias[l];}
 		crs[l] = getCR(gen,w,N); //     fprintf(stderr,"%lf ",crs[l]);
 		poss[l]=pos;
         if(afs[l]>MAF && afs[l]<1.0-MAF && rsq[l]>RSQ && (hwes[l]<HWE||noPriorGenotype==1) && isTestReg(chrs[l], chr0, TSS, TSSPROX, pos)){// tested

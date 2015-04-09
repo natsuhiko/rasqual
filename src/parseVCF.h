@@ -37,7 +37,9 @@ void Log10();
 
 double getRsq(int* dip1, int* dip2, long N);
 double getAF(double* gen, double* w, long N);
+double getHWEfromAP(double* ap, int* dip, double* w, long N);
 double getHWE(int* dip, double* w, long N);
+double getIAfromAP(double* ap, double* gl, double* w, long N);
 double getIA(double* gl, double* w, long N);
 double getCR(double* gl, double* w, long N);
 int init();

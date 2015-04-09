@@ -101,6 +101,16 @@ double getAF(double* gen, double* w, long N){
 	return res;
 	//if(res>0.5){return 1.0-res;}else{return res;}
 }
+double getIAfromAP(double* ap, double* gl, double* w, long N){
+	int i;
+	for(i=0; i<N; i++){
+		gl[i*3]   = (1.0-ap[i*2])*(1.0-ap[i*2+1]);
+		gl[i*3+1] = (1.0-ap[i*2])*ap[i*2+1] + ap[i*2]*(1.0-ap[i*2+1]);
+		gl[i*3+2] = ap[i*2]*ap[i*2+1];
+	}
+	return getIA(gl, w, N);
+}
+
 double getIA(double* gl, double* w, long N){
 	long i;
 	double IA=0.0;
@@ -119,6 +129,15 @@ double getIA(double* gl, double* w, long N){
 	}}
 	IA /= tot;
 	return 1.0-IA;
+}
+
+double getHWEfromAP(double* ap, int* dip, double* w, long N){
+	int i;
+	for(i=0; i<N; i++){
+		dip[i*2]   = ap[i*2]>0.5   ? 1 : 0;
+		dip[i*2+1] = ap[i*2+1]>0.5 ? 1 : 0;
+	}
+	return getHWE(dip, w, N);
 }
 
 double getHWE(int* dip, double* w, long N){
@@ -371,6 +390,8 @@ int parseLine0(char* chr, long* pos, char* rs, char* al, VCF_info* vinfo, int* d
 							dose[ncol-9] = (vinfo->AF)*2.0;
 							ap[(ncol-9)*2] = ap[(ncol-9)*2+1] = vinfo->AF;
 						}
+					}else{
+						dose[ncol-9] = ap[(ncol-9)*2]+ap[(ncol-9)*2+1];
 					}
 					//fprintf(stderr, "%d %lf %lf %lf | %d %d | %lf %lf | %s\n", ncol, gl[(ncol-9)*3], gl[(ncol-9)*3+1], gl[(ncol-9)*3+2], dip[(ncol-9)*2], dip[(ncol-9)*2+1], ap[(ncol-9)*2], ap[(ncol-9)*2+1], cell);
 					//fprintf(stderr, "%d %d %d %lf %lf %lf | %lf %lf | %lf %lf | %s\n", ncol, gl[(ncol-9)*3], gl[(ncol-9)*3+1], gl[(ncol-9)*3+2], dip[(ncol-9)*2], dip[(ncol-9)*2+1], ap[(ncol-9)*2], ap[(ncol-9)*2+1], ap2[(ncol-9)*2], ap2[(ncol-9)*2+1], cell);
@@ -398,6 +419,7 @@ int parseInfo(char* str, VCF_info* vinfo){
 	int nfield=1;
 	for(i=0; i<strlen(str); i++){if(str[i]==';'){nfield++;}}
 	int ns=0;
+	vinfo->RSQ = -1.0;
 	for(i=0; i<nfield; i++){
 		sscanf(str+ns, "%[^;];", infostr);
 		if(strcmp(infostr,"VT=SNP")==0){
