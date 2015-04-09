@@ -1,9 +1,9 @@
 source("R/randomize.R")
 
-# read count and feature length vector (text)
+# read counts and offset
 ytxt=commandArgs()[5]
 ktxt=commandArgs()[6]
-ltxt=commandArgs()[7]
+#ltxt=commandArgs()[7]
 
 # read tables
 Y=read.table(ytxt,as.is=T)
@@ -13,10 +13,10 @@ K=as.matrix(read.table(ktxt,as.is=T)[,-1])
 n=ncol(Y)
 
 # feature length
-len=scan(ltxt)
+#len=scan(ltxt)
 
-# fpkm calculation
-fpkm=t(t(Y/K+1)/apply(Y/K,2,sum))/len*1e9
+# fpm calculation
+fpkm=t(t(Y/K+1)/apply(Y/K,2,sum))*1e6 #  /len*1e9
 
 # Singular value decomposition
 fpkm.svd   = svd((log(fpkm)-apply(log(fpkm),1,mean))/apply(log(fpkm),1,sd))

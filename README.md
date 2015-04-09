@@ -119,7 +119,7 @@ The covariate file is based on a sample-by-variable table (see X.txt in the *dat
 Those confounding factors are not often observed but can be captured by principal component analysis (PCA).  In our example, we applied PCA onto log FPKMs with and without permutation and picked the first N components whose explained variances are greater than those from permutation result as covariates for subsequent analyses.  A sample code is also available in the *R* directory:
 
 	# Not run!
-	$RHOME/R --vanilla --quiet --args data/your.Y.txt data/your.K.txt data/fealen.txt < R/makeCovariates.R > log
-
-Note that you need to prepare a feature length file (fealen.txt in this example) which is a vector of values in a text (separated by either, a comma, a tab or a line break).
-
+	$RHOME/R --vanilla --quiet --args data/your.Y.txt data/your.K.txt < R/makeCovariates.R > log
+#
+#Note that you need to prepare a feature length file (fealen.txt in this example) which is a vector of values in a text (separated by either, a comma, a tab or a line break).
+#
