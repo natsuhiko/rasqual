@@ -402,7 +402,7 @@ int main(int argc, char** argv){
         if(afs[l]>MAF && afs[l]<1.0-MAF && rsq[l]>RSQ && (hwes[l]<HWE||noPriorGenotype==1) && isTestReg(chrs[l], chr0, TSS, TSSPROX, pos)){// tested
                 exon[l]=1.0; numOfLoci++;
         }else{exon[l]=-1.0;}// not tested
-        ep = afs[l]*(1-afs[l])*2.0*(1.0-rsq[l]);  //if(ep<0.01){ep=0.01;}
+        ep = afs[l]*(1-afs[l])*(1.0-rsq[l]);  //if(ep<0.01){ep=0.01;}
         if(noGL>0){ep=0.0;}
         
 		if(allelicProbEstByErrorRate>0 || noGL>0){
