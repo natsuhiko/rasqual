@@ -1,5 +1,5 @@
 # RASQUAL
-RASQUAL (Robust Allele Specific QUAntification and quality controL) maps QTLs for sequenced based cellular traits using population and allele-specific signals.
+RASQUAL (Robust Allele Specific QUAntification and quality controL) maps QTLs for sequenced based cellular traits by combining population and allele-specific signals.
 
 ## How to build & install
 
