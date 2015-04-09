@@ -341,7 +341,6 @@ int main(int argc, char** argv){
     double* gl;
     double* ap;
 	long* ase;
-	double* rd;
 	long pos;
 	char* rs;
 	char* al;
@@ -350,7 +349,6 @@ int main(int argc, char** argv){
     gl =(double*)calloc(N*3, sizeof(double));
     ap =(double*)calloc(N*2, sizeof(double));
 	ase=(long*)calloc(N*2, sizeof(long));
-	rd =(double*)calloc(N, sizeof(double));
 	al = (char*)calloc(2, sizeof(char));
 	rs=(char*)calloc(1000, sizeof(char));
 	int genType=1;
@@ -391,14 +389,14 @@ int main(int argc, char** argv){
 	double Y0 = mean(y, N);
 	long l0=0;
 	double ep;
-    while(parseLine(chrs[l], &pos, rss[l], als[l], &vinfo, dip, gen, gl, ap, ase, rd, N, genType)>0){
+    while(parseLine(chrs[l], &pos, rss[l], als[l], &vinfo, dip, gen, gl, ap, ase, N, genType)>0){
 		afs[l] = getAF(gen,w,N);//      fprintf(stderr,"%lf ",afs[l]);
 		hwes[l] = getHWE(dip,w,N);//    fprintf(stderr,"%lf ",hwes[l]);
 		ias[l] = getIA(gl,w,N); //      fprintf(stderr,"%lf ",ias[l]);
 		rsq[l] = vinfo.RSQ;    //       fprintf(stderr,"%lf ",rsq[l]);
 		crs[l] = getCR(gen,w,N); //     fprintf(stderr,"%lf ",crs[l]);
 		poss[l]=pos;
-        if(afs[l]>MAF && afs[l]<1.0-MAF && rsq[l]>RSQ && hwes[l]<HWE && isTestReg(chrs[l], chr0, TSS, TSSPROX, pos)){// tested
+        if(afs[l]>MAF && afs[l]<1.0-MAF && rsq[l]>RSQ && (hwes[l]<HWE||noPriorGenotype==1) && isTestReg(chrs[l], chr0, TSS, TSSPROX, pos)){// tested
                 exon[l]=1.0; numOfLoci++;
         }else{exon[l]=-1.0;}// not tested
         ep = afs[l]*(1-afs[l])*2.0*(1.0-rsq[l]);  //if(ep<0.01){ep=0.01;}
@@ -569,7 +567,7 @@ int main(int argc, char** argv){
 	afs[L]= afs[L+1] = 0.5; rsq[L] = rsq[L+1]=1.0; hwes[L]=hwes[L+1]=0.0;
 	if(Null==0){for(l=0; l<L; l++){
 	//if(exon[l]>=0.0)printf("%s\t%s\t%s\t%ld\t%c\t%c\t%lf\t%lf\t%lf\t%lf\t%3.22lf\t%lf\t%ld\t%ld\n", gid, rss[l], chr, poss[l], als[l][0], als[l][1], afs[l], hwes[l], ias[l], rsq[l], lkhdDiff[l], ppi[l], m, l);
-		if(afs[l]>MAF && afs[l]<1.0-MAF && rsq[l]>RSQ && hwes[l]<HWE && isTestReg(chrs[l], chr0, TSS, TSSPROX, poss[l]) ){// && (pbound[l+1]+pbound[l+1+L])<1 && ptheta[l+1]<=ptheta[l+1+L]){
+		if(afs[l]>MAF && afs[l]<1.0-MAF && rsq[l]>RSQ && (hwes[l]<HWE||noPriorGenotype==1) && isTestReg(chrs[l], chr0, TSS, TSSPROX, poss[l]) ){// && (pbound[l+1]+pbound[l+1+L])<1 && ptheta[l+1]<=ptheta[l+1+L]){
 			//printf("%ld %lf\n", poss[l],lkhdDiff[l]);
 			if(round(maxld*100000)<round(lkhdDiff[l]*100000)){
 				numOfTies=0;

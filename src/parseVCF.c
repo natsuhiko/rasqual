@@ -153,41 +153,38 @@ double getCR(double* gen, double* w, long N){
 	return cr/tot;
 }
 
-void em(double* g, double* h, int* dip){
+void gl2ap(double* g, double* h, int* dip){
 	int i;
 	if(g[0]<0.0){h[0]=h[1]=0.5;return;}
 	//double gtot=g[0]+g[1]+g[2];
 	//g[0]/=gtot;
 	//g[1]/=gtot;
 	//g[2]/=gtot;
-	if(dip[0]+dip[1]==1){
-		double phi, phi0;
-		double p=(g[2]+g[1]/2.0)*1.001;
-		double q=(g[2]+g[1]/2.0)*0.999;
-		phi0 = phi = p*(1.-q)/(p*(1.-q)+q*(1.-p));
-		for(i=0; i<10000; i++){
-			p = g[2]+g[1]*phi;
-			q = g[2]+g[1]*(1.-phi);
-			phi=p*(1.-q)/(p*(1.-q)+q*(1.-p));
-			if(fabs(phi-phi0)<1e-10){break;}else{phi0=phi;}
-		}
-		if(p>q){double tmp=p; p=q; q=tmp;}
-		if(dip[0]==0){
-			h[0]=p;
-			h[1]=q;
-		}else{
-			h[0]=q;
-			h[1]=p;
-		}
+	double phi, phi0;
+	double p=(g[2]+g[1]/2.0)*1.001;
+	double q=(g[2]+g[1]/2.0)*0.999;
+	phi0 = phi = p*(1.-q)/(p*(1.-q)+q*(1.-p));
+	for(i=0; i<10000; i++){
+		p = g[2]+g[1]*phi;
+		q = g[2]+g[1]*(1.-phi);
+		phi=p*(1.-q)/(p*(1.-q)+q*(1.-p));
+		if(fabs(phi-phi0)<1e-10){break;}else{phi0=phi;}
+	}
+	if(p>q){double tmp=p; p=q; q=tmp;}
+	if(dip[0]==0){
+		h[0]=p;
+		h[1]=q;
 	}else{
-		h[0]=(g[2]+g[1]/2.0);
-		h[1]=(g[2]+g[1]/2.0);
+		h[0]=q;
+		h[1]=p;
+	}
+	if(dip[0]+dip[1]!=1){
+		h[0] = h[1] = (h[0]+h[1])/2.0;
 	}
 }
 
-int parseCell(char* cell, int* dip, double* gl, double* ap, long* ase, double* rd, int* formatID){
+int parseCell(char* cell, int* dip, double* gl, double* ap, long* ase, double* dose, int* formatID){
 	int i, ii0=0, k=0;
-	double ds;
 	for(i=0; i<strlen(cell)+1; i++){
 		if(cell[i]==':' || cell[i]=='\0'){
 			if(i-ii0>0){
@@ -227,21 +224,10 @@ int parseCell(char* cell, int* dip, double* gl, double* ap, long* ase, double* r
 					}
 				}else if(formatID[k]==FORMAT_AS){
 					sscanf(cell+ii0, "%ld,%ld", ase, ase+1);
-				}else if(formatID[k]==FORMAT_RD){
-					sscanf(cell+ii0, "%lf", rd);
 				}else if(formatID[k]==FORMAT_BF){
 					sscanf(cell+ii0, "%lf,%lf", ap, ap+1);
 				}else if(formatID[k]==FORMAT_DS){
-					sscanf(cell+ii0, "%lf", &ds);
-					if((dip[0]==0&&dip[1]==0) || (dip[0]==1&&dip[1]==1)){
-						ap[0]=ap[1]=ds/2.0;
-					}else if(dip[0]==0&&dip[1]==1){
-						if(ds>1.0){ap[0]=ds-1.0; ap[1]=1.0;}else{ap[0]=0.0; ap[1]=ds;}
-					}else if(dip[0]==1&&dip[1]==0){
-						if(ds>1.0){ap[1]=ds-1.0; ap[0]=1.0;}else{ap[1]=0.0; ap[0]=ds;}
-					}else{
-						ap[0]=ap[1]=0.5;
-					}
+					sscanf(cell+ii0, "%lf", dose);
 				}else if(formatID[k]==FORMAT_AP_ORIG){
 					//sscanf(cell+ii0, "%lf,%lf", ap, ap+1);
 				}else if(formatID[k]==FORMAT_OTHER){
@@ -255,6 +241,21 @@ int parseCell(char* cell, int* dip, double* gl, double* ap, long* ase, double* r
 	return 0;
 }
 
+void dose2ap(int* dip, double* ap, double ds){
+        if((dip[0]==0&&dip[1]==0) || (dip[0]==1&&dip[1]==1)){
+               ap[0]=ap[1]=ds/2.0;
+        }else if(dip[0]==0&&dip[1]==1){
+               if(ds>1.0){ap[0]=ds-1.0; ap[1]=1.0;}else{ap[0]=0.0; ap[1]=ds;}
+        }else if(dip[0]==1&&dip[1]==0){
+               if(ds>1.0){ap[1]=ds-1.0; ap[0]=1.0;}else{ap[1]=0.0; ap[0]=ds;}
+        }else{
+               ap[0]=ap[1]=0.5;
+	}
+}
+void gt2ap(int* dip, double* ap){
+	ap[0] = dip[0]==0 ? 0.0 : 1.0;
+	ap[1] = dip[1]==0 ? 0.0 : 1.0;
+}
 
 int main2(int argc, char** argv){
 	int i;
@@ -318,12 +319,12 @@ int existFlag(int* formatID, int nfield, int flag){
 
 // gen will be < 0 and ap=c(-1,-1) gl=(-1,-1,-1) if log10(gl) was (0,0,0)
 
-int parseLine(char* chr, long* pos, char* rs, char* al, VCF_info* vinfo, int* dip, double* gen, double* gl, double* ap, long* ase, double* rd, long N, int genType){
-	return parseLine0(chr, pos, rs, al, vinfo, dip, gen, gl, ap, ase, rd, N, genType, stdin);
+int parseLine(char* chr, long* pos, char* rs, char* al, VCF_info* vinfo, int* dip, double* dose, double* gl, double* ap, long* ase, long N, int genType){
+	return parseLine0(chr, pos, rs, al, vinfo, dip, dose, gl, ap, ase, N, genType, stdin);
 }
 
 
-int parseLine0(char* chr, long* pos, char* rs, char* al, VCF_info* vinfo, int* dip, double* gen, double* gl, double* ap, long* ase, double* rd, long N, int genType, FILE *fp){
+int parseLine0(char* chr, long* pos, char* rs, char* al, VCF_info* vinfo, int* dip, double* dose, double* gl, double* ap, long* ase, long N, int genType, FILE *fp){
 	int i=0,j=0,l=0;
 	int nfield=0;
 	int warningFlag=0;
@@ -353,18 +354,23 @@ int parseLine0(char* chr, long* pos, char* rs, char* al, VCF_info* vinfo, int* d
 					//fprintf(stderr, "%s\t",cell);
 					//fprintf(stderr, "%d ", ncol);
 				}else if(ncol>8){
-					parseCell(cell, dip+(ncol-9)*2, gl+(ncol-9)*3, ap+(ncol-9)*2, ase+(ncol-9)*2, rd+(ncol-9), formatID);
+					parseCell(cell, dip+(ncol-9)*2, gl+(ncol-9)*3, ap+(ncol-9)*2, ase+(ncol-9)*2, dose+(ncol-9), formatID);
 					//estimating allelic prob
-					if(existFlag(formatID, nfield, FORMAT_GL)>0 && existFlag(formatID, nfield, FORMAT_AP)==0 && existFlag(formatID, nfield, FORMAT_DS)==0) em(gl+(ncol-9)*3, ap+(ncol-9)*2, dip+(ncol-9)*2);
-					//if(existFlag(formatID, nfield, FORMAT_GL)>0 ) em(gl+(ncol-9)*3, ap+(ncol-9)*2, dip+(ncol-9)*2);
-					//genotype (dose <-> alleric count)
-					if(genType==FORMAT_GL && existFlag(formatID, nfield, FORMAT_GL)>0){
-						//gen[ncol-9] = ap[(ncol-9)*2]+ap[(ncol-9)*2+1];
-						gen[ncol-9] = gl[(ncol-9)*3+2]*2.0 + gl[(ncol-9)*3+1];
-					}else if(genType==FORMAT_GT){
-						gen[ncol-9] = (double)(dip[(ncol-9)*2]+dip[(ncol-9)*2+1]);
-						if(dip[(ncol-9)*2]==9||dip[(ncol-9)*2+1]==9){gen[ncol-9] = 9;}
-						//if(dip[(ncol-9)*2]==9){gen[ncol-9]/=2.0;}
+					if(existFlag(formatID, nfield, FORMAT_AP)==0){// no AP
+						if(existFlag(formatID, nfield, FORMAT_GT)>0){// GT
+							if(existFlag(formatID, nfield, FORMAT_GL)>0){// gen likelihood
+								gl2ap(gl+(ncol-9)*3, ap+(ncol-9)*2, dip+(ncol-9)*2);
+							}else if(existFlag(formatID, nfield, FORMAT_DS)>0){// dose
+								dose2ap(dip+(ncol-9)*2, ap+(ncol-9)*2, dose[ncol-9]);
+							}else{
+								gt2ap(dip+(ncol-9)*2, ap+(ncol-9)*2);
+							}
+							dose[ncol-9] = (double)(dip[(ncol-9)*2]+dip[(ncol-9)*2+1]);
+							if(dip[(ncol-9)*2]==9||dip[(ncol-9)*2+1]==9){dose[ncol-9] = 9;}
+						}else{// allele freq
+							dose[ncol-9] = (vinfo->AF)*2.0;
+							ap[(ncol-9)*2] = ap[(ncol-9)*2+1] = vinfo->AF;
+						}
 					}
 					//fprintf(stderr, "%d %lf %lf %lf | %d %d | %lf %lf | %s\n", ncol, gl[(ncol-9)*3], gl[(ncol-9)*3+1], gl[(ncol-9)*3+2], dip[(ncol-9)*2], dip[(ncol-9)*2+1], ap[(ncol-9)*2], ap[(ncol-9)*2+1], cell);
 					//fprintf(stderr, "%d %d %d %lf %lf %lf | %lf %lf | %lf %lf | %s\n", ncol, gl[(ncol-9)*3], gl[(ncol-9)*3+1], gl[(ncol-9)*3+2], dip[(ncol-9)*2], dip[(ncol-9)*2+1], ap[(ncol-9)*2], ap[(ncol-9)*2+1], ap2[(ncol-9)*2], ap2[(ncol-9)*2+1], cell);

@@ -51,10 +51,11 @@ Model fitting options:
   --fix-theta                            Fix overdispersion parameter (Theta=10000)
   --number-of-significant-loci  <int>    Average number of SNPs tested by joint model (default: number of tested SNPs)
 
-Genotype likelihood options:
+Genotype uncertainty options:
   
   -z/--convert-imputation-score          Convert genome imputation quality score (R^2 or I^2) into allelic probability (AP)
   --nominal-allelic-probability          Use nomial AP (default: AP is truncated in [0.001, 0.999] to allow uncertainty)
+  --genotype-dosage                      Use genotype dosage as AP
   --population-allele-frequency          Use population allele frequency as AP
   --fix-genotype                         Use fix genotype (in GT field)
   --no-posterior-update                  Not updating posterior probability

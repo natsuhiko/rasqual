@@ -44,14 +44,16 @@ int init();
 int parseHeader(int argc, char** argv);
 int parseFormat(char* str, int* formatID);
 int parseInfo(char* str, VCF_info* vinfo);
-int parseCell(char* cell, int* dip, double* gl, double* ap, long* ase, double* rd, int* formatID);
+int parseCell(char* cell, int* dip, double* gl, double* ap, long* ase, double* dose, int* formatID);
 
 int Fread_parseVCF(char* buf, FILE* fp);
-int parseLine0(char* chr, long* pos, char* rs, char* al, VCF_info* vinfo, int* dip, double* gen, double* gl, double* ap, long* ase, double* rd, long N, int genType, FILE* fp);
-int parseLine(char* chr, long* pos, char* rs, char* al, VCF_info* vinfo, int* dip, double* gen, double* gl, double* ap, long* ase, double* rd, long N, int genType);
+int parseLine0(char* chr, long* pos, char* rs, char* al, VCF_info* vinfo, int* dip, double* dose, double* gl, double* ap, long* ase, long N, int genType, FILE* fp);
+int parseLine(char* chr, long* pos, char* rs, char* al, VCF_info* vinfo, int* dip, double* dose, double* gl, double* ap, long* ase, long N, int genType);
 int parseHap(char* hap);
 int parseGL(char* gl);
-void em(double* g, double* h, int* dip);
+void gl2ap(double* g, double* h, int* dip);
+void dose2ap(int* dip, double* h, double dose);
+void gt2ap(int* dip, double* ap);
 
 
 /*
