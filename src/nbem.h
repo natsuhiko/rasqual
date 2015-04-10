@@ -26,6 +26,8 @@ int hetType;
 
 double theta2;
 
+long numOfLoci;
+
 // hyper parameters
 double ab;//=1.501;
 double phiab;//=1.501;

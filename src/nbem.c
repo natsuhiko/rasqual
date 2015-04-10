@@ -280,7 +280,7 @@ long ASEQTLALL(double* y, double* Y, double* Z, double* X, long P, double* ki, d
         
         
         // Test with as
-        if(Lx>0 && (lkhdDiff[csnp]>Qchisq(min(1.0, NOfSigLoci/(double)L), 1.0) || ASE==2)){
+        if(Lx>0 && (lkhdDiff[csnp]>Qchisq(min(1.0, NOfSigLoci/(double)numOfLoci), 1.0) || ASE==2)){
             if(verbose3>10){fprintf(stderr, "\n\nAlternative with AS\n\n");}
             // init H0
             double* zx;

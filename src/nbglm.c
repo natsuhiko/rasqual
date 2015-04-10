@@ -373,7 +373,7 @@ double nbglm(double* y, double* X, double* ki, double* dki, double* w, long N0, 
     }
     //if(verbose3>0){fprintf(stderr, "Ki [%lf]: ", asum(ki, N0)); printSep(ki, N0, '\n');}
     
-    fprintf(stderr, "%ld %lf %lf", conv, asum(w, N0), stuck_b+stuck_t);
+    if(verbose3>0) fprintf(stderr, "convstatus=%ld %lf stuck=%lf", conv, asum(w, N0), stuck_b+stuck_t);
     
     if(verbose3>0){ fprintf(stderr, "Final likelihood: %lf\nFinal theta: %lf\nFinal beta: ", lkhd0, th); printSep(beta, P, '\n'); fprintf(stderr, "Gradient th: %lf\nGradient be: %lf\n\n", gt, asum(gbeta, P));}
     *ptheta = th;

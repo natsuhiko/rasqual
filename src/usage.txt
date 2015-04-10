@@ -1,0 +1,82 @@
+rasqual:
+  RASQUAL (Robust Allele Specific Quantitation and quality controL) maps QTLs
+  using population and AS signals for any sequenced based cellular tratis.
+
+Usage:
+  VCF as stdin | ./rasqual [OPTIONS] -y <counts.bin> -k <offsets.bin> -n <sample_size> -j <feature_id> \
+                                     -l <#tested_SNPs> -m <#feature_SNPs> -s <feature_start(s)> -e <feature_end(s)>
+									 
+Output:
+  Tested SNPs in stdout and posterior genotype in VCF file
+
+Mandatory arguments:
+
+  -y/--feature-counts          <string>  File name of total feature counts in binary double
+  -k/--sample-offsets          <string>  File name of sample specific offset terms in binary double
+  -s/--feature-starts          <string>  Feature start position(s) in comma separated value (e.g., 100,300,500)
+  -e/--feature-ends            <string>  Feature end position(s) in comma separated value (e.g., 150,350,450)
+  -j/--feature-id              <int>     Row number of target feature in original count table
+  -l/--number-of-testing-snps  <int>     Number of testing SNPs in VCF (candidates of a rSNP)
+  -m/--number-of-fsnps         <int>     Number of feature SNPs (fSNPs) in VCF
+  -n/--sample-size             <int>     Sample size
+  
+Output options:
+  
+  -t/--lead-snp                          Output only the lead QTL SNP
+  -i/--imprint                           Output imprinted (or randomly allelicly inactivated) feature result
+  -g/--posterior-genotype      <string>  Output posterior genotypes as VCF format
+  -f/--feature-name            <string>  Feature name printed on the result (default: feature ID number)
+
+SNP filter options:
+
+  -c/--cis-midpoint            <int>     Midpoint of cis regulatory window, e.g., TSS (default: midpoint of feature start and end)
+  -w/--cis-window-size         <int>     Cis regulatory window size centered at the midpoint (default: 54e7)
+  -a/--minor-allele-frequency  <double>  Minor allele frequency cutoff (default: 0.05)
+  -h/--hardy-weinberg-pvalue   <double>  Hardy-Weinberg equiliblium P-value cutoff (default: 1.0e-8)
+  -q/--imputation-quality      <double>  Genome imputation quality score cutoff, e.g., R^2 (MaCH/Beagle) or I^2 (IMPUTE) (default: 0.7)
+  -d/--min-coverage-depth      <double>  Minimum depth to filter out low coverage fSNPs (default: 0.05)
+  --effective-feature-length   <int>     Effective length of feature to calculate average depth (default: length of union features)
+
+Model fitting options:
+
+  -x/--covariates              <string>  File name of covariates in bianary double
+  -p/--number-of-covariates    <int>     Number of covariates used for adjustment
+  -r/--random-permutation                Randomly permute samples
+  --population-only                      Only total feature counts are modelled
+  --as-only                              Only AS counts are modelled
+  --null                                 Fitting null model only
+#  --force                                Fitting model even if AS counts are 0
+  --fix-delta                            Fix sequencing/mapping error parameter (Delta=0.01)
+  --fix-phi                              Fix reference allele mapping parameter (Phi=0.5)
+  --fix-theta                            Fix overdispersion parameter (Theta=10000)
+  --number-of-significant-loci  <int>    Average number of SNPs tested by joint model (default: number of tested SNPs)
+
+Genotype uncertainty options:
+  
+  -z/--convert-imputation-score          Convert genome imputation quality score (R^2 or I^2) into allelic probability (AP)
+  --nominal-allelic-probability          Use nomial AP (default: AP is truncated in [0.001, 0.999] to allow uncertainty)
+  --genotype-dosage                      Use genotype dosage as AP
+  --population-allele-frequency          Use population allele frequency as AP
+  --fix-genotype                         Use fix genotype (in GT field)
+  --no-posterior-update                  Not updating posterior probability
+  
+Other options:
+
+  -v/-V   Print verbose output (for debugging). 
+
+Hyperparameter options (modification unrecomended):
+
+  -SIGMA  <double>    Variance parameter for Normal gamma distribution on Lambda (default: 10000)
+  -BETA   <double>    Mean parameter for Normal-gamma distribution on Lambda (default: sample mean)
+  -ABPI   <double>    Shape parameters (identical) for Beta distribution on Pi (default:10)
+  -ABPHI  <double>    Shape parameters (identical) for Beta distribution on Phi (default:10)
+  -ADELTA <double>    1st shape parameter for Beta distribution on Delta (default: 1.01)
+  -BDELTA <double>    2nd shape parameter for Beta distribution on Delta (default: 1.99) 
+  -KAPPA  <double>    Shape parameter for Gamma distribution on Theta (default: 2.02)
+  -OMEGA  <double>    Rate parameter for Gamma distribution on Theta (default: 0.2)
+
+#
+# not implemented
+#  -hetType
+#  -trans
+#
