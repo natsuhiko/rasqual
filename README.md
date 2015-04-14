@@ -132,8 +132,10 @@ You first need to get the latest library from http://www.netlib.org/clapack/.  T
 	mv make.inc.example make.inc
 	make
 
-When it has been done, you will find three archive files in the directory which needs to be either linked or renamed, such as
+When it has been done, you will find three archive files in the directory which need to be either linked or renamed, such as
 
 	ln -s lapack_LINUX.a liblapack.a
 	ln -s tmglib_LINUX.a libtmglib.a
 	ln -s blas_LINUX.a libblas.a
+
+before compiling RASQUAL.
