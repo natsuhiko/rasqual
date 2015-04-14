@@ -3,7 +3,7 @@ RASQUAL (Robust Allele Specific QUAntification and quality controL) maps QTLs fo
 
 ## How to build & install
 
-Please make sure CLAPACK is installed in your environment.  Otherwise you can get the library at http://www.netlib.org/clapack/.  To build and install RASQUAL, firstly go to the _source_ directory (*src*), then set environment variables appropriately to point to the CLAPACK library.  Finally use "make" to build and install RASQUAL which will be installed in "$RASQUALDIR/bin".
+Please make sure CLAPACK is installed in your environment (if you don't have it, then see below for installation tips).  To build and install RASQUAL, firstly go to the _source_ directory (*src*), then set environment variables appropriately to point to the CLAPACK library.  Finally use "make" to build and install RASQUAL which will be installed in "$RASQUALDIR/bin".
 
 	RASQUALDIR=/path/to/rasqualdir/
 	cd $RASQUALDIR/src
@@ -122,3 +122,18 @@ Those confounding factors are not often observed but can be captured by principa
 	$RHOME/R --vanilla --quiet --args data/your.Y.txt data/your.K.txt < R/makeCovariates.R > log
 
 Note that, the result of PCA is always sensitive to few outliers (just one or two), which explain almost all variance in the data.  Using those PCs as covariates hurts your QTL mapping result.  We strongly recommend to spend some time to explore and clean up your data first.
+
+## Installation tips for CLAPACK
+
+You first need to get the latest library from http://www.netlib.org/clapack/.  Then, compile it like
+
+	tar zxvf clapack.tgz
+	cd CLAPACK-3.2.1
+	mv make.inc.example make.inc
+	make
+
+When it has been done, you will find three archive files in the directory which needs to be either linked or renamed, such as
+
+	ln -s lapack_LINUX.a liblapack.a
+	ln -s tmglib_LINUX.a libtmglib.a
+	ln -s blas_LINUX.a libblas.a
