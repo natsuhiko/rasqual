@@ -47,7 +47,7 @@ On output, RASQUAL provides the following values for each tested SNP:
 7. Allele frequency (not MAF!)*
 8. HWE Chi-square statistic
 9. Imputation quality score (IA)
-10. Imputation quality score (R-square)*
+10. Imputation quality score (R-square)
 11. Chi square statistic (2 x log Likelihood ratio)*
 12. Effect size (Pi)
 13. Reference allele mapping bias (Phi)
@@ -60,9 +60,11 @@ On output, RASQUAL provides the following values for each tested SNP:
 20. No. of iterations for alternative hypothesis
 21. Random location of ties (lead SNPs)
 22. likelihood for null
-23. Convergence status (0=success)*
+23. Convergence status (0=success)
 24. Squared correlation between prior and poisterior genotypes (fSNPs)
 25. Squared correlation between prior and poisterior genotypes (rSNP)
+
+You may need columns with (*) for the downstream analysis.
 
 ## Data preparation
 
