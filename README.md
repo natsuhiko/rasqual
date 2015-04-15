@@ -36,6 +36,8 @@ Sample size (in this example, *N*=24) is given by **-n** option, the feature ID 
 
 ## Output
 
+On output, RASQUAL provides the following values for each tested SNP:
+
 1. Feature ID*
 2. rs ID*
 3. Chromosome*
