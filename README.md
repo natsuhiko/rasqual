@@ -34,6 +34,34 @@ Using the example data files, you can use the following commands to map expressi
 
 Sample size (in this example, *N*=24) is given by **-n** option, the feature ID is given by **-j** option (only two genes exist in this example, thereby j=1,2).  You need to provide the number of testing SNPs and feature SNPs in the *cis*-window *a priori* (**-l** and **-m**, respectively).  RASQUAL also requires the feature start and end positions (as comma separated values for more than one positions, e.g. such as for a union of exons in this example) as inputs (**-s** and **-e**, respectively).  By default, RASQUAL outputs QTL mapping results for all tested SNPs, but you can also specify only the lead QTL SNP (**-t** option).  In the output, you can also specify the feature name by **-f** option.  To take account of genotype uncertainty, imputation quality score (R square value) are used in this example (**-z** option; see the section below).  
 
+## Output
+
+1. Feature ID*
+2. rs ID*
+3. Chromosome*
+4. SNP position*
+5. Ref allele
+6. Alt allele
+7. Allele frequency (not MAF!)*
+8. HWE Chi-square statistic
+9. Imputation quality score (IA)
+10. Imputation quality score (R-square)*
+11. Chi square statistic (2 x log Likelihood ratio)*
+12. Effect size (Pi)
+13. Reference allele mapping bias (Phi)
+14. Sequencing/mapping error rate (Delta)
+15. Overdispersion
+16. SNP ID within the region
+17. No. of feature SNPs
+18. No. of tested SNPs*
+19. No. of iterations for null hypothesis
+20. No. of iterations for alternative hypothesis
+21. Random location of ties (lead SNPs)
+22. likelihood for null
+23. Convergence status (0=success)*
+24. Squared correlation between prior and poisterior genotypes (fSNPs)
+25. Squared correlation between prior and poisterior genotypes (rSNP)
+
 ## Data preparation
 
 You can find an example expression data for C11orf21 and TSPAN32 genes in the _data_ directory.  There are two files: a read/fragment count table (Y.txt) and sample specific offset data (K.txt), both have to be organised in feature by sample format (*i.e.*, row: gene; col: sample).  We have included an R script to allow you to convert the count and offset files (text) into binary format for us by RASQUAL.  The script converts a table data into a vector of double precision values.
