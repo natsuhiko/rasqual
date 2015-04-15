@@ -58,11 +58,11 @@ On output, RASQUAL provides the following values for each tested SNP:
 18. No. of tested SNPs*
 19. No. of iterations for null hypothesis
 20. No. of iterations for alternative hypothesis
-21. Random location of ties (lead SNPs)
-22. likelihood for null
+21. Random location of ties (tie lead SNP; only useful with **-t** option)
+22. likelihood for null hypothesis
 23. Convergence status (0=success)
-24. Squared correlation between prior and poisterior genotypes (fSNPs)
-25. Squared correlation between prior and poisterior genotypes (rSNP)
+24. Squared correlation between prior and posterior genotypes (fSNPs)
+25. Squared correlation between prior and posterior genotypes (rSNP)
 
 You may need columns with (*) for the downstream analysis.
 
