@@ -10,6 +10,7 @@
 
 
 
+
 void printDouble(double* v, long n){
 	long i;
         for(i=0; i<n; i++){fprintf(stderr, "%lf ", v[i]);}

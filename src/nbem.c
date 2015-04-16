@@ -13,6 +13,7 @@ double d0(double delta){return (delta-lower)/(upper-lower);}
 
 
 
+
 long asemethod = 0;
 
 void setASEMethod(int* i){
