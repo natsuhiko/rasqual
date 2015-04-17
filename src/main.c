@@ -283,7 +283,7 @@ int main(int argc, char** argv){
     
 	
 	double* ki;
-	ki= (double*)calloc(N, sizeof(double));
+	ki= (double*)calloc(N+randomize*M*N, sizeof(double));
 	fseek(fk, N*(K-1)*sizeof(double), SEEK_SET);
 	freadres = fread(ki, sizeof(double), N, fk);
     
@@ -608,7 +608,7 @@ int main(int argc, char** argv){
 	}else{
 
         if(l<0){// no max lkhd
-            printf("%s\trs\t%s\t0\tX\tX\t-1.0\t-1.0\t-1.0\t-1.0\t-1.0\t-1.0\t-1.0\t-1.0\t-1.0\t%ld\t%ld\t%ld\t-1\t-1\t-1\t-1\t-1\t0.0\n", gid, chrs[l], l,m,numOfLoci);
+            printf("%s\trs\t%s\t0\tX\tX\t-1.0\t-1.0\t-1.0\t-1.0\t-1.0\t-1.0\t-1.0\t-1.0\t-1.0\t%ld\t%ld\t%ld\t-1\t-1\t-1\t-1\t-1\t0.0\n", gid, chrs[0], l,m,numOfLoci);
         }else if(l<L){// normal
             printf("%s\t%s\t%s\t%ld\t%c\t%c\t%lf\t%lf\t%lf\t%lf\t%.10lf\t%lf\t%lf\t%lf\t%lf\t%lf\t%ld\t%ld\t%d\t%d\t%ld\t%lf\t%d\t%lf\t%lf\n", 
                    gid, rss[l], chrs[l], poss[l], als[l][0], als[l][1], afs[l], hwes[l], ias[l], rsq[l], 
