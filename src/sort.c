@@ -57,9 +57,9 @@ void randomise2(double* y, int n, int k, int* batch){
 	y1=(double*)calloc(n*k, sizeof(double));
 	getRandomOrder2(n, ord, nb, batch);
 	for(i=0; i<n; i++){
-		cblas_dcopy(k, y+ord[i]*k, 1, y1+i*k, 1);
+		//cblas_dcopy(k, y+ord[i]*k, 1, y1+i*k, 1);
 	}
-	cblas_dcopy(k*n, y1, 1, y, 1);
+	//cblas_dcopy(k*n, y1, 1, y, 1);
 	free(y1);
 	free(ord);
 }
@@ -77,10 +77,10 @@ void randomize3(double*y, double* Y, int n, int k){
 	getRandomOrder(n, ord);
 	for(i=0; i<n; i++){
 		y1[i]=y[ord[i]];
-		cblas_dcopy(k, Y+ord[i]*k, 1, Y1+i*k, 1);
+		//cblas_dcopy(k, Y+ord[i]*k, 1, Y1+i*k, 1);
 	}
-	cblas_dcopy(n,   y1, 1, y, 1);
-	cblas_dcopy(k*n, Y1, 1, Y, 1);
+	//cblas_dcopy(n,   y1, 1, y, 1);
+	//cblas_dcopy(k*n, Y1, 1, Y, 1);
 	free(ord);
 	free(y1);
 	free(Y1);
@@ -108,15 +108,15 @@ void randomise4(double*y, double* Y, double* ki, double* X, int n, int k, int p)
 	for(i=0; i<n; i++){
 		y1[i]=y[ord[i]];
 		ki1[i]=ki[ord[i]];
-		cblas_dcopy(k, Y+ord[i]*2,   2*n, Y1+i*2,   2*n);
-		cblas_dcopy(k, Y+ord[i]*2+1, 2*n, Y1+i*2+1, 2*n);
-		cblas_dcopy(p, X+ord[i]    ,   n, X1+i    ,   n);
+		//cblas_dcopy(k, Y+ord[i]*2,   2*n, Y1+i*2,   2*n);
+		//cblas_dcopy(k, Y+ord[i]*2+1, 2*n, Y1+i*2+1, 2*n);
+		//cblas_dcopy(p, X+ord[i]    ,   n, X1+i    ,   n);
 	}
-	cblas_dcopy(n,     y1, 1, y, 1);
-	cblas_dcopy(n,    ki1, 1, ki,1);
+	//cblas_dcopy(n,     y1, 1, y, 1);
+	//cblas_dcopy(n,    ki1, 1, ki,1);
 //fprintf(stderr, "randomized!\n!");
 	//cblas_dcopy(2*n*k, Y1, 1, Y, 1);
-	cblas_dcopy(n*p,   X1, 1, X, 1);
+//	cblas_dcopy(n*p,   X1, 1, X, 1);
 	free(ord);
 	free(y1);
 	free(Y1);
@@ -167,7 +167,7 @@ void roc(double* x, int* y, int n){
 void getRandomOrder(int n, int* ord){
 	ORDER* array;
 	int i;
-	srand((unsigned)(time(NULL)+getpid())); //srand( (unsigned int)time( NULL ) );
+	//srand((unsigned)(time(NULL)+getpid())); //srand( (unsigned int)time( NULL ) );
 	array=(ORDER*)calloc(n, sizeof(ORDER));
 	for(i=0; i<n; i++){
 		array[i].val=rand();
