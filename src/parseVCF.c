@@ -338,6 +338,10 @@ int existFlag(int* formatID, int nfield, int flag){
 
 // gen will be < 0 and ap=c(-1,-1) gl=(-1,-1,-1) if log10(gl) was (0,0,0)
 
+// GZFILE
+
+
+// STDIN
 int parseLine(char* chr, long* pos, char* rs, char* al, VCF_info* vinfo, int* dip, double* dose, double* gl, double* ap, long* ase, long N, int genType){
 	return parseLine0(chr, pos, rs, al, vinfo, dip, dose, gl, ap, ase, N, genType, stdin);
 }
@@ -358,7 +362,6 @@ int parseLine0(char* chr, long* pos, char* rs, char* al, VCF_info* vinfo, int* d
 				}else if(ncol==1){
 					sscanf(cell, "%ld", pos);
 				}else if(ncol==2){
-					//fprintf(stderr, "RS=%s\n", cell);
 					strcpy(rs, cell);
 				}else if(ncol==3){
 					al[0]=cell[0];
@@ -368,10 +371,8 @@ int parseLine0(char* chr, long* pos, char* rs, char* al, VCF_info* vinfo, int* d
 					parseInfo(cell, vinfo);
 				}else if(ncol==8){
 					nfield = parseFormat(cell, formatID);
-					//fprintf(stderr, "%d f1 %d fs %d f3 %d\n", nfield, formatID[0], formatID[1], formatID[2]);
 				}else if(ncol<5){
-					//fprintf(stderr, "%s\t",cell);
-					//fprintf(stderr, "%d ", ncol);
+				
 				}else if(ncol>8){
 					parseCell(cell, dip+(ncol-9)*2, gl+(ncol-9)*3, ap+(ncol-9)*2, ase+(ncol-9)*2, dose+(ncol-9), formatID);
 					//estimating allelic prob
@@ -393,15 +394,20 @@ int parseLine0(char* chr, long* pos, char* rs, char* al, VCF_info* vinfo, int* d
 					}else{
 						dose[ncol-9] = ap[(ncol-9)*2]+ap[(ncol-9)*2+1];
 					}
-					//fprintf(stderr, "%d %lf %lf %lf | %d %d | %lf %lf | %s\n", ncol, gl[(ncol-9)*3], gl[(ncol-9)*3+1], gl[(ncol-9)*3+2], dip[(ncol-9)*2], dip[(ncol-9)*2+1], ap[(ncol-9)*2], ap[(ncol-9)*2+1], cell);
-					//fprintf(stderr, "%d %d %d %lf %lf %lf | %lf %lf | %lf %lf | %s\n", ncol, gl[(ncol-9)*3], gl[(ncol-9)*3+1], gl[(ncol-9)*3+2], dip[(ncol-9)*2], dip[(ncol-9)*2+1], ap[(ncol-9)*2], ap[(ncol-9)*2+1], ap2[(ncol-9)*2], ap2[(ncol-9)*2+1], cell);
 				}
 				l=0;
 				ncol++;
 				warningFlag=0;
 				if(buf[i]=='\n'){i0=i+1; return 1;}
 			}else{
-				if(l<CELLS-1){cell[l++]=buf[i];}else{ if(warningFlag==0){fprintf(stderr, "cell size exceed %d %s\n", CELLS, cell); warningFlag=1; }; if(ncol>8){return -1;} }
+				if(l<CELLS-1){
+					cell[l++]=buf[i];
+				}else{
+					if(warningFlag==0){
+						fprintf(stderr, "cell size exceed %d %s\n", CELLS, cell); warningFlag=1; 
+					}; 
+					if(ncol>8){return -1;} 
+				}
 			}
 		}
 	}while((ret=Fread_parseVCF(buf, fp))>0);

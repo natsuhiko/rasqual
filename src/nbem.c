@@ -113,8 +113,9 @@ long ASEQTLALL(double* y, double* Y, double* Z, double* X, long P, double* ki, d
         // as permutation
         ll=0;
         for(l=0;l<L;l++){
-            getRandomOrder((int)N, rord);
             if(fabs(exon[l])>1.5){// in a feature
+		//for(i=0; i<N; i++){rord[i]=i;}
+		getRandomOrder((int)N, rord);
                 for(i=0; i<N; i++){
                     //getRandomOrder(2, rord12);
                     if(rord12[0]==0){
@@ -134,6 +135,7 @@ long ASEQTLALL(double* y, double* Y, double* Z, double* X, long P, double* ki, d
         }
         
         // pop permutation
+	//for(i=0; i<N; i++){rord[i]=i;}
         getRandomOrder((int)N, rord);
         for(i=0; i<N; i++){
             yt[i]     =  y[rord[i]];
