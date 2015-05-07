@@ -113,7 +113,7 @@ int main(int argc, char** argv){
     if(verbose2>10){
         fprintf(stderr, "\n");
         fprintf(stderr, "#################################\n");
-        fprintf(stderr, "#           ASQTL v 0.1         #\n");
+        fprintf(stderr, "#         RASQUAL v 1.0         #\n");
         fprintf(stderr, "#################################\n");
         fprintf(stderr, "\n");
 	}
