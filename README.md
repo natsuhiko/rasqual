@@ -133,7 +133,7 @@ Sample specific offset terms can be calculated from the count table.  See the sc
 	# With GC content; not run!
 	$RHOME/R --vanilla --quiet --args data/your.Y.txt data/gcc.txt < R/makeOffset.R > log
 
-Note that you need to prepare a GC content file (gcc.txt in this example) to apply GC correction for the read count.  The file is a vector of GC% values as a text file (separated by either, a comma, a tab or a line break).
+Note that you need to prepare a GC content file (gcc.txt in this example) to apply GC correction for the read count at each feature.  The file is a vector of GC% values for all features as a text file (separated by either, a comma, a tab or a line break).  In order to obtain the GC% for each feature, we normally extract the reference sequence overlapping with the feature annotation, count G/C bases and then divide the count by the total feature length.
 
 ## Covariates
 
