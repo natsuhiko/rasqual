@@ -385,6 +385,7 @@ int parseLine0(char* chr, long* pos, char* rs, char* al, VCF_info* vinfo, int* d
 							}else{
 								gt2ap(dip+(ncol-9)*2, ap+(ncol-9)*2);
 							}
+//gt2ap(dip+(ncol-9)*2, ap+(ncol-9)*2);
 							dose[ncol-9] = (double)(dip[(ncol-9)*2]+dip[(ncol-9)*2+1]);
 							if(dip[(ncol-9)*2]==9||dip[(ncol-9)*2+1]==9){dose[ncol-9] = 9;}
 						}else{// allele freq
@@ -462,6 +463,8 @@ int parseFormat(char* str, int* formatID){
 			formatID[i]=FORMAT_GL;
 		}else if(strcmp(format,"AP")==0){
 			formatID[i]=FORMAT_AP;
+		}else if(strcmp(format,"GP")==0){
+			formatID[i]=FORMAT_PP;
 		}else if(strcmp(format,"PP")==0){
 			formatID[i]=FORMAT_PP;
 		}else if(strcmp(format,"AS")==0){
