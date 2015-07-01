@@ -150,9 +150,6 @@ fprintf(stderr,"N of markers: %ld %ld\n", N, P);
 		if(flag==0){// no snp
 			l1++;
 		}
-printf("olcounts=%d\n", flag);
-			
-		
 		//	//printf("%s\t%ld\t%ld\t%s\t%s\n", chr, left, right, c1, seq);
 		//}else{// more than one snp | flag captures the number of snps
 		//	printf("%d\n", flag);
