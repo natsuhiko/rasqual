@@ -172,11 +172,16 @@ When it has been done, you will find three archive files in the directory which 
 
 before compiling RASQUAL.
 
-## Creat VCF with AS counts
+## Creating a VCF file with AS counts
 
-We provide a useful script to create the VCF file with AS counts from a master VCF file and a set of BAM files:
+We provide a useful script to create a VCF file with AS counts from a master VCF file and a set of BAM files.  Before using the script you need to compile some C codes used from the script:
 
-	$RASQUALDIR/src/ASVCF/createASVCF.sh bam.list.txt master.vcf.gz
+	cd $RASQUALDIR/src/ASVCF
+	make
+
+The command to produce the VCF with AS counts is:
+
+	sh $RASQUALDIR/src/ASVCF/createASVCF.sh bam.list.txt master.vcf.gz
 
 which creates *master.vcf.new.gz* in the same directory.  The *master.vcf.gz* must be tabix indexed and the *bam.list.txt* is a text file which contains absolute path to your set of BAMs from which AS counts are produced:
 
