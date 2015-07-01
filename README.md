@@ -171,3 +171,19 @@ When it has been done, you will find three archive files in the directory which 
 	ln -s blas_LINUX.a libblas.a
 
 before compiling RASQUAL.
+
+## Creat VCF with AS counts
+
+We provide a useful script to create the VCF file with AS counts from a master VCF file and a set of BAM files (from which AS counts are produced).
+
+	$RASQUALDIR/src/ASVCF/createASVCF.sh bam.lists master.vcf.gz
+
+which creates *master.vcf.new.gz* in the same directory.  The *bam.lists* contains absolute path
+
+	/path/to/your/bam/sample1.bam 
+	/path/to/your/bam/sample2.bam 
+	/path/to/your/bam/sample3.bam
+	...
+
+where the order of the samples must be the same as that in the master VCF. 
+
