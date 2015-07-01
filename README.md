@@ -174,7 +174,7 @@ before compiling RASQUAL.
 
 ## Creating a VCF file with AS counts
 
-We provide a useful script to create a VCF file with AS counts from a master VCF file and a set of BAM files.  Before using the script you need to compile some C codes used from the script:
+We provide a useful script to create a VCF file with AS counts from a master VCF file and a set of BAM files.  Before using the script you need to compile some C codes called from the script:
 
 	cd $RASQUALDIR/src/ASVCF
 	make
@@ -191,5 +191,6 @@ which creates *master.vcf.new.gz* in the same directory.  The *master.vcf.gz* mu
 	/path/to/your/bam/sample3.bam
 	...
 
-where the order of the samples **MUST** be the same as that in the master VCF.  Before use the script, please make sure the latest tabix (http://www.htslib.org/doc/tabix.html) is installed in your environment. 
+The order of the samples **MUST** be the same as that in the master VCF.  Before using the script, please make sure the latest tabix (http://www.htslib.org/doc/tabix.html) is installed in your environment. 
 
+Note that, our script doesn't filter out any AS read by means of QC criteria (depth of coverage, mapping quality, etc.).  You may also want to filter out some reads a priori, using GATK ASEReadCounter (https://www.broadinstitute.org/gatk/gatkdocs/org_broadinstitute_gatk_tools_walkers_rnaseq_ASEReadCounter.php).
