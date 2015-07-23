@@ -12,6 +12,48 @@ typedef struct{
   int ord;
 }ORDER_long;
 
+double getMinBH(double* y, int n){
+	int i;
+	double en=0.0;
+	for(i=0; i<n; i++){
+		if(y[i]>0.0){en++;}
+	}
+	double* ran;
+	ran = (double*)calloc(n, sizeof(double));
+	getRank(y, n, ran);
+	double minBH = 0.0;
+	double minBH1;
+	for(i=0; i<n; i++){
+		if(y[i]>0.0){
+			minBH1 = log(pchisq(y[i], 1.0)) - log(ran[i]) + log(en);
+//printf("%lf %lf log(p)=%lf\n", y[i], minBH1, log(pchisq(y[i], 1.0)));
+			if(minBH1 < minBH){
+				minBH = minBH1;
+			}
+		}
+	}
+	free(ran);
+	return minBH/log(10.0);
+}
+
+void getRank(double* y, int n, double* ran){
+        ORDER* array;
+        int i;
+        array=(ORDER*)calloc(n, sizeof(ORDER));
+        for(i=0; i<n; i++){
+                array[i].val=-y[i];
+                array[i].ord=i;
+        }
+        qsort(array, n, sizeof(ORDER), compare_ORDER);
+        for(i=0; i<n; i++){
+                array[i].val=(double)array[i].ord;
+                array[i].ord=i;
+        }
+        qsort(array, n, sizeof(ORDER), compare_ORDER);
+        for(i=0; i<n; i++){ran[i]=(double)array[i].ord+1.0;}
+        free(array);
+}
+
 int sortAndUniqLong(long* x, int n){
 	qsort(x, n, sizeof(long), compare_long);
 	int i, l=0;

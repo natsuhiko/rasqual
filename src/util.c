@@ -1,6 +1,48 @@
 #include "util.h"
 
 
+
+void init_gsl_rand(){
+	gsl_rng_env_setup();
+	rngT = gsl_rng_default;
+	rng = gsl_rng_alloc (rngT);
+	gsl_rng_set (rng, (unsigned int)time( NULL )+getpid());
+}
+
+void rGrand(double* z, double* zt){
+	zt[0] = (z[0]>0.5 ? 1.0 : 0.0);
+	zt[1] = (z[1]>0.5 ? 1.0 : 0.0);
+}
+void rG(double* z, double* zt){
+	int a = gsl_ran_binomial (rng, z[0], 1);
+	zt[0] = (a==1 ? 1.0 : 0.0);
+	a = gsl_ran_binomial (rng, z[1], 1);
+	zt[1] = (a==1 ? 1.0 : 0.0);
+}
+
+double runif(){
+	return gsl_ran_flat (rng, 0.0, 1.0);
+}
+
+void rmultinom(int* ys, int m, int Y, double* probs){
+	gsl_ran_multinomial(rng, m, Y, probs, ys);
+}
+
+
+void rdirmultinom(int* ys, int m, int Y, double* probs, double* alpha){
+	gsl_ran_dirichlet(rng, m, alpha, probs);
+	gsl_ran_multinomial(rng, m, Y, probs, ys);
+}
+
+int rbetabinom(double thA, double thB, int n){
+	int k = gsl_ran_binomial (rng, gsl_ran_beta (rng, thA, thB), n);
+	return k;
+}
+int rbinom(double mu, double th){
+	int k = gsl_ran_poisson (rng, mu*gsl_ran_gamma (rng, th, 1.0/th));
+	return k;
+}
+
 // len(IPIV) N+1
 // len(WORK) N*N
 void solveLapack(double* A, double* b, int N, integer* ipiv, double* work)
@@ -41,7 +83,7 @@ double getStepSize6(double* H, double* g, double* step, integer* ipiv){
         solveLapack(H, step, 6, ipiv, H+36);
 }
 
-double pchisq(double q, double k){
+double pchisq(double q, double k){// lower = F
 	return  gsl_sf_gamma_inc_Q(k/2.0, q/2.0); 
 }
 double Qchisq(double p0, double k){
@@ -644,5 +686,42 @@ void sum2one(double* x, int n){
 
 
 
+
+
+int rD(double* zc, double* zx){
+	int zc1 = gsl_ran_binomial(rng, zc[0], 1);
+	int zc2 = gsl_ran_binomial(rng, zc[1], 1);
+	int zx1 = gsl_ran_binomial(rng, zx[0], 1);
+	int zx2 = gsl_ran_binomial(rng, zx[1], 1);
+	if((zc1+zc2)==0){
+		if((zx1+zx2)==0){
+			return 0;
+		}else if((zx1+zx2)==1){
+			return 1;
+		}else{
+			return 2;
+		}
+	}else if((zc1+zc2)==1){
+		if((zx1+zx2)==0){
+			return 3;
+		}else if((zx1+zx2)==1){
+			if(zc1==zx2){
+				return 4;
+			}else{
+				return 5;
+			}
+		}else{
+			return 6;
+		}
+	}else{
+		if((zx1+zx2)==0){
+			return 7;
+		}else if((zx1+zx2)==1){
+			return 8;
+		}else{
+			return 9;
+		}
+	}
+}
 
 

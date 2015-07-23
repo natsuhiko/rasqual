@@ -121,7 +121,7 @@ double nbglm(double* y, double* X, double* ki, double* dki, double* w, long N0, 
     
     double lkhd_all = -1.0/0.0;
     
-    sigma2=10000.;
+    //sigma2=10000.;
     
     // grad and hess
     double gt;
@@ -378,7 +378,7 @@ double nbglm(double* y, double* X, double* ki, double* dki, double* w, long N0, 
     if(verbose3>0){ fprintf(stderr, "Final likelihood: %lf\nFinal theta: %lf\nFinal beta: ", lkhd0, th); printSep(beta, P, '\n'); fprintf(stderr, "Gradient th: %lf\nGradient be: %lf\n\n", gt, asum(gbeta, P));}
     *ptheta = th;
     clear1(work, (N0+P)*P + P*P + 2*(N0+P) + 2*N0 + 4*P);
-    sigma2=10000.0;
+    //sigma2=10000.0;
     return lkhd0;
 }
 

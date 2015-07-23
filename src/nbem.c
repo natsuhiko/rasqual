@@ -45,7 +45,7 @@ long ASEQTLALL(double* y, double* Y, double* Z, double* X, long P, double* ki, d
     double tval;
     
     double maxLR=-1.0e31;
-    maxCsnp=-1;
+    //maxCsnp=-1;
     
     long i, l;
     long top=0;
@@ -77,8 +77,8 @@ long ASEQTLALL(double* y, double* Y, double* Z, double* X, long P, double* ki, d
     double pitmp, deltatmp, phitmp, betatmp, thetatmp, kldtmp;
     int itrtmp, boundtmp;
     
-    double deltaR[4] = {(ad-1.0)/(ad+bd-2.0), (ad-1.0)/(ad+bd-2.0), 0.5, 0.5};
-    double phiR[4]   = {0.1, 0.9, 0.1, 0.9};
+    double deltaR[5] = {(ad-1.0)/(ad+bd-2.0), (ad-1.0)/(ad+bd-2.0), 0.5, 0.5, 0.5};
+    double phiR[5]   = {0.1, 0.9, 0.1, 0.9, 0.5};
     
     
     lkhdNull = -1.0/0.0;
@@ -95,11 +95,9 @@ long ASEQTLALL(double* y, double* Y, double* Z, double* X, long P, double* ki, d
     betaGlm[0] = pbeta[L];
     double lkhdNullglm = nbglm(y, X, ki, dki, w, N, P, betaGlm, ptheta+L, 0, work); 
     clear1(work, lwork); pbeta[L] = betaGlm[0];
+    double mdki = mean(dki, N);
+    for(i=0; i<N; i++){dki[i] /= mdki;}
     
-    
-    
-    
-    //~!!!!!!!!!!! randome order not complete!!!!!!!!!!!!!!
     double* zr;
     double* Zr;
     if(randomize>0){
@@ -160,9 +158,10 @@ long ASEQTLALL(double* y, double* Y, double* Z, double* X, long P, double* ki, d
     for(i=0;i<N;i++){h0[i*3+1] = h1[i*3+1] = 0.5*w[i];   h0[i*3+2] = h1[i*3+2] = h0[i*3+0] = h1[i*3+0] = 0.25*w[i];}
     fixParam[0]=1;
     if(verbose3>0)fprintf(stderr, "Grand Null w/o AS ");
+
+
     double lkhdNull0 = ASEQTL(y, Y, h0, NULL, ki, dki, km, L, N, 0, -1, work, ppi+L, pdelta+L, pphi+L, pbeta+L, ptheta+L, &nasRat, pitr+L, pbound+L, &tval, pkld+L);
     for(l=0;l<L;l++){ppi[l]=0.5; pdelta[l]=(ad-1.0)/(ad+bd-2.0); pphi[l]=0.5; pbeta[l]=pbeta[L]; ptheta[l]=ptheta[L];}
-    
     //###################
     //#  Null with AS
     //###################
@@ -196,7 +195,7 @@ long ASEQTLALL(double* y, double* Y, double* Z, double* X, long P, double* ki, d
         gencall(H1null, Z, Zx, N, L, exon);
         
         // multi starting
-        for(itr_rand=0; itr_rand<4; itr_rand++){
+        for(itr_rand=0; itr_rand<5; itr_rand++){
             pitmp    = 0.5;
             deltatmp = fixParam[1]==1 ? pdelta[L] : deltaR[itr_rand];
             phitmp   = fixParam[2]==1 ? 0.5       : phiR[itr_rand];
@@ -233,7 +232,9 @@ long ASEQTLALL(double* y, double* Y, double* Z, double* X, long P, double* ki, d
     //#################
     fixParam[0]=0;
     long csnp;
-    for(csnp=0; csnp<L; csnp++){if(exon[csnp]>0.5 ){
+    long csnp_start = (maxCsnp<0 ? 0 : maxCsnp);
+    long csnp_end   = (maxCsnp<0 ? L : maxCsnp+1);
+    for(csnp=csnp_start; csnp<csnp_end; csnp++){if(exon[csnp]>0.5 ){
         clear1(work, lwork);
         z=Z+N*2*csnp;
         for(i=0;i<N;i++){
@@ -311,11 +312,12 @@ long ASEQTLALL(double* y, double* Y, double* Z, double* X, long P, double* ki, d
             fixParam[0]=0;*/
             lkhdDiff[csnp]=2.0*ASEQTL(y, Y, h0, H0, ki, dki, km, L, N, Lx, csnp, work, ppi+csnp, pdelta+csnp, pphi+csnp, pbeta+csnp, ptheta+csnp, pasr+csnp, pitr+csnp, pbound+csnp, &tval, pkld+csnp)-2.0*lkhdNull0as;
             
-            if(lkhdDiff[csnp]>maxLR){
+            /*if(lkhdDiff[csnp]>maxLR){
+fprintf(stderr, "gencall\n");
                 maxLR=lkhdDiff[csnp];
                 maxCsnp = csnp;
                 gencallAlt(H1, h1, Z, Zx, N, L, Lx, exon, csnp);
-            }
+            }*/
             
             if(verbose3>10 && Lx>0){
                 fprintf(stderr,"\nPrior & Posterior\n");
@@ -345,6 +347,11 @@ long ASEQTLALL(double* y, double* Y, double* Z, double* X, long P, double* ki, d
             
             
         }
+	if(lkhdDiff[csnp]>maxLR){
+                maxLR=lkhdDiff[csnp];
+                maxCsnp = csnp;
+                gencallAlt(H1, h1, Z, Zx, N, L, Lx, exon, csnp);
+            }
         ptval[csnp] = tval;
     }else{lkhdDiff[csnp]=0.0;}}}
     
@@ -353,7 +360,7 @@ long ASEQTLALL(double* y, double* Y, double* Z, double* X, long P, double* ki, d
     //##############
     // Imprinting
     //##############
-    if(Lx>0){
+    if(Lx>0 && testImprinting){
         ll=0;
         for(i=0;i<N;i++){h0[i*3+1] = 1.0*w[i];   h0[i*3+2] = h0[i*3+0] = 0.0*w[i];}
         for(l=0;l<L;l++){
@@ -1264,7 +1271,7 @@ long nbbem_init0(double* y, double* ki, long N, double* pbeta, double* ptheta){
         mu += y[i]/ki[i]/A;
     }
     pbeta[0] = log(mu);
-    beta0=pbeta[0];
+    if(beta0>9999.0){beta0=pbeta[0];}
     for(i=0; i<N; i++){
         va += pow(y[i]/ki[i]-mu, 2.0)/A;
     }
@@ -2225,7 +2232,6 @@ void gencallAlt(double* H1, double* h1, double* Z, double* Zx, long N, long L, l
             zc[2*i+1]=tmp;
         }
     }
-    
     long ll=0;
     double p01, p10, q01, q10, q11;
     for(l=0;l<L;l++){

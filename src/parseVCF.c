@@ -1,5 +1,5 @@
 #include "parseVCF.h"
-
+#include "util.h"
 char* format=NULL;
 char* infostr=NULL;
 //VCF_info vinfo;// = NULL;//{VT_OTHER, 0.0, 0.0};
@@ -220,11 +220,13 @@ int parseCell(char* cell, int* dip, double* gl, double* ap, long* ase, double* d
 				}else if(formatID[k]==FORMAT_GL || formatID[k]==FORMAT_PP){
 					sscanf(cell+ii0, "%lf,%lf,%lf", gl, gl+1, gl+2);
 					if(formatID[k]==FORMAT_PP){
+						if(gl[0]<0.0 || gl[1]<0.0 || gl[2]<0.0 || gl[0]>1.0 || gl[1]>1.0 || gl[2]>1.0){fprintf(stderr, "Posterior Probability (%lf, %lf, %lf) is not in the appropriate range [0,1]...\n", gl[0], gl[1], gl[2]);}
 						if(gl[0]<1.0e-5){gl[0]=1.0e-5;}
 						if(gl[1]<1.0e-5){gl[1]=1.0e-5;}
 						if(gl[2]<1.0e-5){gl[2]=1.0e-5;}
 					}else if(formatID[k]==FORMAT_GL){
 						if(LOG10>0){
+							if(gl[0]>0.0 || gl[1]>0.0 || gl[2]>0.0){fprintf(stderr, "Genotype likelihood (%lf, %lf, %lf) is not in the appropriate range [-Inf,0]...\n", gl[0], gl[1], gl[2]);}
 							gl[0] = pow(10.0,gl[0]);
 							gl[1] = pow(10.0,gl[1]);
 							gl[2] = pow(10.0,gl[2]);
@@ -378,7 +380,7 @@ int parseLine0(char* chr, long* pos, char* rs, char* al, VCF_info* vinfo, int* d
 					//estimating allelic prob
 					if(existFlag(formatID, nfield, FORMAT_AP)==0){// no AP
 						if(existFlag(formatID, nfield, FORMAT_GT)>0){// GT
-							if(existFlag(formatID, nfield, FORMAT_GL)>0){// gen likelihood
+							if(existFlag(formatID, nfield, FORMAT_GL)>0 || existFlag(formatID, nfield, FORMAT_PP)>0){// gen likelihood
 								gl2ap(gl+(ncol-9)*3, ap+(ncol-9)*2, dip+(ncol-9)*2);
 							}else if(existFlag(formatID, nfield, FORMAT_DS)>0){// dose
 								dose2ap(dip+(ncol-9)*2, ap+(ncol-9)*2, dose[ncol-9]);
