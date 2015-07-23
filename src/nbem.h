@@ -23,6 +23,7 @@ int randomize;
 double NOfSigLoci;
 int* fixParam;
 int hetType;
+int testImprinting;
 
 double theta2;
 

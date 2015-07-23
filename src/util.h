@@ -5,13 +5,29 @@
 //#include <cblas.h>
 #include <blaswrap.h>
 #include <gsl_cblas.h>
+#include <gsl_rng.h>
+#include <gsl_randist.h>
 #include <f2c.h>
 #include <clapack.h>
 #include <gsl_sf_gamma.h>
 #include <gsl_sf_psi.h>
 #include <zlib.h>
+#include <time.h>
 
 //#include <R.h>
+
+
+const gsl_rng_type * rngT;
+gsl_rng * rng;
+void init_gsl_rand();
+double runif();
+void rdirmultinom(int* ys, int m, int Y, double* probs, double* alpha);
+void rmultinom(int* ys, int m, int Y, double* probs);
+int rbinom(double mu, double th);
+int rbetabinom(double thA, double thB, int n);
+void rG(double* z, double* zt);
+int rD(double* zc, double* zx);
+
 
 double pchisq(double q, double k);
 double Qchisq(double p0, double k);

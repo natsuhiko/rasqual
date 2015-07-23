@@ -5,6 +5,9 @@
 #include <zlib.h>
 //#include <cblas.h>
 
+double getMinBH(double* y, int n);
+void getRank(double* y, int n, double* ran);
+
 void randomise2(double* y, int n, int k, int* batch);
 void randomise3(double* y, double* Y, int n, int k);
 void randomise4(double* y, double* Y, double* ki, double* X, int n, int k, int p);
