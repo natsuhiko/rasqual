@@ -17,7 +17,7 @@ OBJS = usage.o parseVCF.o sort.o nbglm.o nbem.o util.o
 all: $(PROGRAM)
 
 $(PROGRAM): main.c $(OBJS)
-	$(CC) $(CFLAGS) -o $(PROGRAM) $^ $(LDFLAGS) 
+	$(CC) $(CFLAGS) -o $(PROGRAM) $^ $(LDFLAGS)
 
 .c.o:
 	$(CC) $(CFLAGS) -c $<
