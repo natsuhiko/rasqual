@@ -160,7 +160,7 @@ long ASEQTLALL(double* y, double* Y, double* Z, double* X, long P, double* ki, d
     if(verbose3>0)fprintf(stderr, "Grand Null w/o AS ");
 
 
-    double lkhdNull0 = ASEQTL(y, Y, h0, NULL, ki, dki, km, L, N, 0, -1, work, ppi+L, pdelta+L, pphi+L, pbeta+L, ptheta+L, &nasRat, pitr+L, pbound+L, &tval, pkld+L);
+    double lkhdNull0 = ASEQTL(y, Y, h0, NULL, ki, dki, km, L, N, 0, -1, work, ppi+L, pdelta+L, pphi+L, pbeta+L, ptheta+L, &nasRat, pitr+L, pbound+L, &tval, pkld+2*L);
     for(l=0;l<L;l++){ppi[l]=0.5; pdelta[l]=(ad-1.0)/(ad+bd-2.0); pphi[l]=0.5; pbeta[l]=pbeta[L]; ptheta[l]=ptheta[L];}
     //###################
     //#  Null with AS
@@ -189,7 +189,7 @@ long ASEQTLALL(double* y, double* Y, double* Z, double* X, long P, double* ki, d
         pdelta[L] = (ad-1.0)/(ad+bd-2.0);
         pasr[L]   = asNonasRatio0;
         if(verbose3>0)fprintf(stderr, "Grand Null with AS ");
-        lkhdNull0as  = ASEQTL(y, Y, h0, H0, ki, dki, km, L, N, Lx, -1, work, ppi+L, pdelta+L, pphi+L, pbeta+L, ptheta+L, pasr+L, pitr+L, pbound+L, &tval, pkld+L); 
+        lkhdNull0as  = ASEQTL(y, Y, h0, H0, ki, dki, km, L, N, Lx, -1, work, ppi+L, pdelta+L, pphi+L, pbeta+L, ptheta+L, pasr+L, pitr+L, pbound+L, &tval, pkld+2*L); 
         
         cblas_dcopy(N*Lx*10, H1, 1, H1null, 1);
         gencall(H1null, Z, Zx, N, L, exon);
@@ -203,7 +203,7 @@ long ASEQTLALL(double* y, double* Y, double* Z, double* X, long P, double* ki, d
             thetatmp = ptheta[L];
             
             if(verbose3>0)fprintf(stderr, "Grand Null with AS ");
-            lkhdR  = ASEQTL(y, Y, h0, H0, ki, dki, km, L, N, Lx, -1, work, &pitmp, &deltatmp, &phitmp, &betatmp, &thetatmp, pasr+L, &itrtmp, &boundtmp, &tval, pkld+L);
+            lkhdR  = ASEQTL(y, Y, h0, H0, ki, dki, km, L, N, Lx, -1, work, &pitmp, &deltatmp, &phitmp, &betatmp, &thetatmp, pasr+L, &itrtmp, &boundtmp, &tval, pkld+2*L);
             if(lkhdR>lkhdNull0as && boundtmp==0){
                 lkhdNull0as = lkhdR;
                 ppi[L]    = 0.5;
@@ -214,7 +214,7 @@ long ASEQTLALL(double* y, double* Y, double* Z, double* X, long P, double* ki, d
                 
                 pitr[L]   = itrtmp;
                 pbound[L] = boundtmp;
-                pkld[L] = kldtmp;
+                pkld[2*L] = kldtmp;
                 
                 cblas_dcopy(N*Lx*10, H1, 1, H1null, 1);
                 gencall(H1null, Z, Zx, N, L, exon);
@@ -245,7 +245,7 @@ long ASEQTLALL(double* y, double* Y, double* Z, double* X, long P, double* ki, d
         pasr[csnp]=0.0;
         if(verbose3>0)fprintf(stderr, "%ld\t%s ", csnp, rss[csnp]);
         lkhdDiff[csnp]=2.0*ASEQTL(y, Y, h0, H0, ki, dki, km, L, N, 0, csnp, work, ppi+csnp, pdelta+csnp, pphi+csnp, pbeta+csnp, ptheta+csnp, 
-                                  pasr+csnp, pitr+csnp, pbound+csnp, &tval, pkld+csnp)-2.0*lkhdNull0;
+                                  pasr+csnp, pitr+csnp, pbound+csnp, &tval, pkld+2*csnp)-2.0*lkhdNull0;
         
         
         // Test with as
@@ -310,7 +310,7 @@ long ASEQTLALL(double* y, double* Y, double* Z, double* X, long P, double* ki, d
                 }
             }
             fixParam[0]=0;*/
-            lkhdDiff[csnp]=2.0*ASEQTL(y, Y, h0, H0, ki, dki, km, L, N, Lx, csnp, work, ppi+csnp, pdelta+csnp, pphi+csnp, pbeta+csnp, ptheta+csnp, pasr+csnp, pitr+csnp, pbound+csnp, &tval, pkld+csnp)-2.0*lkhdNull0as;
+            lkhdDiff[csnp]=2.0*ASEQTL(y, Y, h0, H0, ki, dki, km, L, N, Lx, csnp, work, ppi+csnp, pdelta+csnp, pphi+csnp, pbeta+csnp, ptheta+csnp, pasr+csnp, pitr+csnp, pbound+csnp, &tval, pkld+2*csnp)-2.0*lkhdNull0as;
             
             /*if(lkhdDiff[csnp]>maxLR){
 fprintf(stderr, "gencall\n");
@@ -386,7 +386,7 @@ fprintf(stderr, "gencall\n");
         ptheta[L+1] = ptheta[L];
         fixParam[0] = 1;
         if(verbose3>0)fprintf(stderr, "Imprinting         ");
-        double lkhdIP = ASEQTL(y, Y, h0, H0, ki, dki, km, L, N, Lx, -1, work, ppi+L+1, pdelta+L+1, pphi+L+1, pbeta+L+1, ptheta+L+1, pasr+L+1, pitr+L+1, pbound+L+1, &tval, pkld+L+1); 
+        double lkhdIP = ASEQTL(y, Y, h0, H0, ki, dki, km, L, N, Lx, -1, work, ppi+L+1, pdelta+L+1, pphi+L+1, pbeta+L+1, ptheta+L+1, pasr+L+1, pitr+L+1, pbound+L+1, &tval, pkld+2*(L+1)); 
         
         ppi[L+1]    = 0.9;
         pdelta[L+1] = (ad-1.0)/(ad+bd-2.0);
@@ -395,7 +395,7 @@ fprintf(stderr, "gencall\n");
         ptheta[L+1] = ptheta[L];
         fixParam[0] = 0;
         if(verbose3>0)fprintf(stderr, "Imprinting         ");
-        lkhdDiff[L+1]=2.0*ASEQTL(y, Y, h0, H0, ki, dki, km, L, N, Lx, -1, work, ppi+L+1, pdelta+L+1, pphi+L+1, pbeta+L+1, ptheta+L+1, pasr+L+1, pitr+L+1, pbound+L+1, &tval, pkld+L+1)-2*lkhdNull0as; 
+        lkhdDiff[L+1]=2.0*ASEQTL(y, Y, h0, H0, ki, dki, km, L, N, Lx, -1, work, ppi+L+1, pdelta+L+1, pphi+L+1, pbeta+L+1, ptheta+L+1, pasr+L+1, pitr+L+1, pbound+L+1, &tval, pkld+2*(L+1))-2*lkhdNull0as; 
         //lkhdDiff[L+1]=2.0*ASEQTL(y, Y, h0, H0, ki, dki, km, L, N, Lx, -1, work, ppi+L+1, pdelta+L+1, pphi+L+1, pbeta+L+1, ptheta+L+1, pasr+L+1, pitr+L+1, pbound+L+1, &tval, pkld+L+1)-2*lkhdIP; 
 
         double* H1;
@@ -793,10 +793,10 @@ double ASEQTL(double* y, double* Y, double* h0, double* H0, double* ki, double* 
     (*pasr) = asr;
     (*pbound)= (lkhdDiff<1e-4?0:1000000) + isConv(grad, nofp, 1.0e-5);
     (*tval) = -pow(logit(pi[0]),2.0)/hess[0];
-    (*pkld) = kld;//theta[1];
+    pkld[0] = kld;//theta[1];
     //pkld[L+2] = getIA1(h1,N0);//theta[1];
     //pkld[L+2] = getIA2(H1,N0*Lx);//theta[1];
-    pkld[L+2] = getCov(h0, h1, N0);
+    pkld[1] = getCov(h0, h1, N0);
     theta2=theta[1];
     
     if(verbose3>0)fprintf(stderr, "[%ld] pi=%lf delta=%lf phi=%lf beta=%lf theta=%lf theta2=%lf asr=%lf lkhd=%lf ldiff=%lf gpi=%lf gd=%lf gh=%lf gb=%lf gt=%lf gR=%lf tval=%lf kld=%lf\n", itr,pi[0], delta, phi, beta, theta[0], theta[1], asr, lkhd, lkhdDiff, grad[0], grad[1], grad[2], grad[3], grad[4], grad[5], *tval, kld);

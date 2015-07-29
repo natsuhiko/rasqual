@@ -743,7 +743,7 @@ int main(int argc, char** argv){
 		l=0;
 		for(l0=0; l0<L; l0++){
 			if(abs(exon[l0])>0.5){printf("%s\t%s\t%s\t%ld\t%c\t%c\t%lf\t%lf\t%lf\t%lf\t%.10lf\t%lf\t%lf\t%lf\t%lf\t%ld\t%ld\t%ld\t%d\t%d\t%ld\t%lf\t%d\t%lf\t%lf\n", gid, rss[l], chrs[l], poss[l], als[l][0], als[l][1], afs[l], hwes[l], ias[l], rsq[l], lkhdDiff[l],
-					ppi[l], pdelta[l], pphi[l], ptheta[l], l, m, numOfLoci, pitr[l], pitr[0], maxlr<0?-1:poss[maxlr], lkhdDiff[L+1], pbound[l]+pbound[L], pkld[l], pkld[l+L+2]);
+					ppi[l], pdelta[l], pphi[l], ptheta[l], l, m, numOfLoci, pitr[l], pitr[0], maxlr<0?-1:poss[maxlr], lkhdDiff[L+1], pbound[l]+pbound[L], pkld[l*2], pkld[l*2+1]);
 				l++;
 			}
 		}
@@ -757,19 +757,19 @@ int main(int argc, char** argv){
 				   lkhdDiff[l], 
 //minBH, 
                    ppi[l], pdelta[l], pphi[l], ptheta[l], pbeta[l], m, numOfLoci, pitr[l], pitr[0], 
-				   maxlr<0?-1:poss[maxlr], lkhdDiff[L+1], pbound[l]+pbound[L], pkld[l], pkld[l+L+2]);
+				   maxlr<0?-1:poss[maxlr], lkhdDiff[L+1], pbound[l]+pbound[L], pkld[l*2], pkld[l*2+1]);
 		}else if(l==L){// null lkhd
-			printf("%s\tAI\t%s\t-1\tN\tN\t-1.0\t-1.0\t-1.0\t%lf\t%.10lf\t%lf\t%lf\t%lf\t%lf\t%ld\t%ld\t%ld\t%d\t%d\t%ld\t%lf\t%d\t%lf\t%lf\t%lf\n", 
+			printf("%s\tAI\t%s\t-1\tN\tN\t-1.0\t-1.0\t-1.0\t%lf\t%.10lf\t%lf\t%lf\t%lf\t%lf\t%ld\t%ld\t%ld\t%d\t%d\t%ld\t%lf\t%d\t%lf\t%lf\n", 
                    gid, chrs[l], asNonasRatio0, 
                    lkhdDiff[L],  ppi[L], pdelta[L], pphi[L], ptheta[L], l, m, numOfLoci, pitr[L], pitr[L], 
-                   maxlr<0?-1:poss[maxlr], lkhdDiff[L+1], pbound[L], pkld[L], pkld[L], pkld[2*L+2]);
+                   maxlr<0?-1:poss[maxlr], lkhdDiff[L+1], pbound[L], pkld[L*2], pkld[L*2+1]);
 		}
 	}
 	if(testImprinting>0){
 		printf("%s\tIMP\t%s\t-1\tN\tN\t-1.0\t-1.0\t-1.0\t-1.0\t%.10lf\t%lf\t%lf\t%lf\t%lf\t%ld\t%ld\t%ld\t%d\t%d\t%ld\t%lf\t%d\t%lf\t%lf\n", 
                gid, chrs[0], 
                lkhdDiff[L+1], ppi[L+1], pdelta[L+1], pphi[L+1], ptheta[L+1], l, m, numOfLoci, pitr[L+1], pitr[L+1], 
-               maxlr<0?-1:poss[maxlr], lkhdDiff[L+1], pbound[L+1]+pbound[L], pkld[L+1], pkld[2*L+3]);
+               maxlr<0?-1:poss[maxlr], lkhdDiff[L+1], pbound[L+1]+pbound[L], pkld[(L+1)*2], pkld[(L+1)*2+1]);
 	}
 	return 0;
 }

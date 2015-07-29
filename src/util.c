@@ -75,7 +75,7 @@ void inverseLapack(double* A, int N, integer* ipiv, double* work){
 
 double getStepSize5(double* H, double* g, double* step, integer* ipiv){
 	cblas_dcopy(5, g, 1, step, 1);
-	solveLapack(H, step, 5, ipiv, H+25);
+	solveLapack(H, step, 5, ipiv, H+50);
 }
 
 double getStepSize6(double* H, double* g, double* step, integer* ipiv){
