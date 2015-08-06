@@ -282,7 +282,7 @@ long ASEQTLALL_ALT(double* y, double* Y, double* Z, double* X, long P, double* k
             }
             pthread_mutex_unlock( &mutex );
             if(tested[csnp] == tid){
-                if(verbose3>1)fprintf(stderr, "rSNP %d is taken by thread %d\n", csnp, tid);
+                if(verbose3>1)fprintf(stderr, "rSNP %ld is taken by thread %d\n", csnp, tid);
                 clear1(work, lwork);
                 z=Z+N*2*csnp;
                 for(i=0;i<N;i++){
@@ -660,7 +660,7 @@ double ASEQTL(double* y, double* Y, double* h0, double* H0, double* ki, double* 
             if(transQTL==0){pi1[1] = pi1[0];}
             //qvalNext = getLkhdAll(y, Y, h0, h1, H0, H1, ki, dki, K0, K2, K, km, Lx, N0, 3, 10, beta1, theta1, pi1, delta1, phi1, cls, pYg, a, A);
             qvalNext = getQval(y, Y, h1, H1, h0, H0, H2, ki, dki, K0, K2, K, km, Lx, N0, 3, 10, theta1, beta1, pi1, delta1, phi1, asr1);
-            if(verbose3>1)fprintf(stderr, "%d: %lf %lf ssize=%lf %lf %lf %lf %lf %lf %lf\n", itr_step, qval, qvalNext, ssize, pi1[0], delta1, phi1, beta1, theta1[0],theta1[1]); 
+            if(verbose3>1)fprintf(stderr, "%ld: %lf %lf ssize=%lf %lf %lf %lf %lf %lf %lf\n", itr_step, qval, qvalNext, ssize, pi1[0], delta1, phi1, beta1, theta1[0],theta1[1]); 
             
             if(qvalNext + xi > qval){
                 //if(verbose3>1)fprintf(stderr, "log qval diff = %lf\n", log(qvalNext-qval));
