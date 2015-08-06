@@ -3,14 +3,40 @@
 #include <time.h>
 
 typedef struct{
-  double val;
-  int ord;
+    double val;
+    int ord;
 }ORDER;
 
 typedef struct{
-  long val;
-  int ord;
+    long val;
+    int ord;
 }ORDER_long;
+
+double getBH(double* y, double* q, int n){
+	int i;
+	double en=0.0;
+	for(i=0; i<n; i++){
+		if(y[i]>0.0){en++;}
+	}
+	double* ran;
+	ran = (double*)calloc(n, sizeof(double));
+	getRank(y, n, ran);
+	for(i=0; i<n; i++){
+		if(y[i]>0.0){
+			q[i] = (log(pchisq(y[i], 1.0)) - log(ran[i]) + log(en)) / log(10.0);
+		}else{q[i]=0.0;}
+	}
+	free(ran);
+	int* ord;
+	ord = (int*)calloc(n, sizeof(int));
+	getOrder(y, n, ord);
+	double minBH=0.0;
+	if( y[ord[n-1]]>0.0 ){minBH=min(0.0, q[ord[n-1]]);}
+	for(i=n-1; i>0; i--){
+		if(y[ord[i-1]]>0.0){if( q[ord[i-1]]>minBH ){ q[ord[i-1]]=minBH; }else{ minBH = q[ord[i-1]]; } }
+	}
+	return minBH;
+}
 
 double getMinBH(double* y, int n){
 	int i;
@@ -26,7 +52,7 @@ double getMinBH(double* y, int n){
 	for(i=0; i<n; i++){
 		if(y[i]>0.0){
 			minBH1 = log(pchisq(y[i], 1.0)) - log(ran[i]) + log(en);
-//printf("%lf %lf log(p)=%lf\n", y[i], minBH1, log(pchisq(y[i], 1.0)));
+            //printf("%lf %lf log(p)=%lf\n", y[i], minBH1, log(pchisq(y[i], 1.0)));
 			if(minBH1 < minBH){
 				minBH = minBH1;
 			}
@@ -36,22 +62,38 @@ double getMinBH(double* y, int n){
 	return minBH/log(10.0);
 }
 
+void getOrder(double* y, int n, int* ord){
+    ORDER* array;
+    int i;
+    array=(ORDER*)calloc(n, sizeof(ORDER));
+    for(i=0; i<n; i++){
+        array[i].val=-y[i];
+        array[i].ord=i;
+    }
+    qsort(array, n, sizeof(ORDER), compare_ORDER);
+    for(i=0; i<n; i++){
+		ord[i] = array[i].ord;
+    }
+    free(array);
+}
+
+
 void getRank(double* y, int n, double* ran){
-        ORDER* array;
-        int i;
-        array=(ORDER*)calloc(n, sizeof(ORDER));
-        for(i=0; i<n; i++){
-                array[i].val=-y[i];
-                array[i].ord=i;
-        }
-        qsort(array, n, sizeof(ORDER), compare_ORDER);
-        for(i=0; i<n; i++){
-                array[i].val=(double)array[i].ord;
-                array[i].ord=i;
-        }
-        qsort(array, n, sizeof(ORDER), compare_ORDER);
-        for(i=0; i<n; i++){ran[i]=(double)array[i].ord+1.0;}
-        free(array);
+    ORDER* array;
+    int i;
+    array=(ORDER*)calloc(n, sizeof(ORDER));
+    for(i=0; i<n; i++){
+        array[i].val=-y[i];
+        array[i].ord=i;
+    }
+    qsort(array, n, sizeof(ORDER), compare_ORDER);
+    for(i=0; i<n; i++){
+        array[i].val=(double)array[i].ord;
+        array[i].ord=i;
+    }
+    qsort(array, n, sizeof(ORDER), compare_ORDER);
+    for(i=0; i<n; i++){ran[i]=(double)array[i].ord+1.0;}
+    free(array);
 }
 
 int sortAndUniqLong(long* x, int n){
@@ -156,9 +198,9 @@ void randomise4(double*y, double* Y, double* ki, double* X, int n, int k, int p)
 	}
 	//cblas_dcopy(n,     y1, 1, y, 1);
 	//cblas_dcopy(n,    ki1, 1, ki,1);
-//fprintf(stderr, "randomized!\n!");
+    //fprintf(stderr, "randomized!\n!");
 	//cblas_dcopy(2*n*k, Y1, 1, Y, 1);
-//	cblas_dcopy(n*p,   X1, 1, X, 1);
+    //	cblas_dcopy(n*p,   X1, 1, X, 1);
 	free(ord);
 	free(y1);
 	free(Y1);
@@ -223,60 +265,60 @@ void getRandomOrder(int n, int* ord){
 
 int compare_ORDER( const void *c1, const void *c2 )
 {
-  ORDER test1 = *(ORDER *)c1;
-  ORDER test2 = *(ORDER *)c2;
-
-  double tmp1 = test1.val;   /* b を基準とする */
-  double tmp2 = test2.val;
-
-  if(tmp1-tmp2>0){return 1;}else if(tmp1-tmp2<0){return -1;}else{ return 0;}
+    ORDER test1 = *(ORDER *)c1;
+    ORDER test2 = *(ORDER *)c2;
+    
+    double tmp1 = test1.val;   /* b を基準とする */
+    double tmp2 = test2.val;
+    
+    if(tmp1-tmp2>0){return 1;}else if(tmp1-tmp2<0){return -1;}else{ return 0;}
 }
 
 int compare_ORDER_long( const void *c1, const void *c2 )
 {
-  ORDER_long test1 = *(ORDER_long *)c1;
-  ORDER_long test2 = *(ORDER_long *)c2;
-
-  long tmp1 = test1.val;   /* b を基準とする */
-  long tmp2 = test2.val;
-
-  if(tmp1-tmp2>0){return 1;}else if(tmp1-tmp2<0){return -1;}else{ return 0;}
+    ORDER_long test1 = *(ORDER_long *)c1;
+    ORDER_long test2 = *(ORDER_long *)c2;
+    
+    long tmp1 = test1.val;   /* b を基準とする */
+    long tmp2 = test2.val;
+    
+    if(tmp1-tmp2>0){return 1;}else if(tmp1-tmp2<0){return -1;}else{ return 0;}
 }
 
 int compare_long( const void *c1, const void *c2 )
 {       
-  long tmp1 = *(long*)c1;
-  long tmp2 = *(long*)c2;
-
-  if(tmp1-tmp2>0){return 1;}else if(tmp1-tmp2<0){return -1;}else{ return 0;}
+    long tmp1 = *(long*)c1;
+    long tmp2 = *(long*)c2;
+    
+    if(tmp1-tmp2>0){return 1;}else if(tmp1-tmp2<0){return -1;}else{ return 0;}
 }
-	
+
 int compare_doubles (const void *a, const void *b){
-  double temp = *(double *)a - *(double *)b;
-  if (temp > 0)
-    return 1;
-  else if (temp < 0)
-    return -1;
-  else
-    return 0;
+    double temp = *(double *)a - *(double *)b;
+    if (temp > 0)
+        return 1;
+    else if (temp < 0)
+        return -1;
+    else
+        return 0;
 }
-
-int main_sort2(void){
-	int i;
-	double x[] = {1.,2.,3.,4.,5.,6.};
-	int batch[] = {0,1,0,1,0,2};
-	randomise2(x, 6, 1, batch);
-	for(i=0; i<6; i++){printf("%lf ",x[i]);}
-	printf("\n");
-}
-
-int mainsort(void){
-	long x[]={1,10,2,4,3,5,6,8,7,9};
-	int i,l;
-	l=sortAndUniqLong(x,10);
-	for(i=0; i<l; i++){printf("%ld ", x[i]);}
-}
-
+/*
+ int main_sort2(void){
+ int i;
+ double x[] = {1.,2.,3.,4.,5.,6.};
+ int batch[] = {0,1,0,1,0,2};
+ randomise2(x, 6, 1, batch);
+ for(i=0; i<6; i++){printf("%lf ",x[i]);}
+ printf("\n");
+ }
+ 
+ int mainsort(void){
+ long x[]={1,10,2,4,3,5,6,8,7,9};
+ int i,l;
+ l=sortAndUniqLong(x,10);
+ for(i=0; i<l; i++){printf("%ld ", x[i]);}
+ }
+ */
 
 
 

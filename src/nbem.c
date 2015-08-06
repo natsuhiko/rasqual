@@ -2,6 +2,7 @@
 #include "nbem.h"
 #include "nbglm.h"
 #include "sort.h"
+
 #define upper 1.0
 #define lower 0.0
 
@@ -17,7 +18,7 @@ double d0(double delta){return (delta-lower)/(upper-lower);}
 long asemethod = 0;
 
 void setASEMethod(int* i){
-     asemethod = (long)(*i);
+    asemethod = (long)(*i);
 }
 
 double oasr = 2.0;
@@ -35,16 +36,16 @@ double dipx[20] = { 0.,0.,0.,1.,1.,1., 0.,0.,0.,1.,1.,0.,1.,1., 0.,0.,0.,1.,1.,1
 long ASEQTLALL(double* y, double* Y, double* Z, double* X, long P, double* ki, double* w, double* km, double* exon, long L, long N, long Lx, char** rss, double* lkhdDiff, double* ppi, double* pdelta, double* pphi, double* pbeta, double* ptheta, double* pasr, int* pitr, int* pbound, double* ptval, double* pkld){
     
     double* work=NULL;
-    double* z;
+    //double* z;
     double* z2;
     double* h0;
     double* H0;
     
-    double* dki;
+    
     
     double tval;
     
-    double maxLR=-1.0e31;
+    //double maxLR=-1.0e31;
     //maxCsnp=-1;
     
     long i, l;
@@ -52,103 +53,45 @@ long ASEQTLALL(double* y, double* Y, double* Z, double* X, long P, double* ki, d
     long ll;
     h0=(double*)calloc(N*3*2,sizeof(double));
     H0=(double*)calloc(N*10*Lx*2,sizeof(double));
-    long lwork = 78+N*Lx*10+3*N+300+2*(Lx+1)+53+Lx+3*Lx+N*10 + 2*(N+4*P)*(P+4);//(N+P)*P + P*P + 2*(N+P) + 2*N + 4*P+;
+    long lwork = 78+N*Lx*10+3*N+300+2*(Lx+1)+53+Lx+3*Lx+N*10;// + 2*(N+4*P)*(P+4);//(N+P)*P + P*P + 2*(N+P) + 2*N + 4*P+;
     work=(double*)calloc(lwork,sizeof(double));
     if(work==NULL){fprintf(stderr, "memory allocation failur (work space is not allocated)\n"); return -1;}
     
     
-    double* Zx;// posterior allelic prob
-    Zx = Z+L*N*2;
-    double* H1null;
+    
+    
+    
+    ///double* Zx;// posterior allelic prob
+    //Zx = Z+L*N*2;
+    //double* H1null;
     double* H1;
     double* h1;
-    H1null = (double*)calloc(N*Lx*10, sizeof(double));
-    H1 = H0 + N*10*Lx;
+    //H1null = (double*)calloc(N*Lx*10, sizeof(double));
     h1 = h0 + N*3;
-    
-    dki = (double*)calloc(N, sizeof(double));
+    H1 = H0 + N*10*Lx;
     
     ppi[L]=pphi[L]=0.5;
     pdelta[L]=(ad-1.0)/(ad+bd-2.0);
     
-    double lkhdNull;
+    //double lkhdNull;
     double lkhdR;
     int itr_rand;
-    double pitmp, deltatmp, phitmp, betatmp, thetatmp, kldtmp;
+    double pitmp, deltatmp, phitmp, betatmp, thetatmp;
+    double kldtmp[2];
     int itrtmp, boundtmp;
     
     double deltaR[5] = {(ad-1.0)/(ad+bd-2.0), (ad-1.0)/(ad+bd-2.0), 0.5, 0.5, 0.5};
     double phiR[5]   = {0.1, 0.9, 0.1, 0.9, 0.5};
     
     
-    lkhdNull = -1.0/0.0;
+    //lkhdNull = -1.0/0.0;
     
     double nasRat = 0.0;
     
-    // moment est (NULL)
-    nbbem_init0(y, ki, N, pbeta+L, ptheta+L);
-    if(isinf(pbeta[L])>0){free(work); free(h0); if(Lx>0){free(H0);} return -1;}
     
-    
-    // glm est with covariates (NULL) -> ki updated
-    double* betaGlm; betaGlm=(double*)calloc(P, sizeof(double)); clear1(betaGlm, P);
-    betaGlm[0] = pbeta[L];
-    double lkhdNullglm = nbglm(y, X, ki, dki, w, N, P, betaGlm, ptheta+L, 0, work); 
-    clear1(work, lwork); pbeta[L] = betaGlm[0];
-    double mdki = mean(dki, N);
-    for(i=0; i<N; i++){dki[i] /= mdki;}
-    
+    double* dki;  dki = ki+N+randomize*Lx*N;
     double* zr;
-    double* Zr;
-    if(randomize>0){
-        double* yt;  yt = (double*)calloc(N*3, sizeof(double));
-        int* rord;   rord = (int*)calloc(N, sizeof(int));
-        int* rord12; rord12 = (int*)calloc(2, sizeof(int));
-        for(i=0; i<N; i++){rord[i]=i;}
-        rord12[0]=0; rord12[1]=1;
-        Zr = (double*)calloc(N*2*Lx, sizeof(double));
-        
-        // as permutation
-        ll=0;
-        for(l=0;l<L;l++){
-            if(fabs(exon[l])>1.5){// in a feature
-		//for(i=0; i<N; i++){rord[i]=i;}
-		getRandomOrder((int)N, rord);
-                for(i=0; i<N; i++){
-                    //getRandomOrder(2, rord12);
-                    if(rord12[0]==0){
-                        Zr[N*2*ll+i*2+0] = Z[N*2*l+rord[i]*2+0];
-                        Zr[N*2*ll+i*2+1] = Z[N*2*l+rord[i]*2+1];
-                    }else{
-                        Zr[N*2*ll+i*2+0] = 1.0 - Z[N*2*l+rord[i]*2+0];
-                        Zr[N*2*ll+i*2+1] = 1.0 - Z[N*2*l+rord[i]*2+1];
-                    }
-                    yt[i*2+0]      = Y[ll*2*N+rord[i]*2+rord12[0]];
-                    yt[i*2+1]      = Y[ll*2*N+rord[i]*2+rord12[1]];
-                    ki[(ll+1)*N+i] = ki[rord[i]];
-                }
-                cblas_dcopy(N*2, yt, 1, Y+ll*2*N, 1);
-                ll++;
-            }
-        }
-        
-        // pop permutation
-	//for(i=0; i<N; i++){rord[i]=i;}
-        getRandomOrder((int)N, rord);
-        for(i=0; i<N; i++){
-            yt[i]     =  y[rord[i]];
-            yt[i+N]   =  ki[rord[i]];
-            yt[i+N*2] =  dki[rord[i]];
-        }
-        cblas_dcopy(N, yt,     1, y,   1);
-        cblas_dcopy(N, yt+N,   1, ki,  1);
-        cblas_dcopy(N, yt+N*2, 1, dki, 1);
-        
-        // vector free
-        free(yt);
-        free(rord);
-        free(rord12);
-    }
+    double* Zr=Z+N*(L+Lx+1)*2;
     
     
     if(fixParam[4]==1){theta0=ptheta[L]=(kappa-2.0)/omega;}
@@ -158,14 +101,14 @@ long ASEQTLALL(double* y, double* Y, double* Z, double* X, long P, double* ki, d
     for(i=0;i<N;i++){h0[i*3+1] = h1[i*3+1] = 0.5*w[i];   h0[i*3+2] = h1[i*3+2] = h0[i*3+0] = h1[i*3+0] = 0.25*w[i];}
     fixParam[0]=1;
     if(verbose3>0)fprintf(stderr, "Grand Null w/o AS ");
-
-
-    double lkhdNull0 = ASEQTL(y, Y, h0, NULL, ki, dki, km, L, N, 0, -1, work, ppi+L, pdelta+L, pphi+L, pbeta+L, ptheta+L, &nasRat, pitr+L, pbound+L, &tval, pkld+2*L);
+    
+    double lkhdNull0 = lkhdDiff[L+2] = ASEQTL(y, Y, h0, NULL, ki, dki, km, L, N, 0, -1, work, ppi+L, pdelta+L, pphi+L, pbeta+L, ptheta+L, &nasRat, pitr+L, pbound+L, &tval, pkld+2*L);
     for(l=0;l<L;l++){ppi[l]=0.5; pdelta[l]=(ad-1.0)/(ad+bd-2.0); pphi[l]=0.5; pbeta[l]=pbeta[L]; ptheta[l]=ptheta[L];}
+    
+    
     //###################
     //#  Null with AS
     //###################
-    double lkhdNull0phi = -1.0e20;
     double lkhdNull0as = -1.0e20;
     if(Lx>0){
         ll=0;
@@ -189,10 +132,10 @@ long ASEQTLALL(double* y, double* Y, double* Z, double* X, long P, double* ki, d
         pdelta[L] = (ad-1.0)/(ad+bd-2.0);
         pasr[L]   = asNonasRatio0;
         if(verbose3>0)fprintf(stderr, "Grand Null with AS ");
-        lkhdNull0as  = ASEQTL(y, Y, h0, H0, ki, dki, km, L, N, Lx, -1, work, ppi+L, pdelta+L, pphi+L, pbeta+L, ptheta+L, pasr+L, pitr+L, pbound+L, &tval, pkld+2*L); 
+        lkhdNull0as  = lkhdDiff[L+3] = ASEQTL(y, Y, h0, H0, ki, dki, km, L, N, Lx, -1, work, ppi+L, pdelta+L, pphi+L, pbeta+L, ptheta+L, pasr+L, pitr+L, pbound+L, &tval, pkld+2*L); 
         
-        cblas_dcopy(N*Lx*10, H1, 1, H1null, 1);
-        gencall(H1null, Z, Zx, N, L, exon);
+        //cblas_dcopy(N*Lx*10, H1, 1, H1null, 1);
+        //gencall(H1null, Z, Zx, N, L, exon);
         
         // multi starting
         for(itr_rand=0; itr_rand<5; itr_rand++){
@@ -203,9 +146,9 @@ long ASEQTLALL(double* y, double* Y, double* Z, double* X, long P, double* ki, d
             thetatmp = ptheta[L];
             
             if(verbose3>0)fprintf(stderr, "Grand Null with AS ");
-            lkhdR  = ASEQTL(y, Y, h0, H0, ki, dki, km, L, N, Lx, -1, work, &pitmp, &deltatmp, &phitmp, &betatmp, &thetatmp, pasr+L, &itrtmp, &boundtmp, &tval, pkld+2*L);
+            lkhdR  = ASEQTL(y, Y, h0, H0, ki, dki, km, L, N, Lx, -1, work, &pitmp, &deltatmp, &phitmp, &betatmp, &thetatmp, pasr+L, &itrtmp, &boundtmp, &tval, kldtmp);
             if(lkhdR>lkhdNull0as && boundtmp==0){
-                lkhdNull0as = lkhdR;
+                lkhdNull0as = lkhdDiff[L+3] = lkhdR;
                 ppi[L]    = 0.5;
                 pdelta[L] = deltatmp;
                 pphi[L]   = phitmp;
@@ -214,148 +157,19 @@ long ASEQTLALL(double* y, double* Y, double* Z, double* X, long P, double* ki, d
                 
                 pitr[L]   = itrtmp;
                 pbound[L] = boundtmp;
-                pkld[2*L] = kldtmp;
+                pkld[2*L]   = kldtmp[0];
+                pkld[2*L+1] = kldtmp[0];
                 
-                cblas_dcopy(N*Lx*10, H1, 1, H1null, 1);
-                gencall(H1null, Z, Zx, N, L, exon);
+                //cblas_dcopy(N*Lx*10, H1, 1, H1null, 1);
+                //gencall(H1null, Z, Zx, N, L, exon);
             }
         }
         // multi starting end
     }
-    lkhdDiff[L]= 0.0*2.0*(lkhdNull0as-lkhdNull0phi);
+    lkhdDiff[L]= 0.0*2.0*(lkhdNull0as);
+    if(verbose3>1){fprintf(stderr, "L0=%lf L0AS=%lf\n", lkhdNull0, lkhdNull0as);}
     
-    
-    if(Null==0){
-    if(verbose3>0){fprintf(stderr, "\n\nAlternative Start\n\n");}
-    //#################
-    //#   Alternative
-    //#################
-    fixParam[0]=0;
-    long csnp;
-    long csnp_start = (maxCsnp<0 ? 0 : maxCsnp);
-    long csnp_end   = (maxCsnp<0 ? L : maxCsnp+1);
-    for(csnp=csnp_start; csnp<csnp_end; csnp++){if(exon[csnp]>0.5 ){
-        clear1(work, lwork);
-        z=Z+N*2*csnp;
-        for(i=0;i<N;i++){
-            h0[i*3]   = h1[i*3]   = w[i] * (1.0-z[i*2])*(1.0-z[i*2+1]);
-            h0[i*3+2] = h1[i*3+2] = w[i] *       z[i*2]*z[i*2+1];
-            h0[i*3+1] = h1[i*3+1] = w[i] * (1.0-h0[i*3]-h0[i*3+2]);
-        }
-        pasr[csnp]=0.0;
-        if(verbose3>0)fprintf(stderr, "%ld\t%s ", csnp, rss[csnp]);
-        lkhdDiff[csnp]=2.0*ASEQTL(y, Y, h0, H0, ki, dki, km, L, N, 0, csnp, work, ppi+csnp, pdelta+csnp, pphi+csnp, pbeta+csnp, ptheta+csnp, 
-                                  pasr+csnp, pitr+csnp, pbound+csnp, &tval, pkld+2*csnp)-2.0*lkhdNull0;
-        
-        
-        // Test with as
-        if(Lx>0 && (lkhdDiff[csnp]>Qchisq(min(1.0, NOfSigLoci/(double)numOfLoci), 1.0) || ASE==2)){
-            if(verbose3>10){fprintf(stderr, "\n\nAlternative with AS\n\n");}
-            // init H0
-            ll=0;
-
-            for(l=0;l<L;l++){
-                z2=Z+N*2*l;  // feature snp
-                if(fabs(exon[l])>1.5){
-                    if(randomize>0){
-                        zr = Zr+N*2*ll;
-                        for(i=0;i<N;i++){ getPrior( H0+10*i+N*10*ll, z+i*2, zr+i*2,  w[i]); }// xSNP = cSNP
-                        for(i=0;i<N;i++){ getPrior( H1+10*i+N*10*ll, z+i*2, zr+i*2,  w[i]); }// xSNP = cSNP
-                    }else{
-                        if(l==csnp){// p(G|G)=1
-                            for(i=0;i<N;i++){ getPrior1(H0+10*i+N*10*ll, z+i*2, w[i]); }// xSNP = cSNP
-                            for(i=0;i<N;i++){ getPrior1(H1+10*i+N*10*ll, z+i*2, w[i]); }// xSNP = cSNP
-                        }else{
-                            for(i=0;i<N;i++){ getPrior( H0+10*i+N*10*ll, z+i*2, z2+i*2, w[i]); }
-                            for(i=0;i<N;i++){ getPrior( H1+10*i+N*10*ll, z+i*2, z2+i*2, w[i]); }
-                        }
-                    }
-                    ll++;
-                }
-            }
-            //ppi[csnp+1]    = 0.49999;
-            pdelta[csnp] = pdelta[L];
-            pphi[csnp]   = pphi[L];
-            pbeta[csnp]  = pbeta[L];
-            ptheta[csnp] = ptheta[L];
-            pasr[csnp]   = asNonasRatio0;
-            if(verbose3>0)fprintf(stderr, "%ld\t%s ", csnp, rss[csnp]);
-           
-            if(verbose3>10){
-                fprintf(stderr,"\nPriors\n\nh0\n");
-                printM(h0, 3, N);
-                fprintf(stderr,"h1\n");
-                printM(h1, 3, N);
-                fprintf(stderr,"\n");
-            }
-            if(verbose3>10 && Lx>0){
-                fprintf(stderr,"\nPrior fSNPs\n");
-                for(l=0; l<Lx; l++){
-                    //fprintf(stderr,"\nH0\n");
-                    printMapGen(H0+l*10*N, (long)N, (long)10);
-                    //printM(H0+l*10*N, 10, N);
-                    //fprintf(stderr,"H1\n");
-                    //printM(H1+l*10*N, 10, N);
-                    //fprintf(stderr,"\n");
-                }
-            }
-            /*fixParam[0]=1;
-            ppi[csnp]=0.5;
-            lkhdNull0as = ASEQTL(y, Y, h0, H0, ki, dki, km, L, N, Lx, csnp, work, ppi+csnp, pdelta+csnp, pphi+csnp, pbeta+csnp, ptheta+csnp, pasr+csnp, pitr+csnp, pbound+csnp, &tval, pkld+csnp);
-            if(verbose3>0){
-                for(l=0; l<Lx; l++){
-                    printMapGen(H0+l*10*N, (long)N, (long)10);
-                    printMapGen(H1+l*10*N, (long)N, (long)10);
-                    fprintf(stderr,"\n");
-                }
-            }
-            fixParam[0]=0;*/
-            lkhdDiff[csnp]=2.0*ASEQTL(y, Y, h0, H0, ki, dki, km, L, N, Lx, csnp, work, ppi+csnp, pdelta+csnp, pphi+csnp, pbeta+csnp, ptheta+csnp, pasr+csnp, pitr+csnp, pbound+csnp, &tval, pkld+2*csnp)-2.0*lkhdNull0as;
-            
-            /*if(lkhdDiff[csnp]>maxLR){
-fprintf(stderr, "gencall\n");
-                maxLR=lkhdDiff[csnp];
-                maxCsnp = csnp;
-                gencallAlt(H1, h1, Z, Zx, N, L, Lx, exon, csnp);
-            }*/
-            
-            if(verbose3>10 && Lx>0){
-                fprintf(stderr,"\nPrior & Posterior\n");
-                printMapGen(h0, (long)N, (long)3);
-                printMapGen(h1, (long)N, (long)3);
-                fprintf(stderr,"\n");
-                for(l=0; l<Lx; l++){
-                    printMapGen(H0+l*10*N, (long)N, (long)10);
-                    printMapGen(H1+l*10*N, (long)N, (long)10);
-                    fprintf(stderr,"\n");
-                }
-            }
-            
-            
-            if(verbose3>10){// matrix
-                fprintf(stderr,"\nPosterior\n");
-                printMapGen(h1, (long)N, (long)3);
-                if(Lx>0){
-                    int l;
-                    for(l=0; l<Lx; l++){
-                        printMapGen(H1+l*10*N, (long)N, (long)10);
-                        //printM(H1+l*10*N,10,N);
-                    }
-                }
-            }
-            
-            
-            
-        }
-	if(lkhdDiff[csnp]>maxLR){
-                maxLR=lkhdDiff[csnp];
-                maxCsnp = csnp;
-                gencallAlt(H1, h1, Z, Zx, N, L, Lx, exon, csnp);
-            }
-        ptval[csnp] = tval;
-    }else{lkhdDiff[csnp]=0.0;}}}
-    
-    
+    // alt here
     
     //##############
     // Imprinting
@@ -377,68 +191,165 @@ fprintf(stderr, "gencall\n");
         }
         pasr[L+1]   = asNonasRatio0;
         
-        //ab=1.01;
-        
-        ppi[L+1]    = 0.5;
-        pdelta[L+1] = (ad-1.0)/(ad+bd-2.0);
-        pphi[L+1]   = 0.5;
-        pbeta[L+1]  = pbeta[L];
-        ptheta[L+1] = ptheta[L];
-        fixParam[0] = 1;
-        if(verbose3>0)fprintf(stderr, "Imprinting         ");
-        double lkhdIP = ASEQTL(y, Y, h0, H0, ki, dki, km, L, N, Lx, -1, work, ppi+L+1, pdelta+L+1, pphi+L+1, pbeta+L+1, ptheta+L+1, pasr+L+1, pitr+L+1, pbound+L+1, &tval, pkld+2*(L+1)); 
-        
         ppi[L+1]    = 0.9;
-        pdelta[L+1] = (ad-1.0)/(ad+bd-2.0);
-        pphi[L+1]   = 0.5;
+        pdelta[L+1] = pdelta[L]; //(ad-1.0)/(ad+bd-2.0);
+        pphi[L+1]   = pphi[L]; //0.5;
         pbeta[L+1]  = pbeta[L];
         ptheta[L+1] = ptheta[L];
         fixParam[0] = 0;
         if(verbose3>0)fprintf(stderr, "Imprinting         ");
-        lkhdDiff[L+1]=2.0*ASEQTL(y, Y, h0, H0, ki, dki, km, L, N, Lx, -1, work, ppi+L+1, pdelta+L+1, pphi+L+1, pbeta+L+1, ptheta+L+1, pasr+L+1, pitr+L+1, pbound+L+1, &tval, pkld+2*(L+1))-2*lkhdNull0as; 
-        //lkhdDiff[L+1]=2.0*ASEQTL(y, Y, h0, H0, ki, dki, km, L, N, Lx, -1, work, ppi+L+1, pdelta+L+1, pphi+L+1, pbeta+L+1, ptheta+L+1, pasr+L+1, pitr+L+1, pbound+L+1, &tval, pkld+L+1)-2*lkhdIP; 
-
-        double* H1;
-        H1 = work+78+3*N+300+2*(Lx+1);
-        for(i=0;i<N;i++){
-            double pa=0.0;
-            double ma=0.0;
-            ll = 0;
-            for(l=0;l<L;l++){
-                z2=Z+N*2*l;
-                if(fabs(exon[l])>1.5){
-                    if(z2[i*2]>z2[i*2+1]){
-                        pa+=H1[10*i+N*10*ll+4];
-                        ma+=H1[10*i+N*10*ll+5];
-                    }else{
-                        pa+=H1[10*i+N*10*ll+5];
-                        ma+=H1[10*i+N*10*ll+4];
-                    }
-
-                    ll++;
-                }// xSNP = cSNP
-            }
-            //fprintf(stderr, "%lf\n", pa/(pa+ma));
-        }
+        lkhdDiff[L+1]=2.0*ASEQTL(y, Y, h0, H0, ki, dki, km, L, N, Lx, -1, work, ppi+L+1, pdelta+L+1, pphi+L+1, pbeta+L+1, ptheta+L+1, pasr+L+1, pitr+L+1, pbound+L+1, &tval, pkld+2*(L+1))-2*lkhdNull0as;
     }
-    
-    
-    
-    
-    
-    
     
     
     
     //fprintf(stderr, "lkhd00000=%lf\n", lkhdDiff[L]);
     free(work);
     free(h0);
-    free(dki);
+    //if(Lx>0)free(H1null);
     if(Lx>0)free(H0);
     return top;
 }
 
 
+void* ASEQTLALL_MP(void *args){
+    RASQUAL_INP ri = *(RASQUAL_INP *) args;
+    //fprintf(stderr, "ASEQTLALL_MP: init %ld %ld\n", ri->rsnp_start, ri->rsnp_end);
+    ASEQTLALL_ALT(ri.y, ri.Y, ri.Z, ri.X, ri.P, ri.ki, ri.w, ri.km, ri.exon, ri.L, ri.N, ri.Lx, ri.rss, ri.lkhdDiff, 
+                  ri.ppi, ri.pdelta, ri.pphi, ri.pbeta, ri.ptheta, ri.pasr, ri.pitr, ri.pbound, ri.ptval, ri.pkld, ri.rsnp_start, ri.rsnp_end, ri.tested, ri.tid);
+    //pthread_exit(NULL);
+    return args;
+}
+
+long ASEQTLALL_ALT(double* y, double* Y, double* Z, double* X, long P, double* ki, double* w, double* km, double* exon, long L, long N, long Lx, char** rss, double* lkhdDiff, double* ppi, double* pdelta, double* pphi, double* pbeta, double* ptheta, double* pasr, int* pitr, int* pbound, double* ptval, double* pkld, long csnp_start, long csnp_end, int* tested, int tid){
+    
+    double* z;
+    double* z2;
+    
+    //double maxLR;
+    double tval;
+    
+    //if(verbose3>0)fprintf(stderr, "ASEQTLALL_ALT: rSNP [%ld, %ld]\n", csnp_start, csnp_end);
+    
+    double lkhdNull0=lkhdDiff[L+2], lkhdNull0as=lkhdDiff[L+3];
+    
+    int i, l, ll;
+    
+    
+    double* work=NULL;
+    long lwork = 78+N*Lx*10+3*N+300+2*(Lx+1)+53+Lx+3*Lx+N*10;// + 2*(N+4*P)*(P+4);//(N+P)*P + P*P + 2*(N+P) + 2*N + 4*P+;
+    work=(double*)calloc(lwork, sizeof(double));
+    
+    double maxLR = -1.0e-20;
+    double* Zx = Z+N*L*2;
+    
+    
+    //double* Zx;// posterior allelic prob
+    //Zx = Z+L*N*2; length: 2*N*(Lx+1)
+    double* h0=NULL;
+    double* H0=NULL;
+    double* h1;
+    double* H1;
+    //h0=work + 78+N*Lx*10+3*N+300+2*(Lx+1)+53+Lx+3*Lx+N*10; //
+    //H0=work + 78+N*Lx*10+3*N+300+2*(Lx+1)+53+Lx+3*Lx+N*10 + N*6; //
+    h0=(double*)calloc(N*3*2,sizeof(double));
+    H0=(double*)calloc(N*10*Lx*2,sizeof(double));
+    h1 = h0 + N*3;
+    H1 = H0 + N*10*Lx;
+    
+    if(work==NULL || h0==NULL || H0==NULL){fprintf(stderr, "memory allocation failur (work space is not allocated)\n"); return -1;} //else{fprintf(stderr, "ASEQTLALL_ALT: memory alloc\n");}
+    
+    double* dki;  dki = ki+N+randomize*Lx*N;
+    double* zr;
+    double* Zr=Z+N*(L+Lx+1)*2;
+    
+    
+    
+    if(verbose3>0){fprintf(stderr, "\n\nAlternative Start\n\n");}
+    //#################
+    //#   Alternative
+    //#################
+    fixParam[0]=0;
+    long csnp;
+    //csnp_start = (maxCsnp<0 ? 0 : maxCsnp);
+    //csnp_end   = (maxCsnp<0 ? L : maxCsnp+1);
+    //fprintf(stderr, "ASEQTL start=%ld end%ld\n", csnp_start, csnp_end);
+    for(csnp=csnp_start; csnp<csnp_end; csnp++){
+        if(exon[csnp]>0.5){
+            pthread_mutex_lock( &mutex );
+            if(tested[csnp]==0){
+                tested[csnp] = tid;
+            }
+            pthread_mutex_unlock( &mutex );
+            if(tested[csnp] == tid){
+                if(verbose3>1)fprintf(stderr, "rSNP %d is taken by thread %d\n", csnp, tid);
+                clear1(work, lwork);
+                z=Z+N*2*csnp;
+                for(i=0;i<N;i++){
+                    h0[i*3]   = h1[i*3]   = w[i] * (1.0-z[i*2])*(1.0-z[i*2+1]);
+                    h0[i*3+2] = h1[i*3+2] = w[i] *       z[i*2]*z[i*2+1];
+                    h0[i*3+1] = h1[i*3+1] = w[i] * (1.0-h0[i*3]-h0[i*3+2]);
+                }
+                pasr[csnp]=0.0;
+                if(verbose3>0)fprintf(stderr, "%ld\t%s %lf ", csnp, rss[csnp], ptheta[csnp]);
+                lkhdDiff[csnp]=2.0*ASEQTL(y, Y, h0, H0, ki, dki, km, L, N, 0, csnp, work, ppi+csnp, pdelta+csnp, pphi+csnp, pbeta+csnp, ptheta+csnp, 
+                                          pasr+csnp, pitr+csnp, pbound+csnp, &tval, pkld+csnp*2)-2.0*lkhdNull0;
+
+                // Test with AS
+                if(Lx>0 && (lkhdDiff[csnp]>Qchisq(min(1.0, NOfSigLoci/(double)numOfLoci), 1.0) || ASE==2)){
+                    if(verbose3>10){fprintf(stderr, "\n\nAlternative with AS\n\n");}
+                    // init H0
+                    ll=0;
+                    
+                    for(l=0;l<L;l++){
+                        z2=Z+N*2*l;  // feature snp
+                        if(fabs(exon[l])>1.5){
+                            if(randomize>0){
+                                zr = Zr+N*2*ll;
+                                for(i=0;i<N;i++){ getPrior( H0+10*i+N*10*ll, z+i*2, zr+i*2,  w[i]); }// xSNP = cSNP
+                                for(i=0;i<N;i++){ getPrior( H1+10*i+N*10*ll, z+i*2, zr+i*2,  w[i]); }// xSNP = cSNP
+                            }else{
+                                if(l==csnp){// p(G|G)=1
+                                    for(i=0;i<N;i++){ getPrior1(H0+10*i+N*10*ll, z+i*2, w[i]); }// xSNP = cSNP
+                                    for(i=0;i<N;i++){ getPrior1(H1+10*i+N*10*ll, z+i*2, w[i]); }// xSNP = cSNP
+                                }else{
+                                    for(i=0;i<N;i++){ getPrior( H0+10*i+N*10*ll, z+i*2, z2+i*2, w[i]); }
+                                    for(i=0;i<N;i++){ getPrior( H1+10*i+N*10*ll, z+i*2, z2+i*2, w[i]); }
+                                }
+                            }
+                            ll++;
+                        }
+                    }
+                    //ppi[csnp+1]    = 0.49999;
+                    pdelta[csnp] = pdelta[L];
+                    pphi[csnp]   = pphi[L];
+                    pbeta[csnp]  = pbeta[L];
+                    ptheta[csnp] = ptheta[L];
+                    pasr[csnp]   = asNonasRatio0;
+                    if(verbose3>0)fprintf(stderr, "%ld\t%s ", csnp, rss[csnp]);
+                    
+                    lkhdDiff[csnp]=2.0*ASEQTL(y, Y, h0, H0, ki, dki, km, L, N, Lx, csnp, work, ppi+csnp, pdelta+csnp, pphi+csnp, pbeta+csnp, ptheta+csnp, pasr+csnp, pitr+csnp, pbound+csnp, &tval, pkld+csnp*2)-2.0*lkhdNull0as;
+                    
+                    
+                }
+                if(lkhdDiff[csnp]>maxLR && nthreads==1){
+                    maxLR=lkhdDiff[csnp];
+                    maxCsnp = csnp;
+                    gencallAlt(H1, h1, Z, Zx, N, L, Lx, exon, csnp);
+                }
+                ptval[csnp] = tval;
+            }
+        }
+    }
+    
+    
+    
+    free(work);
+    free(h0);
+    if(Lx>0)free(H0);
+    
+    return 0;
+}
 
 
 int isConv(double* grad, int n, double th){
@@ -459,11 +370,11 @@ int isConv(double* grad, int n, double th){
 /*
  
  
-pi    0 5 10 15 20
-delta 1 6 11 16 21
-phi   2 7 12 17 22
-beta  3 8 13 18 23
-theta 4 9 14 19 24
+ pi    0 5 10 15 20
+ delta 1 6 11 16 21
+ phi   2 7 12 17 22
+ beta  3 8 13 18 23
+ theta 4 9 14 19 24
  
  
  */
@@ -476,13 +387,18 @@ theta 4 9 14 19 24
 // M : num of xSNP
 double ASEQTL(double* y, double* Y, double* h0, double* H0, double* ki, double* dki, double* km, long L, long N0, long Lx, long csnp, double* work, double* ppi, double* pdelta, double* pphi, double* pbeta, double* ptheta, double* pasr, int* pitr, int* pbound, double* tval, double* pkld){
     
+    integer* ipiv=NULL;
+    ipiv = (integer*)calloc(11, sizeof(integer));
+    if(ipiv==NULL){fprintf(stderr, "ASEQTL: memory allocation error.\n");}
     
-    long itr, itr_step, j, k;
+    
+    
+    long itr, itr_step, j;
     double* K;
     double* K2;
     double* K0;
-    double* K0p;
-    double* K0pp;
+    //double* K0p;
+    //double* K0pp;
     double* K2p;
     double* K2d;
     double* K2h;
@@ -495,6 +411,7 @@ double ASEQTL(double* y, double* Y, double* h0, double* H0, double* ki, double* 
     
     int nofp = 5;
     
+    
     double* a;
     double* A;
     double* h1;
@@ -506,8 +423,6 @@ double ASEQTL(double* y, double* Y, double* h0, double* H0, double* ki, double* 
     double* grad;
     double* hess;
     double* step;
-    //grad = (double*)calloc(3,sizeof(double));
-    //hess = (double*)calloc(12,sizeof(double));
     
     
     double ssize=1.0;
@@ -520,9 +435,8 @@ double ASEQTL(double* y, double* Y, double* h0, double* H0, double* ki, double* 
     double theta1[2];
     //double delta[2];
     //double delta1[2];
-    
     if(transQTL==0){
-        pi[0] = pi[1] = pi[0] = pi1[1] = ppi[0];
+        pi[0] = pi[1] = pi1[0] = pi1[1] = ppi[0];
     }else{
         pi[0] = pi1[0] = ppi[0]; pi[1] = pi1[1] = 0.5;
     }
@@ -532,11 +446,14 @@ double ASEQTL(double* y, double* Y, double* h0, double* H0, double* ki, double* 
     beta  = pbeta[0];
     asr = asr1 = pasr[0];
     
+    
+    
     double qval, qvalNext;
     
-    integer* ipiv;
-    ipiv = (integer*)calloc(11, sizeof(integer));
-
+    
+    
+    //integer ipiv[11];
+    
     //asr=asr1=0.1;
     double lkhd;
     double lkhd_old;
@@ -560,40 +477,43 @@ double ASEQTL(double* y, double* Y, double* h0, double* H0, double* ki, double* 
     K2dh  =work+78+3*N0+140;
     K2hh  =work+78+3*N0+160;
     
+    
     grad = work+78+3*N0+180;
     step = work+78+3*N0+190;
     hess = work+78+3*N0+200; // length 50 = 25 * 2 for hess and inv hess
     //H1   = work+78+3*N0+300+2*(Lx+1);
     
-    K0  = work+78+3*N0+300+2*(Lx+1)+N0*Lx*10;
-    K0p = work+78+3*N0+300+2*(Lx+1)+N0*Lx*10+3;
-    K0pp= work+78+3*N0+300+2*(Lx+1)+N0*Lx*10+6;
+    K0  = work+78+3*N0+300+2*(Lx+1)+N0*Lx*10; // K0p and K0pp should be allocated
+    //K0p = work+78+3*N0+300+2*(Lx+1)+N0*Lx*10+3;
+    //K0pp= work+78+3*N0+300+2*(Lx+1)+N0*Lx*10+6;
     a   = work+78+3*N0+300+2*(Lx+1)+N0*Lx*10+9;
     cls = work+78+3*N0+300+2*(Lx+1)+N0*Lx*10+53;
     pYg = work+78+3*N0+300+2*(Lx+1)+N0*Lx*10+53+Lx;
     
-    H2  = work+78+3*N0+300+2*(Lx+1)+N0*Lx*10+53+Lx+3*Lx;// length N0 * 10
-    if(Lx>1){cblas_dgemv(CblasColMajor, CblasNoTrans, N0*10, Lx, 1.0, H0, N0*10, ones, 1, 0.0, H2, 1);}else if(Lx==1){cblas_dcopy(N0*10, H0, 1, H2, 1);}else if(Lx==0){clear1(H2,N0*10);}
     
-
+    H2  = work+78+3*N0+300+2*(Lx+1)+N0*Lx*10+53+Lx+3*Lx;// length N0 * 10
+    //if(Lx>1){cblas_dgemv(CblasColMajor, CblasNoTrans, N0*10, Lx, 1.0, H0, N0*10, ones, 1, 0.0, H2, 1);}else if(Lx==1){cblas_dcopy(N0*10, H0, 1, H2, 1);}else if(Lx==0){clear1(H2,N0*10);}
+    
+    
     lkhd_old=lkhd=-1e16;
     
     if(verbose3>1){fprintf(stderr, "beta=%lf pi=%lf delta=%lf phi=%lf theta=%lf\n", beta, pi[0], delta, phi, theta[0]);}
     
     
-    double xi=.00;
+    double xi=.0;
     
     int stuck=0;
     
+    
     for(itr=0; itr<MAXITR3+PRESTEPS+200; itr++){
         
+        //fprintf(stderr, "E-step");
         // E-step
-        
         lkhd = getLkhdAll(y, Y, h0, h1, H0, H1, ki, dki, K0, K2, K, km, Lx, N0, 3, 10, beta, theta, pi, delta, phi, asr, cls, pYg, a, A, H2, grad, hess);
         
         // M-step
         
-        
+        //fprintf(stderr, "M-step");
         if(Lx>0){
             // as counts
             
@@ -619,7 +539,7 @@ double ASEQTL(double* y, double* Y, double* h0, double* H0, double* ki, double* 
             if(transQTL==0)grad[0] += getGrad(A, K2, K2p);
             grad[1] += getGrad(A, K2, K2d);
             grad[2] += getGrad(A, K2, K2h);
-                
+            
             if(transQTL==0){
                 hess[0] += getHess1(A, K2, K2p, K2pp);
                 hess[1] += getHess2(A, K2, K2p, K2d, K2pd);
@@ -650,17 +570,17 @@ double ASEQTL(double* y, double* Y, double* h0, double* H0, double* ki, double* 
                 //fprintf(stderr,"\nFix End\n\n");
             }
         }
-	//bar
+        //bar
         //if(verbose3>1){fprintf(stderr, "\n");printM(hess,10,6);}
-        if(verbose3>1){fprintf(stderr, "grad> ");print(grad,5);}
+        //if(verbose3>1){fprintf(stderr, "grad> ");print(grad,5);}
         // prior
         
         grad[0] += (ab-1.0)*(1.0-2.0*pi[0]);
         hess[0] += -2.0*(ab-1.0)*pi[0]*(1.0-pi[0]);
-
+        
         grad[1] += (ad-1.0)*(1.0-delta)-(bd-1.0)*delta;
         hess[11] += -((ad-1.0)+(bd-1.0))*delta*(1.0-delta);
-
+        
         grad[2] += (phiab*1.-1.0)*(1.0-2.0*phi);        
         hess[22]+= -2.0*(phiab*1.-1.0)*phi*(1.0-phi);
         
@@ -669,8 +589,8 @@ double ASEQTL(double* y, double* Y, double* h0, double* H0, double* ki, double* 
         
         hess[33]+= -theta[0]/sigma2;
         if(fixParam[4]==0){
-		hess[34]+= -theta[0]*(beta-beta0)/sigma2;
-	}
+            hess[34]+= -theta[0]*(beta-beta0)/sigma2;
+        }
         hess[44]+= -theta[0]*0.5*pow(beta-beta0,2.0)/sigma2        - omega/2.0*theta[0];;
 #ifdef DIFFTHETA
         grad[5] += (kappa/2.0-1.0) - omega/2.0*theta[1];
@@ -679,19 +599,22 @@ double ASEQTL(double* y, double* Y, double* h0, double* H0, double* ki, double* 
         grad[5]=hess[5]=hess[15]=hess[25]=hess[35]=hess[45]=hess[55]=0.0;
 #endif
         
-        
         //if(Lx>0){
         //    grad[5] += (ad-1.0)*(1.0-asr)-(bd-1.0)*asr;
         //    hess[55]+= -((ad-1.0)+(bd-1.0))*asr*(1.0-asr);
         //}
-        if(verbose3>1){fprintf(stderr, "hess>\n");printM(hess, 10,5);fprintf(stderr, "\n");}
+        //if(verbose3>1){fprintf(stderr, "hess>\n");printM(hess, 10,5);fprintf(stderr, "\n");}
         if(verbose3>1){fprintf(stderr, "grad2>");print(grad,5);}
+        
+        
         
         
         lkhdDiff=fabs(lkhd-lkhd_old);
         //if(fabs(lkhdDiff)<1e-4 && fabs(grad[0])<1e-5 && fabs(grad[1])<1e-5 && fabs(grad[2])<1e-5 && fabs(grad[3])<1e-5 && fabs(grad[4])<1e-5 && fabs(grad[5])<1e-5){break;}else{lkhd_old=lkhd;}
-        if(fabs(lkhdDiff)<1e-4 && isConv(grad, nofp, 1.0e-5)==0){break;}else{lkhd_old=lkhd;}
         
+        
+        
+        if(fabs(lkhdDiff)<1e-4 && isConv(grad, nofp, 1.0e-5)==0){break;}else{lkhd_old=lkhd;}
         
         
         if(Lx==0){
@@ -706,14 +629,12 @@ double ASEQTL(double* y, double* Y, double* h0, double* H0, double* ki, double* 
         //printM(hess, 5,5);fprintf(stderr, "\n");
         if(verbose3>1){fprintf(stderr, "step> ");print(step, 5);}
         
-        
-        
-        
         stuck++;
         //if(stuck>1.5){step[1]=step[2]=step[3]=step[4]=0.0;}
         ssize=1.0;
         //qval = getLkhdAll(y, Y, h0, h1, H0, H1, ki, dki, K0, K2, K, km, Lx, N0, 3, 10, beta, theta, pi, delta, phi, cls, pYg, a, A);
         qval = getQval(y, Y, h1, H1, h0, H0, H2, ki, dki, K0, K2, K, km, Lx, N0, 3, 10, theta, beta, pi, delta, phi, asr);
+        xi=0.1;
         for(itr_step=0; itr_step<50; itr_step++){
             pi1[0]    = fixParam[0]==0 ? expit(logit(pi[0])-ssize*step[0]) : 0.5;
             delta1    = fixParam[1]==0 ? expit(logit(delta)-ssize*step[1]) : (ad-1.0)/(ad+bd-2.0); 
@@ -739,9 +660,11 @@ double ASEQTL(double* y, double* Y, double* h0, double* H0, double* ki, double* 
             if(transQTL==0){pi1[1] = pi1[0];}
             //qvalNext = getLkhdAll(y, Y, h0, h1, H0, H1, ki, dki, K0, K2, K, km, Lx, N0, 3, 10, beta1, theta1, pi1, delta1, phi1, cls, pYg, a, A);
             qvalNext = getQval(y, Y, h1, H1, h0, H0, H2, ki, dki, K0, K2, K, km, Lx, N0, 3, 10, theta1, beta1, pi1, delta1, phi1, asr1);
-            if(verbose3>1)fprintf(stderr, "%lf %lf ssize=%lf %lf %lf %lf %lf %lf %lf\n", qval, qvalNext, ssize, pi1[0], delta1, phi1, beta1, theta1[0],theta1[1]); 
-
+            if(verbose3>1)fprintf(stderr, "%d: %lf %lf ssize=%lf %lf %lf %lf %lf %lf %lf\n", itr_step, qval, qvalNext, ssize, pi1[0], delta1, phi1, beta1, theta1[0],theta1[1]); 
+            
             if(qvalNext + xi > qval){
+                //if(verbose3>1)fprintf(stderr, "log qval diff = %lf\n", log(qvalNext-qval));
+                //if(log(qvalNext + xi - qval)<(-20.0)){stuck2++;}else{stuck2=0;}
                 stuck=0;
                 qval  = qvalNext;
                 pi[0] = pi1[0];
@@ -756,33 +679,41 @@ double ASEQTL(double* y, double* Y, double* h0, double* H0, double* ki, double* 
             }else if(ssize>0.0){ssize *= -1.0;}else{ssize/=-2.0;}//if(ssize>0.0){ssize*=(-1.0);}else{ssize/=-2.0;}}
         }
         
+        
+        //if(stuck2>3){xi=0.0;}else{xi=0.0;}
+        
         if(stuck>0){
+            if(verbose3>1)fprintf(stderr, "stuck=%d\n", stuck);
             //itr--;
             xi+=.1;
+            //if(stuck>5){xi2=10.0;}else if(stuck>10){xi2=1000.0;}
             //xi*=2.0;
         }else{
             //fprintf(stderr, "Q=%lf %lf %lf\n", qvalNext, grad[0], pi);
             xi = 0.0;
+            //xi2= 0.0;
         }
+        
         
         
         if(verbose3>1)fprintf(stderr, "ASEQTL [%ld] pi=%lf delta=%lf phi=%lf beta=%lf theta=%lf theta2=%lf asr=%lf lkhd=%lf ldiff=%lf\n", itr, pi[0], delta, phi, beta, theta[0], theta[1], asr, lkhd,lkhdDiff);
     }
     
     //getInformation(y,Y,h0,H0,h1,H1,H2,ki,dki,K0,K2,K,km,Lx,N0,3,10,beta,theta,pi,delta,phi,K2pp,hess,ipiv,a,A);
-    inverseLapack(hess, 5, ipiv, hess+25);
+    //inverseLapack(hess, 5, ipiv, hess+25);
     
     //updateHess2( y,  Y,  h0,  H0,  h1,  H1,  H2,  ki,  dki,  K0,  K2,  K,  km, Lx, N0, 3, 10, beta, theta, pi, delta, phi,  work,  hess, ipiv,  a,  A);
     
     //updateHess(y, Y, h1, H1, ki, dki, K0, dpdp, K2, K2p, K2d, K2h, K, km, N0, N0*Lx, 3, 10, 2, beta[0], theta[0], pi, delta, phi, d2pdp2, hess, ipiv);
     
-    double kld=getCov2(H0, H1, N0*Lx);
+    
+    double kld  = getCov(h0, h1, N0);
+    double kld2 = getCov2(H0, H1, N0*Lx);
     
     // K-L divergence
     //for(j=0; j<N0*3;     j++){if(h1[j]>0.0&&h0[j]>0.0)kld += h1[j]*log(h1[j]/h0[j]);}
     //for(j=0; j<N0*10*Lx; j++){if(H1[j]>0.0&&H0[j]>0.0)kld += H1[j]*log(H1[j]/H0[j]);}
     
-    free(ipiv);
     // !!!!!!!!!!!!!
     (*ppi)   = pi[0];
     (*pphi)  = phi;
@@ -792,12 +723,18 @@ double ASEQTL(double* y, double* Y, double* h0, double* H0, double* ki, double* 
     (*pitr)  = itr;
     (*pasr) = asr;
     (*pbound)= (lkhdDiff<1e-4?0:1000000) + isConv(grad, nofp, 1.0e-5);
+    
+    
     (*tval) = -pow(logit(pi[0]),2.0)/hess[0];
-    pkld[0] = kld;//theta[1];
+    pkld[0] = kld2;//theta[1];
     //pkld[L+2] = getIA1(h1,N0);//theta[1];
     //pkld[L+2] = getIA2(H1,N0*Lx);//theta[1];
-    pkld[1] = getCov(h0, h1, N0);
+    pkld[1] = kld;
     theta2=theta[1];
+    
+    
+    free(ipiv);
+    
     
     if(verbose3>0)fprintf(stderr, "[%ld] pi=%lf delta=%lf phi=%lf beta=%lf theta=%lf theta2=%lf asr=%lf lkhd=%lf ldiff=%lf gpi=%lf gd=%lf gh=%lf gb=%lf gt=%lf gR=%lf tval=%lf kld=%lf\n", itr,pi[0], delta, phi, beta, theta[0], theta[1], asr, lkhd, lkhdDiff, grad[0], grad[1], grad[2], grad[3], grad[4], grad[5], *tval, kld);
     return lkhd;
@@ -822,7 +759,7 @@ double getLkhdAll(double* y, double* Y, double* h0, double* h, double* H0, doubl
     double denom;
     
     
-    double* K2p   = K2+20;
+    /*double* K2p   = K2+20;
     double* K2d   = K2+40;
     double* K2h   = K2+60;
     double* K2pp  = K2+80;
@@ -830,7 +767,7 @@ double getLkhdAll(double* y, double* Y, double* h0, double* h, double* H0, doubl
     double* K2ph  = K2+120;
     double* K2dd  = K2+140;
     double* K2dh  = K2+160;
-    double* K2hh  = K2+180;
+    double* K2hh  = K2+180;*/
     
     double dLx=(double)Lx;
     if(Lx==0){dLx=1.0;}
@@ -845,23 +782,23 @@ double getLkhdAll(double* y, double* Y, double* h0, double* h, double* H0, doubl
     
     getK0s(pi[0], K0);
     getK2s(pi[1], delta, phi, ktmp, K2);
-
+    
     
     /*fprintf(stderr, "J0=%ld\n", J0);
-    fprintf(stderr, "L =%ld\n", L);
-    fprintf(stderr, "M =%ld\n", M);
-    fprintf(stderr, "J =%ld\n", J);*/
+     fprintf(stderr, "L =%ld\n", L);
+     fprintf(stderr, "M =%ld\n", M);
+     fprintf(stderr, "J =%ld\n", J);*/
     
     for(i0=0; i0<N0; i0++){
         lci=0.0;
         for(j0=0; j0<J0; j0++){
             if(h0[i0*J0+j0]>0.0){
                 // new
-                if(Lx>0){
-                    kij = ((1.0-asr)*K0[j0]   + asr/oasr/dLx*vsum5(K2  +jg[j0]*2, H2+i0*10+jg[j0], kg[j0])/h0[i0*J0+j0]);
-                }else{
+                //if(Lx>0){
+                //    kij = ((1.0-asr)*K0[j0]   + asr/oasr/dLx*vsum5(K2  +jg[j0]*2, H2+i0*10+jg[j0], kg[j0])/h0[i0*J0+j0]);
+                //}else{
                     kij = K0[j0];
-                }
+                //}
 #ifdef NOKJ
                 thij = th[0]*ki[i0];
 #else
@@ -892,33 +829,17 @@ double getLkhdAll(double* y, double* Y, double* h0, double* h, double* H0, doubl
             lci=0;
             for(j=0; j<J; j++){
                 if(H0[i*J+j]>0.0 && h0[i0*J0+ig[j]]>0.0){
-                    if(hetType==1){
-                        if(j==1 || j==4 || j==5 || j==8){
-                            lcij = log(H0[i*J+j]) - log(h0[i0*J0+ig[j]]) - lgamma(th[1]*ki[i1]*km[l]*(K2[j*2]+K2[j*2+1])+Y[i*2]+Y[i*2+1]) + lgamma(Y[i*2]+Y[i*2+1]+1.0) + lgamma(th[1]*ki[i1]*km[l]*(K2[j*2]+K2[j*2+1]));
-                            for(m=0; m<2; m++){
-                                thij = th[1]*ki[i1]*K2[j*2+m]*km[l];
-                                lcij += lgamma(thij+Y[i*2+m]) - lgamma(Y[i*2+m]+1.0) - lgamma(thij);
-                            }
-                        }else{
-                            lcij = log(H0[i*J+j]) - log(h0[i0*J0+ig[j]]);
-                        }
-                    }else if(hetType==2){
-                        if(j==4 || j==5){
-                            lcij = log(H0[i*J+j]) - log(h0[i0*J0+ig[j]]) - lgamma(th[1]*ki[i1]*km[l]*(K2[j*2]+K2[j*2+1])+Y[i*2]+Y[i*2+1]) + lgamma(Y[i*2]+Y[i*2+1]+1.0) + lgamma(th[1]*ki[i1]*km[l]*(K2[j*2]+K2[j*2+1]));
-                            for(m=0; m<2; m++){
-                                thij = th[1]*ki[i1]*K2[j*2+m]*km[l];
-                                lcij += lgamma(thij+Y[i*2+m]) - lgamma(Y[i*2+m]+1.0) - lgamma(thij);
-                            }
-                        }else{
-                            lcij = log(H0[i*J+j]) - log(h0[i0*J0+ig[j]]);
-                        }
-                    }else{
-                        lcij = log(H0[i*J+j]) - log(h0[i0*J0+ig[j]]) - lgamma(th[1]*ki[i1]*km[l]*(K2[j*2]+K2[j*2+1])+Y[i*2]+Y[i*2+1]) + lgamma(Y[i*2]+Y[i*2+1]+1.0) + lgamma(th[1]*ki[i1]*km[l]*(K2[j*2]+K2[j*2+1]));
-                        for(m=0; m<2; m++){
-                            thij = th[1]*ki[i1]*K2[j*2+m]*km[l];
-                            lcij += lgamma(thij+Y[i*2+m]) - lgamma(Y[i*2+m]+1.0) - lgamma(thij);
-                        }
-                    }
+                    
+                    lcij = log(H0[i*J+j]) - log(h0[i0*J0+ig[j]])
+                                - log(Y[i*2]+Y[i*2+1]+1.0) - lbeta(Y[i*2]+1.0, Y[i*2+1]+1.0)
+                                + lbeta(Y[i*2]+th[1]*ki[i1]*K2[j*2]*km[l], Y[i*2+1]+th[1]*ki[i1]*K2[j*2+1]*km[l]) 
+                                - lbeta(       th[1]*ki[i1]*K2[j*2]*km[l],          th[1]*ki[i1]*K2[j*2+1]*km[l]);
+                                //- lgamma(th[1]*ki[i1]*km[l]*(K2[j*2]+K2[j*2+1])+Y[i*2]+Y[i*2+1]) 
+                                //+ lgamma(Y[i*2]+Y[i*2+1]+1.0) + lgamma(th[1]*ki[i1]*km[l]*(K2[j*2]+K2[j*2+1]));
+                    //for(m=0; m<2; m++){
+                    //    thij = th[1]*ki[i1]*K2[j*2+m]*km[l];
+                    //    lcij += lgamma(thij+Y[i*2+m]) - lgamma(Y[i*2+m]+1.0) - lgamma(thij);
+                    //}
                     
                     H[i*J+j] = lcij;
                     lci += lcij;
@@ -931,7 +852,7 @@ double getLkhdAll(double* y, double* Y, double* h0, double* h, double* H0, doubl
                 if(H0[i*J+j]>0.0){
                     H[i*J+j] -= cls[l];
                     pYg[l*3+ig[j]] += exp(H[i*J+j]);
-
+                    
                 }
             }
         }
@@ -949,7 +870,7 @@ double getLkhdAll(double* y, double* Y, double* h0, double* h, double* H0, doubl
         if(Lci>0){ lkhd += log(Lci); }//else{for(j0=0; j0<J0; j0++){fprintf(stderr, "%ld h0i=%lf hi=%lf\n", i0, h0[i0*J0+j0], h[i0*J0+j0]);}}
         
         // posterior calc
-        
+        // fSNPs
         for(l=0;l<Lx;l++){
             i=i0+l*N0;
             for(j=0; j<J; j++){if(H0[i*J+j]>0.0 && pYg[l*3+ig[j]]>0.0){
@@ -967,7 +888,7 @@ double getLkhdAll(double* y, double* Y, double* h0, double* h, double* H0, doubl
                 }
             }else{H[i*J+j]=0.0;}}
         }
-        // hoge
+        // rSNP
         for(j0=0; j0<J0; j0++){
             if(h0[i0*J0+j0]>0.0 && Lci >0.0){
                 if(noPosteriorUpdate>0){
@@ -975,7 +896,7 @@ double getLkhdAll(double* y, double* Y, double* h0, double* h, double* H0, doubl
                 }else{
                     h[i0*J0+j0] = exp(h[i0*J0+j0])/Lci;
             	}
-	    }else{
+            }else{
                 h[i0*J0+j0]=0.0;
             }
         }
@@ -996,9 +917,6 @@ double getLkhdAll(double* y, double* Y, double* h0, double* h, double* H0, doubl
     
     if(isnan(lkhd)>0){fprintf(stderr, "Lkhd nan! %lf %lf \n", pi[0], pi[1]);}
     
-
-    
-    
     // calculation for M-step
     clear1(grad, 20);
     clear1(hess, 100);
@@ -1007,13 +925,13 @@ double getLkhdAll(double* y, double* Y, double* h0, double* h, double* H0, doubl
     mu=exp(beta);
     
     //double kmL = 0.0; if(L>0){kmL = sum(km, L);}
-    double k_p, k_d, k_h, k_pp, k_pd, k_ph, k_dd, k_dh, k_hh, k_R, k_RR, k_pR, k_dR, k_hR;
+    double k_p, k_pp, k_d, k_h, k_pd, k_ph, k_dd, k_dh, k_hh;//, k_R, k_RR, k_pR, k_dR, k_hR;
     double abij, c2de, acd, bde;
     for(i=0; i<N0; i++){
         for(j=0; j<J0; j++){
             if(h0[i*J0+j]>0.0){
                 // new
-                if(Lx>0){
+                /*if(Lx<0){
                     kij = ((1.0-asr)*K0[j]   + asr/oasr/dLx*vsum5(K2  +jg[j]*2, H2+i*10+jg[j], kg[j])/h0[i*J0+j]);
                     //if(i==0){printf("kij=%lf %lf ", kij, K0[j]);}
                     
@@ -1035,13 +953,14 @@ double getLkhdAll(double* y, double* Y, double* h0, double* h, double* H0, doubl
                     //k_dR = (          + 1.0/oasr/dLx*vsum5(K2d  +jg[j]*2, H2+i*10+jg[j], kg[j])/h0[i*J0+j])*asr*(1.0-asr)/kij;
                     //k_hR = (          + 1.0/oasr/dLx*vsum5(K2h  +jg[j]*2, H2+i*10+jg[j], kg[j])/h0[i*J0+j])*asr*(1.0-asr)/kij;
                     
-                }else{
+                }else{*/
                     kij = K0[j]; 
-                    k_R = k_RR = 0.0;                    
+                    //k_R = k_RR = 0.0;
+                    //k_pR = k_dR = k_hR = 0.0;
                     k_p = K0p[j]/kij;
                     k_pp= K0pp[j]/kij;
-                    k_d = k_dd = k_h = k_hh = k_pd= k_ph = k_dh= k_pR = k_dR = k_hR = 0.0;
-                }
+                    k_d = k_dd = k_h = k_hh = k_pd= k_ph = k_dh = 0.0;
+                //}
                 
                 lmij = mu*ki[i]*dki[i]*kij;
 #ifdef NOKJ
@@ -1109,69 +1028,58 @@ double getLkhdAll(double* y, double* Y, double* h0, double* h, double* H0, doubl
         }
     }
     
-    
     clear1(A, 5*J);
     double dlAB, d2lAB, thijA, thijB;
-    for(i=0; i<Lx*N0; i++){for(j=0; j<J; j++){
-        if(randomize>0){i1=i+N0;}else{i1=i%N0;}
-        
-        thijA = th[1]*ki[i1]*K2[j*2]*km[i/N0];
-        thijB = th[1]*ki[i1]*K2[j*2+1]*km[i/N0];
-        
-        dlAB  = digamma(thijA+thijB)  - digamma(thijA+thijB + Y[i*2]+Y[i*2+1]) ;
-        d2lAB = trigamma(thijA+thijB) - trigamma(thijA+thijB + Y[i*2]+Y[i*2+1]) ;
-        //dlAB=d2lAB=0.0;
-        if(hetType==1){
-            if(j==1 || j==4 || j==5 || j==8){
-                A[j]     += H[i*J+j] * thijA          * (digamma(thijA + Y[i*2])    - digamma(thijA)  + dlAB );
-                A[j+J]   += H[i*J+j] * thijB          * (digamma(thijB + Y[i*2+1])  - digamma(thijB)  + dlAB );
-                A[j+J*2] += H[i*J+j] * pow(thijA,2.0) * (trigamma(thijA + Y[i*2])   - trigamma(thijA) + d2lAB );
-                A[j+J*3] += H[i*J+j] * thijA * thijB  * d2lAB ;
-                A[j+J*4] += H[i*J+j] * pow(thijB,2.0) * (trigamma(thijB + Y[i*2+1]) - trigamma(thijB) + d2lAB );
-            }
-        }else if(hetType==2){
-            if(j==4 || j==5){
-                A[j]     += H[i*J+j] * thijA          * (digamma(thijA + Y[i*2])    - digamma(thijA)  + dlAB );
-                A[j+J]   += H[i*J+j] * thijB          * (digamma(thijB + Y[i*2+1])  - digamma(thijB)  + dlAB );
-                A[j+J*2] += H[i*J+j] * pow(thijA,2.0) * (trigamma(thijA + Y[i*2])   - trigamma(thijA) + d2lAB );
-                A[j+J*3] += H[i*J+j] * thijA * thijB  * d2lAB ;
-                A[j+J*4] += H[i*J+j] * pow(thijB,2.0) * (trigamma(thijB + Y[i*2+1]) - trigamma(thijB) + d2lAB );
-            }
-        }else{
-            A[j]     += H[i*J+j] * thijA          * (digamma(thijA + Y[i*2])    - digamma(thijA)  + dlAB );
-            A[j+J]   += H[i*J+j] * thijB          * (digamma(thijB + Y[i*2+1])  - digamma(thijB)  + dlAB );
-            A[j+J*2] += H[i*J+j] * pow(thijA,2.0) * (trigamma(thijA + Y[i*2])   - trigamma(thijA) + d2lAB );
-            A[j+J*3] += H[i*J+j] * thijA * thijB  * d2lAB ;
-            A[j+J*4] += H[i*J+j] * pow(thijB,2.0) * (trigamma(thijB + Y[i*2+1]) - trigamma(thijB) + d2lAB );
+    for(i=0; i<Lx*N0; i++){
+        i1 = i%N0 + (i/N0+1)*N0*randomize;       //if(randomize>0){i1=i+N0;}else{i1=i%N0;}
+        double AB=th[1]*ki[i1]*km[i/N0];
+        double Yitot=Y[i*2]+Y[i*2+1];
+        for(j=0; j<J; j++){
+            thijA = AB*K2[j*2];
+            thijB = AB*K2[j*2+1];
+            
+            dlAB  = digamma(thijA+thijB)  - digamma(thijA+thijB + Yitot) ;
+            d2lAB = trigamma(thijA+thijB) - trigamma(thijA+thijB + Yitot) ;
+            //dlAB=d2lAB=0.0;
+            A[j]     += H[i*J+j] * thijA         * (digamma(thijA + Y[i*2])    - digamma(thijA)  + dlAB );
+            A[j+J]   += H[i*J+j] * thijB         * (digamma(thijB + Y[i*2+1])  - digamma(thijB)  + dlAB );
+            A[j+J*2] += H[i*J+j] * thijA * thijA * (trigamma(thijA + Y[i*2])   - trigamma(thijA) + d2lAB );
+            A[j+J*3] += H[i*J+j] * thijA * thijB * d2lAB ;
+            A[j+J*4] += H[i*J+j] * thijB * thijB * (trigamma(thijB + Y[i*2+1]) - trigamma(thijB) + d2lAB );
         }
-
-    }}
+    }
     
     return lkhd;
 }
 
 
+
+
+
+
 double getQval(double* y, double* Y, double* h1, double* H1, double* h0, double* H0, double* H2, double* ki, double* dki, double* K0, double* K2, double* ktmp, double* km, long Lx, long N0, long J0, long J, double* th, double beta, double* pi, double delta, double phi, double asr){
     double lkhd = 0.0;
-    long i0,j0,m,i,j,l,i1;
+    long i0,j0,m,i,j,l,i1,i2;
     double thij, lmij, kij;
     double mu = exp(beta);
     
     double dLx = (double)Lx;
+    
+    double AB, Aj, Bj;
     if(Lx==0){dLx=1.0;}
     
     K0[0] = 2.0*(1-pi[0]); K0[1] = 1.0; K0[2] = 2.0*pi[0];
     getK(pi[1],delta,phi,ktmp,K2);
-
+    
     for(i0=0; i0<N0; i0++){
         for(j0=0; j0<J0; j0++){
             if(h0[i0*J0+j0]>0.0){
                 // new
-                if(Lx>0){
-                    kij = ((1.0-asr)*K0[j0]   + asr/oasr/dLx*vsum5(K2  +jg[j0]*2, H2+i0*10+jg[j0], kg[j0])/h0[i0*J0+j0]);
-                }else{
+                //if(Lx>0){
+                //    kij = ((1.0-asr)*K0[j0]   + asr/oasr/dLx*vsum5(K2  +jg[j0]*2, H2+i0*10+jg[j0], kg[j0])/h0[i0*J0+j0]);
+                //}else{
                     kij = K0[j0];
-                }
+                //}
 #ifdef NOKJ
                 thij = th[0]*ki[i0];
 #else
@@ -1186,43 +1094,31 @@ double getQval(double* y, double* Y, double* h1, double* H1, double* h0, double*
                 }
             }
         }
-        
-        for(l=0;l<Lx;l++){// for each xSNP l
+    }
+
+    for(l=0;l<Lx;l++){// for each xSNP l
+        for(i0=0; i0<N0; i0++){
             i=i0+l*N0;
-            if(randomize>0){i1=i+N0;}else{i1=i0;}
+            i2=i*2;
+            i1=i0 + (l+1)*N0*randomize;
+            AB = th[1]*ki[i1]*km[l];
             for(j=0; j<J; j++){
-                if(hetType==1){
-                    if(j==1 || j==4 || j==5 || j==8){
-                        if(H0[i*J+j]>0.0){
-                            lkhd += H1[i*J+j] * ( - lgamma(th[1]*ki[i1]*km[l]*(K2[j*2]+K2[j*2+1])+Y[i*2]+Y[i*2+1]) + lgamma(Y[i*2]+Y[i*2+1]+1.0) + lgamma(th[1]*ki[i1]*km[l]*(K2[j*2]+K2[j*2+1])) );
-                            for(m=0; m<2; m++){
-                                thij = th[1]*ki[i1]*K2[j*2+m]*km[l];
-                                lkhd += H1[i*J+j] * ( lgamma(thij+Y[i*2+m]) - lgamma(Y[i*2+m]+1.0) - lgamma(thij) );
-                            }
-                        }
-                    }
-                }else if(hetType==2){
-                    if(j==4 || j==5){
-                        if(H0[i*J+j]>0.0){
-                            lkhd += H1[i*J+j] * ( - lgamma(th[1]*ki[i1]*km[l]*(K2[j*2]+K2[j*2+1])+Y[i*2]+Y[i*2+1]) + lgamma(Y[i*2]+Y[i*2+1]+1.0) + lgamma(th[1]*ki[i1]*km[l]*(K2[j*2]+K2[j*2+1])) );
-                            for(m=0; m<2; m++){
-                                thij = th[1]*ki[i1]*K2[j*2+m]*km[l];
-                                lkhd += H1[i*J+j] * ( lgamma(thij+Y[i*2+m]) - lgamma(Y[i*2+m]+1.0) - lgamma(thij) );
-                            }
-                        }
-                    }
-                }else{
-                    if(H0[i*J+j]>0.0){
-                        lkhd += H1[i*J+j] * ( - lgamma(th[1]*ki[i1]*km[l]*(K2[j*2]+K2[j*2+1])+Y[i*2]+Y[i*2+1]) + lgamma(Y[i*2]+Y[i*2+1]+1.0) + lgamma(th[1]*ki[i1]*km[l]*(K2[j*2]+K2[j*2+1])) );
-                        for(m=0; m<2; m++){
-                            thij = th[1]*ki[i1]*K2[j*2+m]*km[l];
-                            lkhd += H1[i*J+j] * ( lgamma(thij+Y[i*2+m]) - lgamma(Y[i*2+m]+1.0) - lgamma(thij) );
-                        }
-                    }
-                }
+                //if(H0[i*J+j]>0.0){
+                //lkhd += H1[i*J+j] * ( - lgamma(th[1]*ki[i1]*km[l]*(K2[j*2]+K2[j*2+1])+Y[i2]+Y[i2+1]) + lgamma(Y[i2]+Y[i2+1]+1.0) + lgamma(th[1]*ki[i1]*km[l]*(K2[j*2]+K2[j*2+1])) );
+                //for(m=0; m<2; m++){
+                //    thij = th[1]*ki[i1]*K2[j*2+m]*km[l];
+                //    lkhd += H1[i*J+j] * ( lgamma(thij+Y[i2+m]) - lgamma(Y[i2+m]+1.0) - lgamma(thij) );
+                //}
+                Aj = AB*K2[j*2];
+                Bj = AB*K2[j*2+1];
+                lkhd += H1[i*J+j] * ( -log(Y[i2]+Y[i2+1]+1.0) - lbeta(Y[i2]+1.0, Y[i2+1]+1.0) 
+                                     + lbeta(Y[i2]+Aj, Y[i2+1]+Bj) 
+                                     - lbeta(      Aj,         Bj) );
+                //}
             }
         }
     }
+    
     
     // prior
     lkhd += kappa/2.0*log(omega/2.0) + (kappa/2.0-1.0)*log(th[0]) - omega*th[0]/2.0 - lgamma(kappa/2.0);
@@ -1261,7 +1157,7 @@ double getQval(double* y, double* Y, double* h1, double* H1, double* h0, double*
 
 
 long nbbem_init0(double* y, double* ki, long N, double* pbeta, double* ptheta){
-    long i,j,m;
+    long i;
     // init mean
     double mu = 0.0;
     double va = 0.0;
@@ -1348,6 +1244,7 @@ long getPrior(double* h0, double* z1, double* z2, double wi){
 #ifdef RECOMB
 	h0[4]=h0[5]=(h0[4]+h0[5])/2.0;
 #endif
+    return 0;
 }
 
 long getPriorIndep(double* h0, double* z1, double* z2, double wi){
@@ -1421,57 +1318,57 @@ long getPriorIP(double* h0, double* z2, double wi){
 
 
 /*
-long getCondPrior(double* h0, double* z1, double* z2){
-    h0[0] = h0[3] = h0[7] = (1.0-z2[0])*(1.0-z2[1]);
-    h0[1] = h0[8] = (1.0-z2[0])*(z2[1])+(z2[0])*(1.0-z2[1]);
-    h0[2] = h0[6] = h0[9] = (z2[0])*(z2[1]);
-
-    if(((1.0-z1[0])*(z1[1]) + (z1[0])*(1.0-z1[1]))>0.0){
-    h0[4] = ((z1[0])*(1.0-z2[0])*(1.0-z1[1])*(z2[1])+(1.0-z1[0])*(z2[0])*(z1[1])*(1.0-z2[1]))/((1.0-z1[0])*(z1[1]) + (z1[0])*(1.0-z1[1]));
-    h0[5] = ((z1[0])*(z2[0])*(1.0-z1[1])*(1.0-z2[1])+(1.0-z1[0])*(1.0-z2[0])*(z1[1])*(z2[1]))/((1.0-z1[0])*(z1[1]) + (z1[0])*(1.0-z1[1]));
-    }else{
-    h0[4] = 0.0;
-    h0[5] = 0.0;
-    }
-
-    return 1;
-}
-long getPriorHet(double* h0, double* z1, double* z2, double wi){
-    h0[0] = 0.0;
-    h0[1] = 0.0;
-    h0[2] = 0.0;
-    
-    h0[3] = 0.0;
-    h0[4] = ((z1[0])*(1.0-z2[0])*(1.0-z1[1])*(z2[1])+(1.0-z1[0])*(z2[0])*(z1[1])*(1.0-z2[1]))*wi;
-    h0[5] = ((z1[0])*(z2[0])*(1.0-z1[1])*(1.0-z2[1])+(1.0-z1[0])*(1.0-z2[0])*(z1[1])*(z2[1]))*wi;
-    h0[6] = 0.0;
-    
-    h0[7] = 0.0;
-    h0[8] = 0.0;
-    h0[9] = 0.0;
-    return 1;
-}
-long getPrior1Het(double* h0, double* z, double wi){
-    h0[0] = 0.0;
-    h0[1] = 0.0;
-    h0[2] = 0.0;
-    
-    h0[3] = 0.0;
-    h0[4] = 0.0;
-    h0[5] = ((1.0-z[0])*(z[1]) + (z[0])*(1.0-z[1]))*wi;;
-    h0[6] = 0.0;
-    
-    h0[7] = 0.0;
-    h0[8] = 0.0;
-    h0[9] = 0.0;
-    return 1;
-}
-long getCondPrior1(double* h0, double* z){
-    h0[0] = h0[5] = h0[9] = 1.0;
-    h0[1] = h0[2] = h0[3] = h0[4] = h0[6] = h0[7] = h0[8] = 0.0;
-    return 1;
-}
-*/
+ long getCondPrior(double* h0, double* z1, double* z2){
+ h0[0] = h0[3] = h0[7] = (1.0-z2[0])*(1.0-z2[1]);
+ h0[1] = h0[8] = (1.0-z2[0])*(z2[1])+(z2[0])*(1.0-z2[1]);
+ h0[2] = h0[6] = h0[9] = (z2[0])*(z2[1]);
+ 
+ if(((1.0-z1[0])*(z1[1]) + (z1[0])*(1.0-z1[1]))>0.0){
+ h0[4] = ((z1[0])*(1.0-z2[0])*(1.0-z1[1])*(z2[1])+(1.0-z1[0])*(z2[0])*(z1[1])*(1.0-z2[1]))/((1.0-z1[0])*(z1[1]) + (z1[0])*(1.0-z1[1]));
+ h0[5] = ((z1[0])*(z2[0])*(1.0-z1[1])*(1.0-z2[1])+(1.0-z1[0])*(1.0-z2[0])*(z1[1])*(z2[1]))/((1.0-z1[0])*(z1[1]) + (z1[0])*(1.0-z1[1]));
+ }else{
+ h0[4] = 0.0;
+ h0[5] = 0.0;
+ }
+ 
+ return 1;
+ }
+ long getPriorHet(double* h0, double* z1, double* z2, double wi){
+ h0[0] = 0.0;
+ h0[1] = 0.0;
+ h0[2] = 0.0;
+ 
+ h0[3] = 0.0;
+ h0[4] = ((z1[0])*(1.0-z2[0])*(1.0-z1[1])*(z2[1])+(1.0-z1[0])*(z2[0])*(z1[1])*(1.0-z2[1]))*wi;
+ h0[5] = ((z1[0])*(z2[0])*(1.0-z1[1])*(1.0-z2[1])+(1.0-z1[0])*(1.0-z2[0])*(z1[1])*(z2[1]))*wi;
+ h0[6] = 0.0;
+ 
+ h0[7] = 0.0;
+ h0[8] = 0.0;
+ h0[9] = 0.0;
+ return 1;
+ }
+ long getPrior1Het(double* h0, double* z, double wi){
+ h0[0] = 0.0;
+ h0[1] = 0.0;
+ h0[2] = 0.0;
+ 
+ h0[3] = 0.0;
+ h0[4] = 0.0;
+ h0[5] = ((1.0-z[0])*(z[1]) + (z[0])*(1.0-z[1]))*wi;;
+ h0[6] = 0.0;
+ 
+ h0[7] = 0.0;
+ h0[8] = 0.0;
+ h0[9] = 0.0;
+ return 1;
+ }
+ long getCondPrior1(double* h0, double* z){
+ h0[0] = h0[5] = h0[9] = 1.0;
+ h0[1] = h0[2] = h0[3] = h0[4] = h0[6] = h0[7] = h0[8] = 0.0;
+ return 1;
+ }
+ */
 
 
 
@@ -1491,11 +1388,11 @@ double getHess1(double* A, double* K2, double* K2p, double* K2pp){
     double res=0.0;
     for(j=0; j<10; j++){
         res += A[j+20]*pow(K2p[j*2]   /K2[j*2],2.0) 
-             + A[j+30]*   (K2p[j*2]   /K2[j*2])
-                         *(K2p[j*2+1] /K2[j*2+1])*2.0
-             + A[j+40]*pow(K2p[j*2+1] /K2[j*2+1],2.0)
-             + A[j]       *K2pp[j*2]  /K2[j*2] 
-             + A[j+10]    *K2pp[j*2+1]/K2[j*2+1];
+        + A[j+30]*   (K2p[j*2]   /K2[j*2])
+        *(K2p[j*2+1] /K2[j*2+1])*2.0
+        + A[j+40]*pow(K2p[j*2+1] /K2[j*2+1],2.0)
+        + A[j]       *K2pp[j*2]  /K2[j*2] 
+        + A[j+10]    *K2pp[j*2+1]/K2[j*2+1];
     }
     return res;
 }
@@ -1504,12 +1401,12 @@ double getHess2(double* A, double* K2, double* K2p, double* K2d, double* K2pd){
     double res=0.0;
     for(j=0; j<10; j++){
         res += A[j+20]*(K2p[j*2]   /K2[j*2])  *(K2d[j*2]   /K2[j*2])
-             + A[j+30]*(K2p[j*2]   /K2[j*2])  *(K2d[j*2+1] /K2[j*2+1])
-             + A[j+30]*(K2p[j*2+1] /K2[j*2+1])*(K2d[j*2]   /K2[j*2])
-             + A[j+40]*(K2p[j*2+1] /K2[j*2+1])*(K2d[j*2+1] /K2[j*2+1])
+        + A[j+30]*(K2p[j*2]   /K2[j*2])  *(K2d[j*2+1] /K2[j*2+1])
+        + A[j+30]*(K2p[j*2+1] /K2[j*2+1])*(K2d[j*2]   /K2[j*2])
+        + A[j+40]*(K2p[j*2+1] /K2[j*2+1])*(K2d[j*2+1] /K2[j*2+1])
         
-             + A[j]       *K2pd[j*2]  /K2[j*2] 
-             + A[j+10]    *K2pd[j*2+1]/K2[j*2+1];
+        + A[j]       *K2pd[j*2]  /K2[j*2] 
+        + A[j+10]    *K2pd[j*2+1]/K2[j*2+1];
     }
     return res;
 }
@@ -1738,7 +1635,7 @@ void expand(double* s1, double* s2, long N, double* K, double* K2){
     clear1(K2, 2*N);
     for(i=0; i<N; i++){
         for(j=0; j<2; j++){
-                  if(s1[i*2+j]<=0.5 && s2[i*2+j]<=0.5){K2[i*2]+=K[0]; K2[i*2+1]+=K[4];
+            if(s1[i*2+j]<=0.5 && s2[i*2+j]<=0.5){K2[i*2]+=K[0]; K2[i*2+1]+=K[4];
             }else if(s1[i*2+j]<=0.5 && s2[i*2+j]>0.5){ K2[i*2]+=K[1]; K2[i*2+1]+=K[5];
             }else if(s1[i*2+j]>0.5  && s2[i*2+j]<=0.5){K2[i*2]+=K[2]; K2[i*2+1]+=K[6];
             }else if(s1[i*2+j]>0.5  && s2[i*2+j]>0.5){ K2[i*2]+=K[3]; K2[i*2+1]+=K[7];}
@@ -1751,7 +1648,7 @@ void expandForSun(double* s1, long N, double* K, double* K2){
     clear1(K2, 2*N);
     for(i=0; i<N; i++){
         for(j=0; j<2; j++){
-                  if(s1[i*2+j]<=0.5 && j==0){K2[i*2]+=K[0]; K2[i*2+1]+=K[4];
+            if(s1[i*2+j]<=0.5 && j==0){K2[i*2]+=K[0]; K2[i*2+1]+=K[4];
             }else if(s1[i*2+j]<=0.5 && j==1){K2[i*2]+=K[1]; K2[i*2+1]+=K[5];
             }else if(s1[i*2+j]>0.5 && j==0){K2[i*2]+=K[2]; K2[i*2+1]+=K[6];
             }else if(s1[i*2+j]>0.5 && j==1){K2[i*2]+=K[3]; K2[i*2+1]+=K[7];}
@@ -1851,12 +1748,12 @@ double vsum4(double* x, double* y1, double* y2, long J, long M){
 }
 
 double vsum5(double* x, double* y, long N){
-   long i;
-   double res=0.0;
-   for(i=0; i<N; i++){
-       res += (x[i*2]+x[i*2+1])*y[i];
-   }
-   return res;
+    long i;
+    double res=0.0;
+    for(i=0; i<N; i++){
+        res += (x[i*2]+x[i*2+1])*y[i];
+    }
+    return res;
 }
 
 
@@ -1946,7 +1843,7 @@ void getInformation(double* y, double* Y, double* h0, double* H0, double* h1, do
     
     double dLx = (double)Lx;
     if(Lx==0){dLx=1.0;}
-	 
+    
     double* ESp;
     double* ESd;
     double* ESh;
@@ -2056,26 +1953,26 @@ void getInformation(double* y, double* Y, double* h0, double* H0, double* h1, do
             }
         }
         
-         hess[0] -= vsum(h1+i0*3, VSp, 3)  + vsum2(h1+i0*3, ESp, 3);
-         hess[1] -= vsum(h1+i0*3, VSpd, 3) + vsum3(h1+i0*3, ESp, ESd, 3);
-         hess[2] -= vsum(h1+i0*3, VSph, 3) + vsum3(h1+i0*3, ESp, ESh, 3);
-         hess[3] -=                          vsum3(h1+i0*3, ESp, ESb, 3);
-         hess[4] -= vsum(h1+i0*3, VSpt, 3) + vsum3(h1+i0*3, ESp, ESt, 3);
-         
-         hess[11] -= vsum(h1+i0*3, VSd, 3)  + vsum2(h1+i0*3, ESd, 3);
-         hess[12] -= vsum(h1+i0*3, VSdh, 3) + vsum3(h1+i0*3, ESd, ESh, 3);
-         hess[13] -=                          vsum3(h1+i0*3, ESd, ESb, 3);
-         hess[14] -= vsum(h1+i0*3, VSdt, 3) + vsum3(h1+i0*3, ESd, ESt, 3);
-         
-         hess[22]-= vsum(h1+i0*3, VSh, 3)  + vsum2(h1+i0*3, ESh, 3);
-         hess[23]-=                          vsum3(h1+i0*3, ESh, ESb, 3);
-         hess[24]-= vsum(h1+i0*3, VSht, 3) + vsum3(h1+i0*3, ESh, ESt, 3);
-         
-         hess[33]-=                          vsum2(h1+i0*3, ESb, 3);
-         hess[34]-=                          vsum3(h1+i0*3, ESb, ESt, 3);
-         
-         hess[44]-= vsum(h1+i0*3, VSt, 3)  + vsum2(h1+i0*3, ESt, 3);
-         
+        hess[0] -= vsum(h1+i0*3, VSp, 3)  + vsum2(h1+i0*3, ESp, 3);
+        hess[1] -= vsum(h1+i0*3, VSpd, 3) + vsum3(h1+i0*3, ESp, ESd, 3);
+        hess[2] -= vsum(h1+i0*3, VSph, 3) + vsum3(h1+i0*3, ESp, ESh, 3);
+        hess[3] -=                          vsum3(h1+i0*3, ESp, ESb, 3);
+        hess[4] -= vsum(h1+i0*3, VSpt, 3) + vsum3(h1+i0*3, ESp, ESt, 3);
+        
+        hess[11] -= vsum(h1+i0*3, VSd, 3)  + vsum2(h1+i0*3, ESd, 3);
+        hess[12] -= vsum(h1+i0*3, VSdh, 3) + vsum3(h1+i0*3, ESd, ESh, 3);
+        hess[13] -=                          vsum3(h1+i0*3, ESd, ESb, 3);
+        hess[14] -= vsum(h1+i0*3, VSdt, 3) + vsum3(h1+i0*3, ESd, ESt, 3);
+        
+        hess[22]-= vsum(h1+i0*3, VSh, 3)  + vsum2(h1+i0*3, ESh, 3);
+        hess[23]-=                          vsum3(h1+i0*3, ESh, ESb, 3);
+        hess[24]-= vsum(h1+i0*3, VSht, 3) + vsum3(h1+i0*3, ESh, ESt, 3);
+        
+        hess[33]-=                          vsum2(h1+i0*3, ESb, 3);
+        hess[34]-=                          vsum3(h1+i0*3, ESb, ESt, 3);
+        
+        hess[44]-= vsum(h1+i0*3, VSt, 3)  + vsum2(h1+i0*3, ESt, 3);
+        
         /*
          clear1(work, 50);
          for(j=0; j<J; j++){
@@ -2187,7 +2084,7 @@ double getAR(double* gl){
 
 
 void gencall(double* H1, double* Z, double* Zx, long N, long L, double* exon){
-    long i, l, k, il;
+    long i, l, il;
     double ratio1, ratio2;
     double* z;
     double* zx;
@@ -2215,9 +2112,8 @@ void gencall(double* H1, double* Z, double* Zx, long N, long L, double* exon){
 void gencallAlt(double* H1, double* h1, double* Z, double* Zx, long N, long L, long Lx, double* exon, long csnp){
     double* work; work=(double*)calloc(16,sizeof(double));
     
-    long i, l, k, il;
-    double ratio1, ratio2;
-    double* z;
+    long i, l, il;
+    //double* z;
     double* zx;
     double* zc;
     double* zc0;
@@ -2233,9 +2129,9 @@ void gencallAlt(double* H1, double* h1, double* Z, double* Zx, long N, long L, l
         }
     }
     long ll=0;
-    double p01, p10, q01, q10, q11;
+    //double p01, p10, q01, q10, q11;
     for(l=0;l<L;l++){
-        z=Z+N*2*l;
+        //z=Z+N*2*l;
         if(fabs(exon[l])>1.5){
             zx = Zx + N*2*ll;
             for(i=0; i<N; i++){
@@ -2262,7 +2158,7 @@ void H3toZx(double* H1, double* zc, double* zx, double* work){
     //double p10 = zc[0]*(1.0-zc[1]);
     double p01, p10, q01, q10;
     
-    double p00 = H1[0]+H1[1]+H1[2];
+    //double p00 = H1[0]+H1[1]+H1[2];
     double p11 = H1[7]+H1[8]+H1[9];
     double phet= H1[3]+H1[4]+H1[5]+H1[6];
     
@@ -2388,9 +2284,9 @@ void H3toZx2(double* H1, double* zc, double* zx, double* work){
     //double p10 = zc[0]*(1.0-zc[1]);
     double p01, p10, q01, q10;
     
-    double p00 = H1[0]+H1[1]+H1[2];
-    double p11 = H1[7]+H1[8]+H1[9];
-    double phet= H1[3]+H1[4]+H1[5]+H1[6];
+    //double p00 = H1[0]+H1[1]+H1[2];
+    //double p11 = H1[7]+H1[8]+H1[9];
+    //double phet= H1[3]+H1[4]+H1[5]+H1[6];
     
     double q00 = H1[0]+H1[3]+H1[7];
     double q11 = H1[2]+H1[6]+H1[9];
@@ -2399,8 +2295,8 @@ void H3toZx2(double* H1, double* zc, double* zx, double* work){
     double qs[3]={q00,qhet,q11};
     H3toZ(qs, zx);
     
-    double* Z;
-    Z=work;
+    //double* Z;
+    //Z=work;
     
     // exceptions 
     if(q11>=1.0){
@@ -2435,5 +2331,57 @@ void H3toZx2(double* H1, double* zc, double* zx, double* work){
 
 
 
-
+void randomPerm(double* y, double* Y, double* Z, double* ki, double* exon, int L, int N, int m){
+    int i, l;
+    double* Zr;
+    Zr = Z+N*(L+m+1)*2;
+    double* dki;
+    dki = ki+N+m*N;
+    double* yt;  yt = (double*)calloc(N*3, sizeof(double));
+    int* rord;   rord = (int*)calloc(N, sizeof(int));
+    int* rord12; rord12 = (int*)calloc(2, sizeof(int));
+    for(i=0; i<N; i++){rord[i]=i;}
+    rord12[0]=0; rord12[1]=1;
+    //Zr = (double*)calloc(N*2*m, sizeof(double));
+    
+    // as permutation
+    int ll=0;
+    for(l=0;l<L;l++){
+        if(fabs(exon[l])>1.5){// in a feature
+            //for(i=0; i<N; i++){rord[i]=i;}
+            getRandomOrder((int)N, rord);
+            for(i=0; i<N; i++){
+                //getRandomOrder(2, rord12);
+                if(rord12[0]==0){
+                    Zr[N*2*ll+i*2+0] = Z[N*2*l+rord[i]*2+0];
+                    Zr[N*2*ll+i*2+1] = Z[N*2*l+rord[i]*2+1];
+                }else{
+                    Zr[N*2*ll+i*2+0] = 1.0 - Z[N*2*l+rord[i]*2+0];
+                    Zr[N*2*ll+i*2+1] = 1.0 - Z[N*2*l+rord[i]*2+1];
+                }
+                yt[i*2+0]      = Y[ll*2*N+rord[i]*2+rord12[0]];
+                yt[i*2+1]      = Y[ll*2*N+rord[i]*2+rord12[1]];
+                ki[(ll+1)*N+i] = ki[rord[i]];
+            }
+            cblas_dcopy(N*2, yt, 1, Y+ll*2*N, 1);
+            ll++;
+        }
+    }
+    // pop permutation
+    //for(i=0; i<N; i++){rord[i]=i;}
+    getRandomOrder((int)N, rord);
+    for(i=0; i<N; i++){
+        yt[i]     =  y[rord[i]];
+        yt[i+N]   =  ki[rord[i]];
+        yt[i+N*2] =  dki[rord[i]];
+    }
+    cblas_dcopy(N, yt,     1, y,   1);
+    cblas_dcopy(N, yt+N,   1, ki,  1);
+    cblas_dcopy(N, yt+N*2, 1, dki, 1);
+    
+    // vector free
+    free(yt);
+    free(rord);
+    free(rord12);
+}
 

@@ -45,11 +45,12 @@ Model fitting options:
   --population-only                      Only total feature counts are modelled
   --as-only                              Only AS counts are modelled
   --null                                 Fitting null model only
-#  --force                                Fitting model even if AS counts are 0
+  --force                                Fitting model for the large numbers of fSNPs and rSNPs (#fSNPs x #rSNPs < 30,000 w/o this option)
   --fix-delta                            Fix sequencing/mapping error parameter (Delta=0.01)
   --fix-phi                              Fix reference allele mapping parameter (Phi=0.5)
   --fix-theta                            Fix overdispersion parameter (Theta=10000)
   --number-of-significant-loci  <int>    Average number of SNPs tested by joint model (default: number of tested SNPs)
+  --n-threads                   <int>    The number of threads used for mapping QTLs in parallel
 
 Genotype uncertainty options:
   

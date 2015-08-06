@@ -37,8 +37,8 @@ double inverse(double* a, double* inv);
 double getStepSize(double* H, double* g, int fixPi);
 void inverseLapack(double* A, int N, integer* ipiv, double* work);
 void solveLapack(double* A, double* b, int N, integer* ipiv, double* work);
-double getStepSize5(double* H, double* g, double* step, integer* ipiv);
-double getStepSize6(double* H, double* g, double* step, integer* ipiv);
+void getStepSize5(double* H, double* g, double* step, integer* ipiv);
+void getStepSize6(double* H, double* g, double* step, integer* ipiv);
 
 double pf1(double fval, int df1, int df2);
 void pf(double* fvals, int N, int df1, int df2);
@@ -56,7 +56,9 @@ double doub(double x);
 
 double esum(double *x, long n, double y);
 
+//double lgamma_a(double z);
 double lgamma(double x);
+double lbeta(double a, double b);
 double digamma(double x);
 double trigamma(double x);
 double psi_2(double x);
