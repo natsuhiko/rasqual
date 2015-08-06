@@ -3,7 +3,7 @@ RASQUAL (Robust Allele Specific QUAntification and quality controL) maps QTLs fo
 
 ## How to build & install
 
-Please make sure CLAPACK is installed in your environment.  Otherwise you can get the library at http://www.netlib.org/clapack/.  To build and install RASQUAL, firstly go to the _source_ directory (*src*), then set environment variables appropriately to point to the CLAPACK library.  Finally use "make" to build and install RASQUAL which will be installed in "$RASQUALDIR/bin".
+Please make sure CLAPACK is installed in your environment (if you don't have it, then see below for installation tips).  To build and install RASQUAL, firstly go to the _source_ directory (*src*), then set environment variables appropriately to point to the CLAPACK library.  Finally use "make" to build and install RASQUAL which will be installed in "$RASQUALDIR/bin".
 
 	RASQUALDIR=/path/to/rasqualdir/
 	cd $RASQUALDIR/src
@@ -34,6 +34,38 @@ Using the example data files, you can use the following commands to map expressi
 
 Sample size (in this example, *N*=24) is given by **-n** option, the feature ID is given by **-j** option (only two genes exist in this example, thereby j=1,2).  You need to provide the number of testing SNPs and feature SNPs in the *cis*-window *a priori* (**-l** and **-m**, respectively).  RASQUAL also requires the feature start and end positions (as comma separated values for more than one positions, e.g. such as for a union of exons in this example) as inputs (**-s** and **-e**, respectively).  By default, RASQUAL outputs QTL mapping results for all tested SNPs, but you can also specify only the lead QTL SNP (**-t** option).  In the output, you can also specify the feature name by **-f** option.  To take account of genotype uncertainty, imputation quality score (R square value) are used in this example (**-z** option; see the section below).  
 
+## Output
+
+On output, RASQUAL provides the following values for each tested SNP:
+
+1. Feature ID*
+2. rs ID*
+3. Chromosome*
+4. SNP position*
+5. Ref allele
+6. Alt allele
+7. Allele frequency (not MAF!)*
+8. HWE Chi-square statistic
+9. Imputation quality score (IA or R-square)
+10. Benjamini-Hochberg Q-value
+11. Chi square statistic (2 x log Likelihood ratio)*
+12. Effect size (Pi)
+13. Reference allele mapping bias (Phi)
+14. Sequencing/mapping error rate (Delta)
+15. Overdispersion
+16. SNP ID within the region
+17. No. of feature SNPs
+18. No. of tested SNPs*
+19. No. of iterations for null hypothesis
+20. No. of iterations for alternative hypothesis
+21. Random location of ties (tie lead SNP; only useful with **-t** option)
+22. likelihood for null hypothesis
+23. Convergence status (0=success)
+24. Squared correlation between prior and posterior genotypes (fSNPs)
+25. Squared correlation between prior and posterior genotypes (rSNP)
+
+You may need columns with (*) for the downstream analysis.
+
 ## Data preparation
 
 You can find an example expression data for C11orf21 and TSPAN32 genes in the _data_ directory.  There are two files: a read/fragment count table (Y.txt) and sample specific offset data (K.txt), both have to be organised in feature by sample format (*i.e.*, row: gene; col: sample).  We have included an R script to allow you to convert the count and offset files (text) into binary format for us by RASQUAL.  The script converts a table data into a vector of double precision values.
@@ -62,10 +94,15 @@ To maximise the ability of RASQUAL, we recommend to incorporate uncertainty in i
 
 2. **Genotype likelihood** (GL)
 
-    You may also use genotype likelihood from conventional genotype imputation in conjunction with phased genotype data:
+    You may also use genotype likelihood (in Log10 scale) from conventional genotype imputation in conjunction with phased genotype data:
 
         ... FORMAT    ... Sample_i                ...
         ... GT:GL:AS  ... 0|1:-4.0,-0.1,-0.6:1,10 ...
+
+    Likewise, you can also provide the genotype likelihood in nominal scale [0-1] with GP FORMAT:
+
+        ... FORMAT    ... Sample_i                ...
+        ... GT:GP:AS  ... 0|1:0.01,0.99,0.0:1,10 ...
 
 3. **Dosage** (DS)
 
@@ -101,7 +138,7 @@ Sample specific offset terms can be calculated from the count table.  See the sc
 	# With GC content; not run!
 	$RHOME/R --vanilla --quiet --args data/your.Y.txt data/gcc.txt < R/makeOffset.R > log
 
-Note that you need to prepare a GC content file (gcc.txt in this example) to apply GC correction for the read count.  The file is a vector of GC% values as a text file (separated by either, a comma, a tab or a line break).
+Note that you need to prepare a GC content file (gcc.txt in this example) to apply GC correction for the read count at each feature.  The file is a vector of GC% values for all features as a text file (separated by either, a comma, a tab or a line break).  In order to obtain the GC% for each feature, we normally extract the reference sequence overlapping with the feature annotation, count G/C bases and then divide the count by the total feature length.
 
 ## Covariates
 
@@ -122,3 +159,43 @@ Those confounding factors are not often observed but can be captured by principa
 	$RHOME/R --vanilla --quiet --args data/your.Y.txt data/your.K.txt < R/makeCovariates.R > log
 
 Note that, the result of PCA is always sensitive to few outliers (just one or two), which explain almost all variance in the data.  Using those PCs as covariates hurts your QTL mapping result.  We strongly recommend to spend some time to explore and clean up your data first.
+
+## Installation tips for CLAPACK
+
+You first need to get the latest library from http://www.netlib.org/clapack/.  Then, compile it like
+
+	tar zxvf clapack.tgz
+	cd CLAPACK-3.2.1
+	mv make.inc.example make.inc
+	make
+
+When it has been done, you will find three archive files in the directory which need to be either linked or renamed, such as
+
+	ln -s lapack_LINUX.a liblapack.a
+	ln -s tmglib_LINUX.a libtmglib.a
+	ln -s blas_LINUX.a libblas.a
+
+before compiling RASQUAL.
+
+## Creating a VCF file with AS counts
+
+We provide a useful script to create a VCF file with AS counts from a master VCF file and a set of BAM files.  Before using the script you need to compile some C codes called from the script:
+
+	cd $RASQUALDIR/src/ASVCF
+	make
+
+The command to produce the VCF with AS counts is:
+
+	sh $RASQUALDIR/src/ASVCF/createASVCF.sh bam.list.txt master.vcf.gz
+
+which creates *master.vcf.new.gz* in the same directory.  The *master.vcf.gz* must be tabix indexed and the *bam.list.txt* is a text file which contains absolute path to your set of BAMs from which AS counts are produced:
+
+	# bam.list.txt
+	/path/to/your/bam/sample1.bam 
+	/path/to/your/bam/sample2.bam 
+	/path/to/your/bam/sample3.bam
+	...
+
+The order of the samples **MUST** be the same as that in the master VCF.  Before using the script, please make sure the latest tabix (http://www.htslib.org/doc/tabix.html) is installed in your environment. 
+
+Note that, our script doesn't filter out any AS read by means of QC criteria (depth of coverage, mapping quality, etc.).  You may also want to filter out some reads a priori, using GATK ASEReadCounter (https://www.broadinstitute.org/gatk/gatkdocs/org_broadinstitute_gatk_tools_walkers_rnaseq_ASEReadCounter.php).
