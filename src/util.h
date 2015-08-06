@@ -5,13 +5,29 @@
 //#include <cblas.h>
 #include <blaswrap.h>
 #include <gsl_cblas.h>
+#include <gsl_rng.h>
+#include <gsl_randist.h>
 #include <f2c.h>
 #include <clapack.h>
 #include <gsl_sf_gamma.h>
 #include <gsl_sf_psi.h>
 #include <zlib.h>
+#include <time.h>
 
 //#include <R.h>
+
+
+const gsl_rng_type * rngT;
+gsl_rng * rng;
+void init_gsl_rand();
+double runif();
+void rdirmultinom(int* ys, int m, int Y, double* probs, double* alpha);
+void rmultinom(int* ys, int m, int Y, double* probs);
+int rbinom(double mu, double th);
+int rbetabinom(double thA, double thB, int n);
+void rG(double* z, double* zt);
+int rD(double* zc, double* zx);
+
 
 double pchisq(double q, double k);
 double Qchisq(double p0, double k);
@@ -21,8 +37,8 @@ double inverse(double* a, double* inv);
 double getStepSize(double* H, double* g, int fixPi);
 void inverseLapack(double* A, int N, integer* ipiv, double* work);
 void solveLapack(double* A, double* b, int N, integer* ipiv, double* work);
-double getStepSize5(double* H, double* g, double* step, integer* ipiv);
-double getStepSize6(double* H, double* g, double* step, integer* ipiv);
+void getStepSize5(double* H, double* g, double* step, integer* ipiv);
+void getStepSize6(double* H, double* g, double* step, integer* ipiv);
 
 double pf1(double fval, int df1, int df2);
 void pf(double* fvals, int N, int df1, int df2);
@@ -40,7 +56,9 @@ double doub(double x);
 
 double esum(double *x, long n, double y);
 
+//double lgamma_a(double z);
 double lgamma(double x);
+double lbeta(double a, double b);
 double digamma(double x);
 double trigamma(double x);
 double psi_2(double x);

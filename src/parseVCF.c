@@ -1,5 +1,5 @@
 #include "parseVCF.h"
-
+#include "util.h"
 char* format=NULL;
 char* infostr=NULL;
 //VCF_info vinfo;// = NULL;//{VT_OTHER, 0.0, 0.0};
@@ -220,11 +220,13 @@ int parseCell(char* cell, int* dip, double* gl, double* ap, long* ase, double* d
 				}else if(formatID[k]==FORMAT_GL || formatID[k]==FORMAT_PP){
 					sscanf(cell+ii0, "%lf,%lf,%lf", gl, gl+1, gl+2);
 					if(formatID[k]==FORMAT_PP){
+						if(gl[0]<0.0 || gl[1]<0.0 || gl[2]<0.0 || gl[0]>1.0 || gl[1]>1.0 || gl[2]>1.0){fprintf(stderr, "Posterior Probability (%lf, %lf, %lf) is not in the appropriate range [0,1]...\n", gl[0], gl[1], gl[2]);}
 						if(gl[0]<1.0e-5){gl[0]=1.0e-5;}
 						if(gl[1]<1.0e-5){gl[1]=1.0e-5;}
 						if(gl[2]<1.0e-5){gl[2]=1.0e-5;}
 					}else if(formatID[k]==FORMAT_GL){
 						if(LOG10>0){
+							if(gl[0]>0.0 || gl[1]>0.0 || gl[2]>0.0){fprintf(stderr, "Genotype likelihood (%lf, %lf, %lf) is not in the appropriate range [-Inf,0]...\n", gl[0], gl[1], gl[2]);}
 							gl[0] = pow(10.0,gl[0]);
 							gl[1] = pow(10.0,gl[1]);
 							gl[2] = pow(10.0,gl[2]);
@@ -338,6 +340,10 @@ int existFlag(int* formatID, int nfield, int flag){
 
 // gen will be < 0 and ap=c(-1,-1) gl=(-1,-1,-1) if log10(gl) was (0,0,0)
 
+// GZFILE
+
+
+// STDIN
 int parseLine(char* chr, long* pos, char* rs, char* al, VCF_info* vinfo, int* dip, double* dose, double* gl, double* ap, long* ase, long N, int genType){
 	return parseLine0(chr, pos, rs, al, vinfo, dip, dose, gl, ap, ase, N, genType, stdin);
 }
@@ -358,7 +364,6 @@ int parseLine0(char* chr, long* pos, char* rs, char* al, VCF_info* vinfo, int* d
 				}else if(ncol==1){
 					sscanf(cell, "%ld", pos);
 				}else if(ncol==2){
-					//fprintf(stderr, "RS=%s\n", cell);
 					strcpy(rs, cell);
 				}else if(ncol==3){
 					al[0]=cell[0];
@@ -368,22 +373,21 @@ int parseLine0(char* chr, long* pos, char* rs, char* al, VCF_info* vinfo, int* d
 					parseInfo(cell, vinfo);
 				}else if(ncol==8){
 					nfield = parseFormat(cell, formatID);
-					//fprintf(stderr, "%d f1 %d fs %d f3 %d\n", nfield, formatID[0], formatID[1], formatID[2]);
 				}else if(ncol<5){
-					//fprintf(stderr, "%s\t",cell);
-					//fprintf(stderr, "%d ", ncol);
+				
 				}else if(ncol>8){
 					parseCell(cell, dip+(ncol-9)*2, gl+(ncol-9)*3, ap+(ncol-9)*2, ase+(ncol-9)*2, dose+(ncol-9), formatID);
 					//estimating allelic prob
 					if(existFlag(formatID, nfield, FORMAT_AP)==0){// no AP
 						if(existFlag(formatID, nfield, FORMAT_GT)>0){// GT
-							if(existFlag(formatID, nfield, FORMAT_GL)>0){// gen likelihood
+							if(existFlag(formatID, nfield, FORMAT_GL)>0 || existFlag(formatID, nfield, FORMAT_PP)>0){// gen likelihood
 								gl2ap(gl+(ncol-9)*3, ap+(ncol-9)*2, dip+(ncol-9)*2);
 							}else if(existFlag(formatID, nfield, FORMAT_DS)>0){// dose
 								dose2ap(dip+(ncol-9)*2, ap+(ncol-9)*2, dose[ncol-9]);
 							}else{
 								gt2ap(dip+(ncol-9)*2, ap+(ncol-9)*2);
 							}
+//gt2ap(dip+(ncol-9)*2, ap+(ncol-9)*2);
 							dose[ncol-9] = (double)(dip[(ncol-9)*2]+dip[(ncol-9)*2+1]);
 							if(dip[(ncol-9)*2]==9||dip[(ncol-9)*2+1]==9){dose[ncol-9] = 9;}
 						}else{// allele freq
@@ -393,15 +397,20 @@ int parseLine0(char* chr, long* pos, char* rs, char* al, VCF_info* vinfo, int* d
 					}else{
 						dose[ncol-9] = ap[(ncol-9)*2]+ap[(ncol-9)*2+1];
 					}
-					//fprintf(stderr, "%d %lf %lf %lf | %d %d | %lf %lf | %s\n", ncol, gl[(ncol-9)*3], gl[(ncol-9)*3+1], gl[(ncol-9)*3+2], dip[(ncol-9)*2], dip[(ncol-9)*2+1], ap[(ncol-9)*2], ap[(ncol-9)*2+1], cell);
-					//fprintf(stderr, "%d %d %d %lf %lf %lf | %lf %lf | %lf %lf | %s\n", ncol, gl[(ncol-9)*3], gl[(ncol-9)*3+1], gl[(ncol-9)*3+2], dip[(ncol-9)*2], dip[(ncol-9)*2+1], ap[(ncol-9)*2], ap[(ncol-9)*2+1], ap2[(ncol-9)*2], ap2[(ncol-9)*2+1], cell);
 				}
 				l=0;
 				ncol++;
 				warningFlag=0;
 				if(buf[i]=='\n'){i0=i+1; return 1;}
 			}else{
-				if(l<CELLS-1){cell[l++]=buf[i];}else{ if(warningFlag==0){fprintf(stderr, "cell size exceed %d %s\n", CELLS, cell); warningFlag=1; }; if(ncol>8){return -1;} }
+				if(l<CELLS-1){
+					cell[l++]=buf[i];
+				}else{
+					if(warningFlag==0){
+						fprintf(stderr, "cell size exceed %d %s\n", CELLS, cell); warningFlag=1; 
+					}; 
+					if(ncol>8){return -1;} 
+				}
 			}
 		}
 	}while((ret=Fread_parseVCF(buf, fp))>0);
@@ -456,6 +465,8 @@ int parseFormat(char* str, int* formatID){
 			formatID[i]=FORMAT_GL;
 		}else if(strcmp(format,"AP")==0){
 			formatID[i]=FORMAT_AP;
+		}else if(strcmp(format,"GP")==0){
+			formatID[i]=FORMAT_PP;
 		}else if(strcmp(format,"PP")==0){
 			formatID[i]=FORMAT_PP;
 		}else if(strcmp(format,"AS")==0){

@@ -1,3 +1,4 @@
+#include <pthread.h>
 
 #define GZ_WMODE "wb6f"
 #define GZ_RMODE "rb6f"
@@ -7,7 +8,41 @@
 #define MAXITR3 30
 #define PRESTEPS 1
 
+pthread_mutex_t mutex;
+typedef struct{
+	double* y;
+	double* Y;
+	double* Z;
+	double* X;
+	double* ki;
+	double* w;
+	double* km;
+	double* exon;
+	long P;
+	long L;
+	long N;
+	long Lx;
+	char** rss;
+	double* lkhdDiff;
+	double* ppi;
+	double* pdelta; 
+	double* pphi;
+	double* pbeta;
+	double* ptheta; 
+	double* pasr; 
+	int* pitr;
+	int* pbound; 
+	double* ptval;
+	double* pkld;
+	long rsnp_start;
+	long rsnp_end;
+	int* tested;
+	int tid;
+} RASQUAL_INP;
+
+
 long maxCsnp;
+long nthreads;
 
 int verbose;
 int verbose2;
@@ -23,6 +58,7 @@ int randomize;
 double NOfSigLoci;
 int* fixParam;
 int hetType;
+int testImprinting;
 
 double theta2;
 
@@ -44,7 +80,9 @@ double asNonasRatio0;
 double beta0;
 double theta0;
 
+void* ASEQTLALL_MP(void *args);
 long ASEQTLALL(double* y, double* Y, double* Z, double* X, long P, double* ki, double* w, double* km, double* exon, long L, long N, long M, char** rss, double* lkhdDiff, double* ppi, double* pdelta, double* pphi, double* pbeta, double* ptheta, double* pasr, int* pitr, int* pbound, double* ptval, double* pkld);
+long ASEQTLALL_ALT(double* y, double* Y, double* Z, double* X, long P, double* ki, double* w, double* km, double* exon, long L, long N, long Lx, char** rss, double* lkhdDiff, double* ppi, double* pdelta, double* pphi, double* pbeta, double* ptheta, double* pasr, int* pitr, int* pbound, double* ptval, double* pkld, long csnp_start, long csnp_end, int* tested, int tid);
 
 void getInformation(double* y, double* Y, double* h0, double* H0, double* h1, double* H1, double* H2, double* ki, double* dki, double* K0, double* K2, double* K, double* km, long Lx, long N0, long J0, long J, double beta, double th, double pi, double delta, double phi, double asr, double* work, double* hess, integer* ipiv, double* a, double* A);
 
@@ -111,3 +149,5 @@ double getAA(double* gl);
 double getAR(double* gl);
 
 void printMapGen(double* z, long N, long L);
+
+void randomPerm(double* y, double* Y, double* Z, double* ki, double* exon, int L, int N, int m);
