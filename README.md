@@ -50,8 +50,8 @@ On output, RASQUAL provides the following values for each tested SNP:
 10. Benjamini-Hochberg Q-value
 11. Chi square statistic (2 x log Likelihood ratio)*
 12. Effect size (Pi)
-13. Reference allele mapping bias (Phi)
-14. Sequencing/mapping error rate (Delta)
+13. Sequencing/mapping error rate (Delta)
+14. Reference allele mapping bias (Phi)
 15. Overdispersion
 16. SNP ID within the region
 17. No. of feature SNPs
