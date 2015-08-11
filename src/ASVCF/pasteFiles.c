@@ -88,17 +88,21 @@ int main(int argc, char** argv){
 	fprintf(stderr, "%d Header lines and %d Data points x %d cells in %s\n", M, L, P, argv[1]);
 	
 	// print all headers
-	int m=0;
-	while((ret = gzread(fs[0], buf, sizeof(char))) != 0 && ret!=-1){
-		printf("%c", buf[0]);
-		if(buf[0]=='\n'){
-			m++;
-			if(m==M-1){
-				printf("##FORMAT=<ID=AS,Number=.,Type=String,Description=\"Allele-specific counts from sequenced reads\">\n");
-			}else if(m==M){
-				break;
+	if(M>0){
+		int m=0;
+		while((ret = gzread(fs[0], buf, sizeof(char))) != 0 && ret!=-1){
+			printf("%c", buf[0]);
+			if(buf[0]=='\n'){
+				m++;
+				if(m==M-1){
+					printf("##FORMAT=<ID=AS,Number=.,Type=String,Description=\"Allele-specific counts from sequenced reads\">\n");
+				}else if(m==M){
+					break;
+				}
 			}
 		}
+	}else{
+		printf("##FORMAT=<ID=AS,Number=.,Type=String,Description=\"Allele-specific counts from sequenced reads\">\n");	
 	}
 	// K times P string matrix
 	char*** lines;
