@@ -47,7 +47,7 @@ On output, RASQUAL provides the following values for each tested SNP:
 7. Allele frequency (not MAF!)*
 8. HWE Chi-square statistic
 9. Imputation quality score (IA)
-10. Imputation quality score (R-square)
+10. Benjamini-Hochberg Q-value
 11. Chi square statistic (2 x log Likelihood ratio)*
 12. Effect size (Pi)
 13. Sequencing/mapping error rate (Delta)
@@ -199,3 +199,7 @@ which creates *master.vcf.new.gz* in the same directory.  The *master.vcf.gz* mu
 The order of the samples **MUST** be the same as that in the master VCF.  Before using the script, please make sure the latest tabix (http://www.htslib.org/doc/tabix.html) is installed in your environment. 
 
 Note that, our script doesn't filter out any AS read by means of QC criteria (depth of coverage, mapping quality, etc.).  You may also want to filter out some reads a priori, using GATK ASEReadCounter (https://www.broadinstitute.org/gatk/gatkdocs/org_broadinstitute_gatk_tools_walkers_rnaseq_ASEReadCounter.php).
+
+## Permutation test
+
+The permutation test is also implemented in RASQUAL.  The **-r/--random-permutation** option generates a random permutation for each feature to break the correlation between genotype and total feature count as well as AS counts.
