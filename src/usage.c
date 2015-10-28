@@ -47,11 +47,12 @@ void usage(){
 	fprintf(stderr, "  --population-only                      Only total feature counts are modelled\n");
 	fprintf(stderr, "  --as-only                              Only AS counts are modelled\n");
 	fprintf(stderr, "  --null                                 Fitting null model only\n");
+	fprintf(stderr, "  --force                                Fitting model for the large numbers of fSNPs and rSNPs (#fSNPs x #rSNPs < 30,000 w/o this option)\n");
 	fprintf(stderr, "  --fix-delta                            Fix sequencing/mapping error parameter (Delta=0.01)\n");
 	fprintf(stderr, "  --fix-phi                              Fix reference allele mapping parameter (Phi=0.5)\n");
 	fprintf(stderr, "  --fix-theta                            Fix overdispersion parameter (Theta=10000)\n");
 	fprintf(stderr, "  --number-of-significant-loci  <int>    Average number of SNPs tested by joint model (default: number of tested SNPs)\n");
-	fprintf(stderr, "  --rsnp                        <string> SNP ID in the VCF, only tested in the given cis-regulatory window\n");
+	fprintf(stderr, "  --n-threads                   <int>    The number of threads used for mapping QTLs in parallel\n");
 	fprintf(stderr, "\n");
 	fprintf(stderr, "Genotype uncertainty options:\n");
 	fprintf(stderr, "  \n");

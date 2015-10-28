@@ -24,7 +24,7 @@ int readLine(gzFile* f, char** cells, char* buf, int i0, int* ret0){
 			cells[colnum++][l]='\0';
 			l=0;
 		}else{
-			if(l<MAXF-1){cells[colnum][l++]= buf[i]; }else{fprintf(stderr,"truncated!\n"); };
+			if(l<MAXF-1){cells[colnum][l++]= buf[i]; }else{fprintf(stderr,"%s truncated!\n", cells[colnum]); };
 		}
 	}
 	while((ret = gzread(*f, buf, BUFSIZE)) != 0 && ret!=-1){
@@ -37,7 +37,7 @@ int readLine(gzFile* f, char** cells, char* buf, int i0, int* ret0){
 				cells[colnum++][l]='\0';
 				l=0;
 			}else{
-				if(l<MAXF-1){ cells[colnum][l++]= buf[i]; }else{fprintf(stderr, "truncated!\n"); };
+				if(l<MAXF-1){ cells[colnum][l++]= buf[i]; }else{fprintf(stderr, "%s truncated!\n", cells[colnum]); };
 			}
 		}
 		if(breakFlag>0){break;}
