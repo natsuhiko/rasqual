@@ -10,7 +10,9 @@
 #include "nbglm.h"
 
 
-
+double trunc(double x){
+	return x<1.0e-5 ? 1.0e-5 : x;
+}
 
 void printDouble(double* v, long n){
 	long i;
@@ -416,6 +418,8 @@ int main(int argc, char** argv){
 		}
         ias[l] = getIAfromAP(ap, gl, w, N); 
         rsq[l] = vinfo.RSQ;
+// jkl
+if(verbose3>1){fprintf(stderr, "%lf %lf %lf %lf\n", afs[l], hwes[l], ias[l], rsq[l]);}
 		if(rsq[l]<0.0){rsq[l]=ias[l];}
 		crs[l] = getCR(gen,w,N); //	 fprintf(stderr,"%lf ",crs[l]);
 		poss[l]=pos;
@@ -711,9 +715,9 @@ int main(int argc, char** argv){
 		for(l=0;l<L;l++){
 			if(fabs(exon[l])>1.5){// feature snp
 				if(l==maxCsnp){
-					gzprintf(postVCF, "%s\t%ld\t%s\t%c\t%c\t.\tLEAD_QTL_SNP\t%s\tGT:GP:AP:AS\t", chrs[l], poss[l], rss[l], als[l][0], als[l][1], gid);
+					gzprintf(postVCF, "%s\t%ld\t%s\t%c\t%c\t.\tLEAD_QTL_SNP\t%s;RSQ=1.0\tGT:GP:AP:AS\t", chrs[l], poss[l], rss[l], als[l][0], als[l][1], gid);
 				}else{
-					gzprintf(postVCF, "%s\t%ld\t%s\t%c\t%c\t.\t.\t%s\tGT:GP:AP:AS\t", chrs[l], poss[l], rss[l], als[l][0], als[l][1], gid);
+					gzprintf(postVCF, "%s\t%ld\t%s\t%c\t%c\t.\t.\t%s;RSQ=1.0\tGT:GP:AP:AS\t", chrs[l], poss[l], rss[l], als[l][0], als[l][1], gid);
 				}
 				zx = Zx+N*2*ll;
 				yx = Y+N*2*ll;
@@ -721,17 +725,17 @@ int main(int argc, char** argv){
 					gzprintf(postVCF, "%d|%d:%lf,%lf,%lf:%lf,%lf:%.0lf,%.0lf", 
 							 zx[i*2]>0.5?1:0, zx[i*2+1]>0.5?1:0 , 
 							 (1.0-zx[i*2])*(1.0-zx[i*2+1]), zx[i*2]*(1.0-zx[i*2+1])+(1.0-zx[i*2])*zx[i*2+1], zx[i*2]*zx[i*2+1], 
-							 zx[i*2], zx[i*2+1], yx[i*2], yx[i*2+1]);
+							 log10(trunc(zx[i*2])), log10(trunc(zx[i*2+1])), yx[i*2], yx[i*2+1]);
 					if(i<N-1){gzprintf(postVCF, "\t");}else{gzprintf(postVCF, "\n");}
 				}
 				ll++;
 			}else if(l==maxCsnp){
-				gzprintf(postVCF, "%s\t%ld\t%s\t%c\t%c\t.\tLEAD_QTL_SNP\t%s\tGT:GP:AP:AS\t", chrs[l], poss[l], rss[l], als[l][0], als[l][1], gid);
+				gzprintf(postVCF, "%s\t%ld\t%s\t%c\t%c\t.\tLEAD_QTL_SNP\t%s;RSQ=1.0\tGT:GP:AP:AS\t", chrs[l], poss[l], rss[l], als[l][0], als[l][1], gid);
 				for(i=0; i<N; i++){
 					gzprintf(postVCF, "%d|%d:%lf,%lf,%lf:%lf,%lf:%.0lf,%.0lf", 
 							 zc[i*2]>0.5?1:0, zc[i*2+1]>0.5?1:0 , 
 							 (1.0-zc[i*2])*(1.0-zc[i*2+1]), zc[i*2]*(1.0-zc[i*2+1])+(1.0-zc[i*2])*zc[i*2+1], zc[i*2]*zc[i*2+1], 
-							 zc[i*2], zc[i*2+1], 0.0, 0.0); 
+							 log10(trunc(zc[i*2])), log10(trunc(zc[i*2+1])), 0.0, 0.0); 
 					if(i<N-1){gzprintf(postVCF, "\t");}else{gzprintf(postVCF, "\n");}
 				}
 			}
