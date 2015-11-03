@@ -509,6 +509,7 @@ int main(int argc, char** argv){
         if((m+1)*numOfLoci>3e4 && forced==0)fprintf(stderr, "Estimated computational time is too long for %s (Sample Size=%ld, NofrSNPs=%ld, NoffSNPs=%ld)...aborted.\n", gid, N, numOfLoci, m);
         printf("%s\tSKIPPED\t%s\t-1\tN\tN\t-1.0\t-1.0\t-1.0\t0.0\t0.0\t-1.0\t-1.0\t-1.0\t-1.0\t-1.0\t%ld\t%ld\t-1\t-1\t-1\t0.0\t0\t-1.0\t-1.0\n", 
                gid, chrs[0], m, numOfLoci);
+	if(printVCF==1){gzclose(postVCF);}
         return 0;
     }
     if(printRandom>0){
