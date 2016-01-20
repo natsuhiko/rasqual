@@ -203,3 +203,7 @@ Note that, our script doesn't filter out any AS read by means of QC criteria (de
 ## Permutation test
 
 The permutation test is also implemented in RASQUAL.  The **-r/--random-permutation** option generates a random permutation for each feature to break the correlation between genotype and total feature count as well as AS counts.
+
+## Warnings
+
+Each variant ID in the VCF file must be shorter than 100 characters, otherwise a buffer overflow happens.
