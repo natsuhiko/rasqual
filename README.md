@@ -206,4 +206,4 @@ The permutation test is also implemented in RASQUAL.  The **-r/--random-permutat
 
 ## Warnings
 
-Each variant ID in the VCF file must be shorter than 100 characters, otherwise a buffer overflow happens.
+To save the memory, each variant ID in the VCF file must be shorter than 100 characters; otherwise a buffer overflow happens.
