@@ -272,7 +272,7 @@ int main(int argc, char** argv){
 	
 	for(i=0; i<argc-1; i++){if(strcmp(argv[i],"-y")==0 || strcmp(argv[i],"--feature-counts")==0){fy=fopen(argv[i+1],"rb"); break;}}
 	for(i=0; i<argc-1; i++){if(strcmp(argv[i],"-k")==0 || strcmp(argv[i],"--sample-offsets")==0){fk=fopen(argv[i+1],"rb"); break;}}
-	for(i=0; i<argc-1; i++){if(strcmp(argv[i],"-x")==0 || strcmp(argv[i],"--covariates")==0){fx=fopen(argv[i+1],"rb"); break;}}
+	for(i=0; i<argc-1; i++){if(strcmp(argv[i],"-x")==0 || strcmp(argv[i],"--covariates")==0){if((fx=fopen(argv[i+1],"rb"))==NULL){fprintf(stderr, "Covariate file does not exists.\n"); return 1;}; break;}}
 	
 	if(fy==NULL || fk==NULL){fprintf(stderr, "input files are not specified!\n"); return -1;}
 	int freadres;
