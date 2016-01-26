@@ -166,7 +166,7 @@ long ASEQTLALL(double* y, double* Y, double* Z, double* X, long P, double* ki, d
         }
         // multi starting end
     }
-    lkhdDiff[L]= 0.0*2.0*(lkhdNull0as);
+    lkhdDiff[L]= 2.0*(lkhdNull0as);
     if(verbose3>1){fprintf(stderr, "L0=%lf L0AS=%lf\n", lkhdNull0, lkhdNull0as);}
     
     // alt here
