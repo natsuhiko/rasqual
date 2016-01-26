@@ -555,7 +555,13 @@ if(verbose3>1){fprintf(stderr, "%lf %lf %lf %lf\n", afs[l], hwes[l], ias[l], rsq
     double* dki;  dki = ki+N+randomize*m*N; //(double*)calloc(N, sizeof(double));
     betaGlm[0] = pbeta[L];
     double lkhdNullglm = nbglm(y, X, ki, dki, w, N, P, betaGlm, ptheta+L, 0, work);
-    if(verbose3>10){fprintf(stderr, "%lf\n", lkhdNullglm);}
+    if(verbose3>3){fprintf(stderr, "%lf\n", lkhdNullglm);
+       fprintf(stderr, "Glm. results:\n");
+       printM(y,1,84);	
+       printM(ki,1,84);	
+       printM(dki,1,84);
+       fprintf(stderr, "\n");
+    }
     pbeta[L] = betaGlm[0];
     double mdki = mean(dki, N);
     for(i=0; i<N; i++){dki[i] /= mdki;}
@@ -673,7 +679,7 @@ if(verbose3>1){fprintf(stderr, "%lf %lf %lf %lf\n", afs[l], hwes[l], ias[l], rsq
                            rsq[l], 
                            qval[l],
                            lkhdDiff[l],
-                           ppi[l], pdelta[l], pphi[l], ptheta[l], l, m, numOfLoci, pitr[l], pitr[0], maxlr<0?-1:poss[maxlr], lkhdDiff[L+1], pbound[l]+pbound[L], pkld[l*2], pkld[l*2+1]);
+                           ppi[l], pdelta[l], pphi[l], ptheta[l], l, m, numOfLoci, pitr[l], pitr[0], maxlr<0?-1:poss[maxlr], lkhdDiff[L], pbound[l]+pbound[L], pkld[l*2], pkld[l*2+1]);
                 }
 				l++;
 			}
@@ -688,19 +694,19 @@ if(verbose3>1){fprintf(stderr, "%lf %lf %lf %lf\n", afs[l], hwes[l], ias[l], rsq
                    minBH,
 				   lkhdDiff[l], 
                    ppi[l], pdelta[l], pphi[l], ptheta[l], pbeta[l], m, numOfLoci, pitr[l], pitr[0], 
-				   maxlr<0?-1:poss[maxlr], lkhdDiff[L+1], pbound[l]+pbound[L], pkld[l*2], pkld[l*2+1]);
+				   maxlr<0?-1:poss[maxlr], lkhdDiff[L], pbound[l]+pbound[L], pkld[l*2], pkld[l*2+1]);
 		}else if(l==L){// null lkhd
 			printf("%s\tAI\t%s\t-1\tN\tN\t-1.0\t-1.0\t-1.0\t0.0\t%.10lf\t%lf\t%lf\t%lf\t%lf\t%ld\t%ld\t%ld\t%d\t%d\t%ld\t%lf\t%d\t%lf\t%lf\n", 
                    gid, chrs[l],  
-                   lkhdDiff[L],  ppi[L], pdelta[L], pphi[L], ptheta[L], l, m, numOfLoci, pitr[L], pitr[L], 
-                   maxlr<0?-1:poss[maxlr], lkhdDiff[L+1], pbound[L], pkld[L*2], pkld[L*2+1]);
+                   0.0,  ppi[L], pdelta[L], pphi[L], ptheta[L], l, m, numOfLoci, pitr[L], pitr[L], 
+                   maxlr<0?-1:poss[maxlr], lkhdDiff[L], pbound[L], pkld[L*2], pkld[L*2+1]);
 		}
 	}
 	if(testImprinting>0){
 		printf("%s\tIMP\t%s\t-1\tN\tN\t-1.0\t-1.0\t-1.0\t0.0\t%.10lf\t%lf\t%lf\t%lf\t%lf\t%ld\t%ld\t%ld\t%d\t%d\t%ld\t%lf\t%d\t%lf\t%lf\n", 
                gid, chrs[0], 
                lkhdDiff[L+1], ppi[L+1], pdelta[L+1], pphi[L+1], ptheta[L+1], l, m, numOfLoci, pitr[L+1], pitr[L+1], 
-               maxlr<0?-1:poss[maxlr], lkhdDiff[L+1], pbound[L+1]+pbound[L], pkld[(L+1)*2], pkld[(L+1)*2+1]);
+               maxlr<0?-1:poss[maxlr], lkhdDiff[L], pbound[L+1]+pbound[L], pkld[(L+1)*2], pkld[(L+1)*2+1]);
 	}
     if(nthreads>1)pthread_mutex_destroy( &mutex );
     

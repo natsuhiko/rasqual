@@ -102,7 +102,7 @@ long ASEQTLALL(double* y, double* Y, double* Z, double* X, long P, double* ki, d
     fixParam[0]=1;
     if(verbose3>0)fprintf(stderr, "Grand Null w/o AS ");
     
-    double lkhdNull0 = lkhdDiff[L+2] = ASEQTL(y, Y, h0, NULL, ki, dki, km, L, N, 0, -1, work, ppi+L, pdelta+L, pphi+L, pbeta+L, ptheta+L, &nasRat, pitr+L, pbound+L, &tval, pkld+2*L);
+    double lkhdNull0 = lkhdDiff[L] = lkhdDiff[L+2] = ASEQTL(y, Y, h0, NULL, ki, dki, km, L, N, 0, -1, work, ppi+L, pdelta+L, pphi+L, pbeta+L, ptheta+L, &nasRat, pitr+L, pbound+L, &tval, pkld+2*L);
     for(l=0;l<L;l++){ppi[l]=0.5; pdelta[l]=(ad-1.0)/(ad+bd-2.0); pphi[l]=0.5; pbeta[l]=pbeta[L]; ptheta[l]=ptheta[L];}
     
     
@@ -132,7 +132,7 @@ long ASEQTLALL(double* y, double* Y, double* Z, double* X, long P, double* ki, d
         pdelta[L] = (ad-1.0)/(ad+bd-2.0);
         pasr[L]   = asNonasRatio0;
         if(verbose3>0)fprintf(stderr, "Grand Null with AS ");
-        lkhdNull0as  = lkhdDiff[L+3] = ASEQTL(y, Y, h0, H0, ki, dki, km, L, N, Lx, -1, work, ppi+L, pdelta+L, pphi+L, pbeta+L, ptheta+L, pasr+L, pitr+L, pbound+L, &tval, pkld+2*L); 
+        lkhdNull0as  = lkhdDiff[L] = lkhdDiff[L+3] = ASEQTL(y, Y, h0, H0, ki, dki, km, L, N, Lx, -1, work, ppi+L, pdelta+L, pphi+L, pbeta+L, ptheta+L, pasr+L, pitr+L, pbound+L, &tval, pkld+2*L); 
         
         //cblas_dcopy(N*Lx*10, H1, 1, H1null, 1);
         //gencall(H1null, Z, Zx, N, L, exon);
@@ -148,7 +148,7 @@ long ASEQTLALL(double* y, double* Y, double* Z, double* X, long P, double* ki, d
             if(verbose3>0)fprintf(stderr, "Grand Null with AS ");
             lkhdR  = ASEQTL(y, Y, h0, H0, ki, dki, km, L, N, Lx, -1, work, &pitmp, &deltatmp, &phitmp, &betatmp, &thetatmp, pasr+L, &itrtmp, &boundtmp, &tval, kldtmp);
             if(lkhdR>lkhdNull0as && boundtmp==0){
-                lkhdNull0as = lkhdDiff[L+3] = lkhdR;
+                lkhdNull0as = lkhdDiff[L] = lkhdDiff[L+3] = lkhdR;
                 ppi[L]    = 0.5;
                 pdelta[L] = deltatmp;
                 pphi[L]   = phitmp;
@@ -166,7 +166,7 @@ long ASEQTLALL(double* y, double* Y, double* Z, double* X, long P, double* ki, d
         }
         // multi starting end
     }
-    lkhdDiff[L]= 2.0*(lkhdNull0as);
+    //lkhdDiff[L]= 0.0*2.0*(lkhdNull0as);
     if(verbose3>1){fprintf(stderr, "L0=%lf L0AS=%lf\n", lkhdNull0, lkhdNull0as);}
     
     // alt here
