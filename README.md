@@ -204,7 +204,9 @@ Note that, our script doesn't filter out any AS read by means of QC criteria (de
 
 The permutation test is also implemented in RASQUAL.  The **-r/--random-permutation** option generates a random permutation for each feature to break the correlation between genotype and total feature count as well as AS counts.
 
-## Tips for speeding up
+## Tips to speed up QTL mapping with RASQUAL
+
+### Multithreading
 
 RASQUAL is now multithreaded in order to speed up execution times, which requires the **pthread** library.  You just need to specify the additional option **--n-thereads** to use this function.  Using the above example, you can use the following commands to map expression QTLs with 10 threads:
 
