@@ -204,6 +204,16 @@ Note that, our script doesn't filter out any AS read by means of QC criteria (de
 
 The permutation test is also implemented in RASQUAL.  The **-r/--random-permutation** option generates a random permutation for each feature to break the correlation between genotype and total feature count as well as AS counts.
 
+## Tips for speeding up
+
+RASQUAL is now multithreaded in order to speed up execution times, which requires the **pthread** library.  You just need to specify the additional option **--n-thereads** to use this function.  Using the above example, you can use the following commands to map expression QTLs with 10 threads:
+
+    # make sure tabix is installed in your environment
+    cd $RASQUALDIR
+    tabix data/chr11.gz 11:2315000-2340000 | bin/rasqual -y data/Y.bin -k data/K.bin -n 24 -j 1 -l 409 -m 63 \
+        -s 2316875,2320655,2321750,2321914,2324112 -e 2319151,2320937,2321843,2323290,2324279 \
+        -t -f C11orf21 -z --n-threads 10
+        
 ## Warnings
 
 To save the memory, each variant ID in the VCF file must be shorter than 100 characters; otherwise a buffer overflow happens.
