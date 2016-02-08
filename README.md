@@ -204,7 +204,7 @@ Note that, our script doesn't filter out any AS read by means of QC criteria (de
 
 The permutation test is also implemented in RASQUAL.  The **-r/--random-permutation** option generates a random permutation for each feature to break the correlation between genotype and total feature count as well as AS counts.
 
-## Tips to speed up QTL mapping with RASQUAL
+## Tips to speed up QTL mapping
 
 ### Multithreading
 
