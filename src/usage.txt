@@ -11,55 +11,61 @@ Output:
 
 Mandatory arguments:
 
-  -y/--feature-counts          <string>  File name of total feature counts in binary double
-  -k/--sample-offsets          <string>  File name of sample specific offset terms in binary double
-  -s/--feature-starts          <string>  Feature start position(s) in comma separated value (e.g., 100,300,500)
-  -e/--feature-ends            <string>  Feature end position(s) in comma separated value (e.g., 150,350,450)
-  -j/--feature-id              <int>     Row number of target feature in original count table
-  -l/--number-of-testing-snps  <int>     Number of testing SNPs in VCF (candidates of a rSNP)
-  -m/--number-of-fsnps         <int>     Number of feature SNPs (fSNPs) in VCF
-  -n/--sample-size             <int>     Sample size
+  -y/--feature-counts            <string>  File name of total feature counts in binary double
+  -k/--sample-offsets            <string>  File name of sample specific offset terms in binary double
+  -s/--feature-starts            <string>  Feature start position(s) in comma separated value (e.g., 100,300,500)
+  -e/--feature-ends              <string>  Feature end position(s) in comma separated value (e.g., 150,350,450)
+  -j/--feature-id                <int>     Row number of target feature in original count table
+  -l/--number-of-testing-snps    <int>     Number of testing SNPs in VCF (candidates of a rSNP)
+  -m/--number-of-fsnps           <int>     Number of feature SNPs (fSNPs) in VCF
+  -n/--sample-size               <int>     Sample size
   
 Output options:
   
-  -t/--lead-snp                          Output only the lead QTL SNP
-  -i/--imprint                           Output imprinted (or randomly allelicly inactivated) feature result
-  -g/--posterior-genotype      <string>  Output posterior genotypes as VCF format
-  -f/--feature-name            <string>  Feature name printed on the result (default: feature ID number)
+  -t/--lead-snp                            Output only the lead QTL SNP
+  -i/--imprint                             Output imprinted (or randomly allelicly inactivated) feature result
+  -g/--posterior-genotype        <string>  Output posterior genotypes as VCF format
+  -f/--feature-name              <string>  Feature name printed on the result (default: feature ID number)
 
-SNP filter options:
+Test SNP (rSNP) filter options:
 
-  -c/--cis-midpoint            <int>     Midpoint of cis regulatory window, e.g., TSS (default: midpoint of feature start and end)
-  -w/--cis-window-size         <int>     Cis regulatory window size centered at the midpoint (default: 54e7)
-  -a/--minor-allele-frequency  <double>  Minor allele frequency cutoff (default: 0.05)
-  -h/--hardy-weinberg-pvalue   <double>  Hardy-Weinberg equiliblium P-value cutoff (default: 1.0e-8)
-  -q/--imputation-quality      <double>  Genome imputation quality score cutoff, e.g., R^2 (MaCH/Beagle) or I^2 (IMPUTE) (default: 0.7)
-  -d/--min-coverage-depth      <double>  Minimum depth to filter out low coverage fSNPs (default: 0.05)
-  --effective-feature-length   <int>     Effective length of feature to calculate average depth (default: length of union features)
+  -c/--cis-midpoint              <int>     Midpoint of cis regulatory window, e.g., TSS (default: midpoint of feature start and end)
+  -w/--cis-window-size           <int>     Cis regulatory window size centered at the midpoint (default: 54e7)
+  -a/--minor-allele-frequency    <double>  Minor allele frequency cutoff (default: 0.05)
+  -h/--hardy-weinberg-pvalue     <double>  Hardy-Weinberg equiliblium P-value cutoff (default: 1.0e-8)
+  -q/--imputation-quality        <double>  Genome imputation quality score cutoff, e.g., R^2 (MaCH/Beagle) or I^2 (IMPUTE) (default: 0.7)
+
+fSNP filter options:
+
+  --minor-allele-frequency-fsnp  <double>  Minor allele frequency cutoff for fSNPs (default: 0.0)
+  --hardy-weinberg-pvalue-fsnp   <double>  Hardy-Weinberg equiliblium P-value cutoff for fSNPs (default: 0.0)
+  --imputation-quality-fsnp      <double>  Genome imputation quality score cutoff for fSNPs (default: 0.0)
+  --min-coverage-depth           <double>  Minimum depth to filter out low coverage fSNPs (default: 0.05)
+  --effective-feature-length     <int>     Effective length of feature to calculate average depth (default: length of union features)
 
 Model fitting options:
 
-  -x/--covariates              <string>  File name of covariates in bianary double
-  -p/--number-of-covariates    <int>     Number of covariates used for adjustment
-  -r/--random-permutation                Randomly permute samples
-  --population-only                      Only total feature counts are modelled
-  --as-only                              Only AS counts are modelled
-  --null                                 Fitting null model only
-  --force                                Fitting model for the large numbers of fSNPs and rSNPs (#fSNPs x #rSNPs < 30,000 w/o this option)
-  --fix-delta                            Fix sequencing/mapping error parameter (Delta=0.01)
-  --fix-phi                              Fix reference allele mapping parameter (Phi=0.5)
-  --fix-theta                            Fix overdispersion parameter (Theta=10000)
-  --number-of-significant-loci  <int>    Average number of SNPs tested by joint model (default: number of tested SNPs)
-  --n-threads                   <int>    The number of threads used for mapping QTLs in parallel
+  -x/--covariates                <string>  File name of covariates in bianary double
+  -p/--number-of-covariates      <int>     Number of covariates used for adjustment
+  -r/--random-permutation                  Randomly permute samples
+  --population-only                        Only total feature counts are modelled
+  --as-only                                Only AS counts are modelled
+  --null                                   Fitting null model only
+  --force                                  Fitting model for the large numbers of fSNPs and rSNPs (#fSNPs x #rSNPs < 30,000 w/o this option)
+  --fix-delta                              Fix sequencing/mapping error parameter (Delta=0.01)
+  --fix-phi                                Fix reference allele mapping parameter (Phi=0.5)
+  --fix-theta                              Fix overdispersion parameter (Theta=10000)
+  --number-of-significant-loci   <int>     Average number of SNPs tested by joint model (default: number of tested SNPs)
+  --n-threads                    <int>     The number of threads used for mapping QTLs in parallel
 
 Genotype uncertainty options:
   
-  -z/--convert-imputation-score          Convert genome imputation quality score (R^2 or I^2) into allelic probability (AP)
-  --nominal-allelic-probability          Use nomial AP (default: AP is truncated in [0.001, 0.999] to allow uncertainty)
-  --genotype-dosage                      Use genotype dosage as AP
-  --population-allele-frequency          Use population allele frequency as AP
-  --fix-genotype                         Use fix genotype (in GT field)
-  --no-posterior-update                  Not updating posterior probability
+  -z/--convert-imputation-score            Convert genome imputation quality score (R^2 or I^2) into allelic probability (AP)
+  --nominal-allelic-probability            Use nomial AP (default: AP is truncated in [0.001, 0.999] to allow uncertainty)
+  --genotype-dosage                        Use genotype dosage as AP
+  --population-allele-frequency            Use population allele frequency as AP
+  --fix-genotype                           Use fix genotype (in GT field)
+  --no-posterior-update                    Not updating posterior probability
   
 Other options:
 

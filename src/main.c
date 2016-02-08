@@ -1,4 +1,5 @@
 #include <math.h>
+#include <float.h>
 #include <stdio.h>
 #include <time.h>
 #include <stdlib.h>
@@ -349,7 +350,14 @@ int main(int argc, char** argv){
 	for(i=0; i<argc-1; i++){if(strcmp(argv[i],"-a")==0 || strcmp(argv[i],"--minor-allele-frequency")==0){MAF=(double)atof(argv[i+1]); break;}}
 	for(i=0; i<argc-1; i++){if(strcmp(argv[i],"-h")==0 || strcmp(argv[i],"--hardy-weinberg-pvalue")==0){HWE=Qchisq((double)atof(argv[i+1]), 1.0); break;}}
 	for(i=0; i<argc-1; i++){if(strcmp(argv[i],"-q")==0 || strcmp(argv[i],"--imputation-quality")==0){RSQ=(double)atof(argv[i+1]); break;}}
+	
+       	double fMAF=0.0;
+	double fHWE=DBL_MAX;
+	double fRSQ=0.0;
 	double coverageDepth=0.05;
+	for(i=0; i<argc-1; i++){if(strcmp(argv[i],"--minor-allele-frequency-fsnp")==0){fMAF=(double)atof(argv[i+1]); break;}}
+	for(i=0; i<argc-1; i++){if(strcmp(argv[i],"--hardy-weinberg-pvalue-fsnp")==0){ fHWE=Qchisq((double)atof(argv[i+1]), 1.0); break;}}
+	for(i=0; i<argc-1; i++){if(strcmp(argv[i],"--imputation-quality-fsnp")==0){    fRSQ=(double)atof(argv[i+1]); break;}}
 	for(i=0; i<argc-1; i++){if(strcmp(argv[i],"-d")==0 || strcmp(argv[i],"--min-coverage-depth")==0){coverageDepth=(double)atof(argv[i+1]);break;}}
 	
 	//
@@ -460,7 +468,7 @@ if(verbose3>1){fprintf(stderr, "%lf %lf %lf %lf\n", afs[l], hwes[l], ias[l], rsq
         
 		//if(strcmp("rs9945088",rss[l])==0){fprintf(stderr, "%s ", rss[l]); print(ap,2*N); print(Z+l*2*N,2*N);}
 		//if(strcmp("rs2296475",rss[l])==0){fprintf(stderr, "%s ", rss[l]); print(ap,2*N);}
-		if(ASE>0 && isExon(pos, starts, ends, nexon) && afs[l]>0.005 && afs[l]<0.995 && rsq[l]>0. && isSameChr(chrs[l],chr0)>0){
+		if(ASE>0 && isExon(pos, starts, ends, nexon) && afs[l]>fMAF && afs[l]<(1.0-fMAF) && (hwes[l]<fHWE||noPriorGenotype==1) && rsq[l]>fRSQ && isSameChr(chrs[l],chr0)>0){
 			km[m] = asgaf[0] = asgaf[1] = asaf[0] = asaf[1] = 0.0;
 			for(i=0; i<N; i++){
 				Y[m*2*N+i*2]   = (double)ase[i*2];
