@@ -375,11 +375,11 @@ int main(int argc, char** argv){
 	int genType=1;
 	
 	double* Z=NULL;
-	Z = (double*)calloc(N*L*2+N*(M+1)*2+N*M*2, sizeof(double));
+	Z = (double*)calloc(N*L*2+N*(M+1+2)*2+N*(M+2)*2, sizeof(double));
 	double* Y=NULL;
-	Y = (double*)calloc(N*M*2, sizeof(double));
+	Y = (double*)calloc(N*(M+2)*2, sizeof(double));
 	double* km=NULL;
-	km = (double*)calloc((M+1), sizeof(double));
+	km = (double*)calloc((M+1+2), sizeof(double));
     if(Z==NULL || Y==NULL || km==NULL){fprintf(stderr, "memory allocation error (Z, Y, km)...aborted.\n");return 1;}
 	
     double* exon=NULL;    exon = (double*)calloc(L+2, sizeof(double));
@@ -393,7 +393,7 @@ int main(int argc, char** argv){
 	char** als=NULL;	  als = (char**)calloc(L+2, sizeof(char*));
 	char** chrs=NULL;	  chrs =(char**)calloc(L+2, sizeof(char*));
     if(exon==NULL || poss==NULL || afs==NULL || hwes==NULL || ias==NULL || rsq==NULL || crs==NULL || rss==NULL || als==NULL || chrs==NULL){fprintf(stderr, "memory allocation error (Z, Y, km)...aborted.\n");return 1;}
-	for(l=0; l<L; l++){//fprintf(stderr, "%ld ", l);
+	for(l=0; l<L+2; l++){//fprintf(stderr, "%ld ", l);
 		als[l] = (char*)calloc(2, sizeof(char)); 
 		rss[l] = NULL;  
 		rss[l] = (char*)calloc(100, sizeof(char));
@@ -488,14 +488,14 @@ if(verbose3>1){fprintf(stderr, "%lf %lf %lf %lf\n", afs[l], hwes[l], ias[l], rsq
 			if(km[m]>coverageDepth && asgaf[0]>0.005 && asgaf[0]<0.995 && asaf[0]>0.0 && asaf[0]<1.0){
                 for(i=0; i<N; i++){Y1 += (Y[m*2*N+i*2]+Y[m*2*N+i*2+1])/(double)N;}
 				if(verbose3>0){fprintf(stderr, "RSQ=%lf EP=%lf\n", rsq[l], ep);}
-				//if(m==0){ hoge++; }else{ if(poss[l]-poss[l0]<150){hoge += ((double)(poss[l]-poss[l0]))/150.0; }else{hoge++;} }
 				km[m]=1.0;
 				m++; // num of eSNPs
+if(m>M){fprintf(stderr, "\nThe number of fSNPs is greater than that specified by \'-m\' option.\nAborted...\n"); return -1;}
 				exon[l]*=2.0;
 				l0 = l;
 			}
 		}
-		if(exon[l]!=(-1)){l++;}
+		if(exon[l]!=(-1)){l++; if(l>L){fprintf(stderr, "\nThe number of lines from STDIN is greater than the number of loci specified by \'-l\' option.\nAborted...\n"); return -1;}}
         // 2: fSNP & rSNP; 1: rSNP; -2: fSNP
 	}
     //if(verbose3>0)fprintf(stderr, "%lf %ld %s\n", exon[maxCsnp], maxCsnp, csnp);
