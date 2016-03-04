@@ -131,7 +131,7 @@ We strongly recommend using the AP field for QTL mapping.  If there are multiple
 
 ## Offset calculation
 
-Sample specific offset terms can be calculated from the count table.  See the script makeOffset.R in the *R* directory.  The usage is:
+Sample specific offset terms (K.txt) can be calculated from the count table.  See the script makeOffset.R in the *R* directory.  The usage is:
 
 	# Not run!
 	$RHOME/R --vanilla --quiet --args data/your.Y.txt < R/makeOffset.R > log
