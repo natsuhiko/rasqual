@@ -15,6 +15,7 @@ typedef struct{
 	double* Z;
 	double* X;
 	double* ki;
+	double* ki2;
 	double* w;
 	double* km;
 	double* exon;
@@ -81,16 +82,16 @@ double beta0;
 double theta0;
 
 void* ASEQTLALL_MP(void *args);
-long ASEQTLALL(double* y, double* Y, double* Z, double* X, long P, double* ki, double* w, double* km, double* exon, long L, long N, long M, char** rss, double* lkhdDiff, double* ppi, double* pdelta, double* pphi, double* pbeta, double* ptheta, double* pasr, int* pitr, int* pbound, double* ptval, double* pkld);
-long ASEQTLALL_ALT(double* y, double* Y, double* Z, double* X, long P, double* ki, double* w, double* km, double* exon, long L, long N, long Lx, char** rss, double* lkhdDiff, double* ppi, double* pdelta, double* pphi, double* pbeta, double* ptheta, double* pasr, int* pitr, int* pbound, double* ptval, double* pkld, long csnp_start, long csnp_end, int* tested, int tid);
+long ASEQTLALL(double* y, double* Y, double* Z, double* X, long P, double* ki, double* ki2, double* w, double* km, double* exon, long L, long N, long M, char** rss, double* lkhdDiff, double* ppi, double* pdelta, double* pphi, double* pbeta, double* ptheta, double* pasr, int* pitr, int* pbound, double* ptval, double* pkld);
+long ASEQTLALL_ALT(double* y, double* Y, double* Z, double* X, long P, double* ki, double* ki2, double* w, double* km, double* exon, long L, long N, long Lx, char** rss, double* lkhdDiff, double* ppi, double* pdelta, double* pphi, double* pbeta, double* ptheta, double* pasr, int* pitr, int* pbound, double* ptval, double* pkld, long csnp_start, long csnp_end, int* tested, int tid);
 
-void getInformation(double* y, double* Y, double* h0, double* H0, double* h1, double* H1, double* H2, double* ki, double* dki, double* K0, double* K2, double* K, double* km, long Lx, long N0, long J0, long J, double beta, double th, double pi, double delta, double phi, double asr, double* work, double* hess, integer* ipiv, double* a, double* A);
+void getInformation(double* y, double* Y, double* h0, double* H0, double* h1, double* H1, double* H2, double* ki, double* dki, double* ki2, double* K0, double* K2, double* K, double* km, long Lx, long N0, long J0, long J, double beta, double th, double pi, double delta, double phi, double asr, double* work, double* hess, integer* ipiv, double* a, double* A);
 
-double ASEQTL(double* y, double* Y, double* h, double* h0, double* ki, double* dki, double* km, long L, long N, long M, long csnp, double* work, double* ppi, double* pdelta, double* pphi, double* pbeta, double* ptheta, double* pasr, int* pitr, int* pbound, double* tval, double* pkld);
+double ASEQTL(double* y, double* Y, double* h, double* h0, double* ki, double* dki, double* ki2, double* km, long L, long N, long M, long csnp, double* work, double* ppi, double* pdelta, double* pphi, double* pbeta, double* ptheta, double* pasr, int* pitr, int* pbound, double* tval, double* pkld);
 
-double getLkhdAll(double* y, double* Y, double* h0, double* h, double* H0, double* H, double* ki, double* dki, double* kj0, double* kj, double* ktmp, double* km, long L, long N0, long J0, long J, double beta, double* th, double* pi, double delta, double phi, double asr, double* cls, double* hYg, double* a, double* A, double* H2, double* grad, double* hess);
+double getLkhdAll(double* y, double* Y, double* h0, double* h, double* H0, double* H, double* ki, double* dki, double* ki2, double* kj0, double* kj, double* ktmp, double* km, long L, long N0, long J0, long J, double beta, double* th, double* pi, double delta, double phi, double asr, double* cls, double* hYg, double* a, double* A, double* H2, double* grad, double* hess);
 
-double getQval(double* y, double* Y, double* h1, double* H1, double* h0, double* H0, double* H2, double* ki, double* dki, double* kj0, double* kj, double* ktmp, double* km, long L, long N0, long J0, long J, double* th, double beta, double* pi, double delta, double phi, double asr);
+double getQval(double* y, double* Y, double* h1, double* H1, double* h0, double* H0, double* H2, double* ki, double* dki, double* ki2, double* kj0, double* kj, double* ktmp, double* km, long L, long N0, long J0, long J, double* th, double beta, double* pi, double delta, double phi, double asr);
 
 long nbbem_init0(double* y, double* ki, long N, double* pbeta, double* ptheta);
 
@@ -99,27 +100,27 @@ long getPrior1(double* h0, double* z, double wi);
 long getPriorNull(double* h0, double* z, double wi);
 long getPriorIP(double* h0, double* z2, double wi);
 void getK0s(double pi, double* K0);
-void getK2s(double pi, double delta, double phi, double* ktmp, double* K2);
-void getK(double pi, double delta, double phi, double* K, double* K2);
-void getdKdPi(double pi, double delta, double phi, double* K, double* K2);
-void getd2KdPi2(double pi, double delta, double phi, double* K, double* K2);
-void getdKdDelta(double pi, double delta, double phi, double* K, double* K2);
-void getd2KdDelta2(double pi, double delta, double phi, double* K, double* K2);
-void getdKdPhi(double pi, double delta, double phi, double* K, double* K2);
-void getd2KdPhi2(double pi, double delta, double phi, double* K, double* K2);
+void getK2s(double pi, double delta, double phi, double* ktmp, double* w, double* K2);
+void getK(double pi, double delta, double phi, double* K, double* w, double* K2);
+void getdKdPi(double pi, double delta, double phi, double* K, double* w, double* K2);
+void getd2KdPi2(double pi, double delta, double phi, double* K, double* w, double* K2);
+void getdKdDelta(double pi, double delta, double phi, double* K, double* w, double* K2);
+void getd2KdDelta2(double pi, double delta, double phi, double* K, double* w, double* K2);
+void getdKdPhi(double pi, double delta, double phi, double* K, double* w, double* K2);
+void getd2KdPhi2(double pi, double delta, double phi, double* K, double* w, double* K2);
 
-double getGradHess(double* y, double* Y, double* h0, double* h, double* H0, double* H, double* ki, double* dki, double* K0, double* K2, double* ktmp, double* km, long Lx, long N0, long J0, long J, double beta, double* th, double pi, double delta, double phi, double asr, double* cls, double* pYg, double* a, double* A, double* H2, double* grad, double* hess);
+double getGradHess(double* y, double* Y, double* h0, double* h, double* H0, double* H, double* ki, double* dki, double* ki2, double* K0, double* K2, double* ktmp, double* km, long Lx, long N0, long J0, long J, double beta, double* th, double pi, double delta, double phi, double asr, double* cls, double* pYg, double* a, double* A, double* H2, double* grad, double* hess);
 double getGrad(double* A, double* K2, double* K2p);
 double getHess1(double* A, double* K2, double* K2p, double* K2pp);
 double getHess2(double* A, double* K2, double* K2p, double* K2d, double* K2pd);
 double getHess3(double* A, double* K2, double* K2p);
 
 
-void getd2KdPidDelta(double pi, double delta, double phi, double* K, double* K2);
-void getd2KdPidPhi(double pi, double delta, double phi, double* K, double* K2);
-void getd2KdDeltadPhi(double pi, double delta, double phi, double* K, double* K2);
+void getd2KdPidDelta(double pi, double delta, double phi, double* K, double* w, double* K2);
+void getd2KdPidPhi(double pi, double delta, double phi, double* K, double* w, double* K2);
+void getd2KdDeltadPhi(double pi, double delta, double phi, double* K, double* w, double* K2);
 
-void expand(double* s1, double* s2, long N, double* K, double* K2);
+void expand(double* s1, double* s2, long N, double* K, double* w, double* K2);
 double vsum(double* x, double* y, long N);
 double vsum2(double* x, double* y, long N);
 double vsum3(double* x, double* y, double* z, long J);
@@ -150,4 +151,4 @@ double getAR(double* gl);
 
 void printMapGen(double* z, long N, long L);
 
-void randomPerm(double* y, double* Y, double* Z, double* ki, double* exon, int L, int N, int m);
+void randomPerm(double* y, double* Y, double* Z, double* ki, double* ki2, double* exon, int L, int N, int m);
