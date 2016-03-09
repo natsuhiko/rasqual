@@ -34,6 +34,7 @@ Test SNP (rSNP) filter options:
   -a/--minor-allele-frequency    <double>  Minor allele frequency cutoff (default: 0.05)
   -h/--hardy-weinberg-pvalue     <double>  Hardy-Weinberg equiliblium P-value cutoff (default: 1.0e-8)
   -q/--imputation-quality        <double>  Genome imputation quality score cutoff, e.g., R^2 (MaCH/Beagle) or I^2 (IMPUTE) (default: 0.7)
+  --rsnp                         <string>  Test only specific SNP (variant ID given in the VCF file)
 
 fSNP filter options:
 
@@ -48,6 +49,7 @@ Model fitting options:
   -x/--covariates                <string>  File name of covariates in bianary double
   -p/--number-of-covariates      <int>     Number of covariates used for adjustment
   -r/--random-permutation                  Randomly permute samples
+  -k2/--conditional-snps         <string>  Conditional SNP(s) ID with effect size(s) connected by colon (:) (e.g., rs1:0.12,rs2:0.34) 
   --population-only                        Only total feature counts are modelled
   --as-only                                Only AS counts are modelled
   --null                                   Fitting null model only
