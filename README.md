@@ -7,6 +7,7 @@ Please make sure CLAPACK is installed in your environment (if you don't have it,
 
 	RASQUALDIR=/path/to/rasqualdir/
 	cd $RASQUALDIR/src
+	# Not run!  Please export your library directories.
 	export CFLAGS="-I/nfs/users/nfs_n/nk5/team170/Natsuhiko/CLAPACK-3.1.1.1/INCLUDE -I/nfs/users/nfs_n/nk5/team170/Natsuhiko/CLAPACK-3.1.1.1/F2CLIBS"
 	export LDFLAGS="-L/nfs/users/nfs_n/nk5/team170/Natsuhiko/CLAPACK-3.1.1.1 -L/nfs/users/nfs_n/nk5/team170/Natsuhiko/CLAPACK-3.1.1.1/F2CLIBS"
 	make
