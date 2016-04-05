@@ -3,13 +3,15 @@ RASQUAL (Robust Allele Specific QUAntification and quality controL) maps QTLs fo
 
 ## How to build & install
 
-Please make sure CLAPACK is installed in your environment (if you don't have it, then see below for installation tips).  To build and install RASQUAL, firstly go to the _source_ directory (*src*), then set environment variables appropriately to point to the CLAPACK library.  Finally use "make" to build and install RASQUAL which will be installed in "$RASQUALDIR/bin".
+**Please make sure CLAPACK and GSL (GNU Scientific Library) are installed in your environment** (if you don't have them, then see below for installation tips).  GSL is usually install in */usr* directory.  Please check */usr/include/gsl* and */usr/lib/libgsl.a*.
+
+To build and install RASQUAL, firstly go to the _source_ directory (*src*), then set environment variables appropriately to point to the CLAPACK library and GSL.  Finally use "make" to build and install RASQUAL which will be installed in "$RASQUALDIR/bin".
 
 	RASQUALDIR=/path/to/rasqualdir/
 	cd $RASQUALDIR/src
-	# Not run!  Please export your library directories.
-	export CFLAGS="-I/nfs/users/nfs_n/nk5/team170/Natsuhiko/CLAPACK-3.1.1.1/INCLUDE -I/nfs/users/nfs_n/nk5/team170/Natsuhiko/CLAPACK-3.1.1.1/F2CLIBS"
-	export LDFLAGS="-L/nfs/users/nfs_n/nk5/team170/Natsuhiko/CLAPACK-3.1.1.1 -L/nfs/users/nfs_n/nk5/team170/Natsuhiko/CLAPACK-3.1.1.1/F2CLIBS"
+	# Not run!  Please export your environment.
+	export CFLAGS="-I/path/to/your/CLAPACK-*.*.*.*/INCLUDE -I/path/to/your/CLAPACK-*.*.*.*/F2CLIBS -I/path/to/your/gsl-*.*/gsl"
+	export LDFLAGS="-L/path/to/your/CLAPACK-*.*.*.* -L/path/to/your/CLAPACK-*.*.*.*/F2CLIBS -I/path/to/your/gsl-*.*/lib"
 	make
 	make install
 
@@ -161,7 +163,7 @@ Those confounding factors are not often observed but can be captured by principa
 
 Note that, the result of PCA is always sensitive to few outliers (just one or two), which explain almost all variance in the data.  Using those PCs as covariates hurts your QTL mapping result.  We strongly recommend to spend some time to explore and clean up your data first.
 
-## Installation tips for CLAPACK
+## Installation tips for CLAPACK and GSL
 
 You first need to get the latest library from http://www.netlib.org/clapack/.  Then, compile it like
 
@@ -177,6 +179,14 @@ When it has been done, you will find three archive files in the directory which 
 	ln -s blas_LINUX.a libblas.a
 
 before compiling RASQUAL.
+
+You also need to get the latest GSL (GNU Scientific Library) from http://www.gnu.org/software/gsl/.  Then, compile it like
+
+	tar zxvf gsl-*.*.tar.gz
+	cd gsl-*.*
+	./configure --prefix=$PWD
+	make
+	make install
 
 ## Creating a VCF file with AS counts
 
