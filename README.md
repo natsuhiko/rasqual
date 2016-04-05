@@ -180,7 +180,7 @@ When it has been done, you will find three archive files in the directory which 
 
 before compiling RASQUAL.
 
-You also need to get the latest GSL (GNU Scientific Library) from http://www.gnu.org/software/gsl/.  Then, compile it like
+You may also need to get GSL (GNU Scientific Library) from http://www.gnu.org/software/gsl/ (if it is not installed).  Then, compile it like
 
 	tar zxvf gsl-*.*.tar.gz
 	cd gsl-*.*
