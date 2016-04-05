@@ -3,7 +3,7 @@ RASQUAL (Robust Allele Specific QUAntification and quality controL) maps QTLs fo
 
 ## How to build & install
 
-**Please make sure CLAPACK and GSL (GNU Scientific Library) are installed in your environment** (if you don't have them, then see below for installation tips).  GSL is usually install in */usr* directory.  Please check */usr/include/gsl* and */usr/lib/libgsl.a*.
+**Please make sure CLAPACK and GSL (GNU Scientific Library) are installed in your environment** (if you don't have them, then see below for installation tips).  GSL is usually installed in /usr directory.  Please check /usr/include/gsl and /usr/lib/libgsl.a.
 
 To build and install RASQUAL, firstly go to the _source_ directory (*src*), then set environment variables appropriately to point to the CLAPACK library and GSL.  Finally use "make" to build and install RASQUAL which will be installed in "$RASQUALDIR/bin".
 
