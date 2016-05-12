@@ -192,12 +192,13 @@ You may also need to get GSL (GNU Scientific Library) from http://www.gnu.org/so
 
 We provide a useful script to create a VCF file with AS counts from a master VCF file and a set of BAM files.  Before using the script you need to compile some C codes called from the script:
 
+	export RASQUALDIR=/path/to/rasqualdir/
 	cd $RASQUALDIR/src/ASVCF
 	make
 
 The command to produce the VCF with AS counts is:
 
-	sh $RASQUALDIR/src/ASVCF/createASVCF.sh bam.list.txt master.vcf.gz
+	sh ./createASVCF.sh bam.list.txt master.vcf.gz
 
 which creates *master.vcf.new.gz* in the same directory.  The *master.vcf.gz* must be tabix indexed and the *bam.list.txt* is a text file which contains absolute path to your set of BAMs from which AS counts are produced:
 
