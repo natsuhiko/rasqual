@@ -77,7 +77,7 @@ You can find an example expression data for C11orf21 and TSPAN32 genes in the _d
 	RHOME=/software/R-3.0.0/bin/
 	$RHOME/R --vanilla --quiet --args data/Y.txt data/K.txt < R/txt2bin.R > log
 
-Note here that, the row of the fragment count table corresponds to the feature ID given by **-j** option in mapping with RASQUAL.  For example, if you set **-j 12345** in the RASQUAL command, you map QTL for the 12,345th feature (row) from the top of the fragment count table.
+Note here that, the row number of the fragment count table corresponds to the feature ID given by **-j** option previously explained.  For example, if you set **-j 12345** in the RASQUAL command, you would map QTL for the 12,345th feature (row) from the top of the fragment count table.
 
 You will also need to prepare custom VCF files containing the allele specific counts of your target cellular trait at all SNPs.  The files have to contain an additional subfield, "AS", located within the genotype field consisting of two integers, the reference and alternative allele counts, separated by a comma.  For example, sample **_i_** is heterozygous at a SNP and has 1 and 10 reads overlapping the reference and alternative alleles respectively, the genotype field for the sample becomes
 
