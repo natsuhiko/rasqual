@@ -97,7 +97,7 @@ To maximise the ability of RASQUAL, we recommend to incorporate uncertainty in i
         ... FORMAT ... Sample_i      ...
         ... AP:AS  ... 0.0,-5.0:1,10 ...
 
-2. **Genotype likelihood** (GL)
+2. **Genotype likelihood** (GL & GP)
 
     You may also use genotype likelihood (in Log10 scale) from conventional genotype imputation in conjunction with phased genotype data:
 
