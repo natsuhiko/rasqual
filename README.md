@@ -50,7 +50,7 @@ On output, RASQUAL provides the following values for each tested SNP:
 7. Allele frequency (not MAF!)*
 8. HWE Chi-square statistic
 9. Imputation quality score (IA)
-10. Benjamini-Hochberg Q-value
+10. Log_10 Benjamini-Hochberg Q-value
 11. Chi square statistic (2 x log Likelihood ratio)*
 12. Effect size (Pi)
 13. Sequencing/mapping error rate (Delta)
