@@ -134,7 +134,7 @@ To maximise the ability of RASQUAL, we recommend to incorporate uncertainty in i
 
 We strongly recommend using the AP field for QTL mapping.  If there are multiple subfields of AP, GL and DS, AP is prioritised over both GL and DS, and GL is prioritised over DS.  If neither of GL, DS nor AP is provided, GL is used as AP.
 
-**NOTE (genotype drift)** It is always recommended to check the squared correlation between prior and posterior rSNP genotypes on the 25th column of the output.  RASQUAL may favorably interpret genotype uncertainty and aggressively correct genotyping errors to obtain higher likelihood ratio.  You can also try fixing genotype update (**--fix-genotype** option) to see there is any significant change in Chi-square statistics.
+**NOTE (genotype drift)** It is always recommended to check the squared correlation between prior and posterior rSNP genotypes on the 25th column of the output.  RASQUAL may favorably interpret genotype uncertainty and aggressively correct genotyping errors to obtain higher likelihood ratio.  You can also stop updating posterior genotypes (**--no-posterior-update**) or using nominal genotype 0, 1 and 2 (**--fix-genotype** option) to see there is any significant change in Chi-square statistics.
 
 ## Offset calculation
 
