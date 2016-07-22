@@ -89,10 +89,10 @@ An example VCF file (chr11.gz) can be found in the _data_ directory.  Note that,
 ## Genotype uncertainty
 
 **NOTE (large genotype drift)** 
-We have found that, in rare cases, RASQUAL may aggressively overcorrect genotyping errors to obtain higher likelihood ratio.
+We have found that, in rare cases, RASQUAL may aggressively overcorrect genotyping errors to obtain a higher likelihood ratio.
 To detect this, we recommend that you always check the squared correlation between prior and posterior rSNP genotypes on the 25th column of the output. Cases where there is a very large change in genotypes between the prior and posterior should be treated with caution. 
 Another approach that you can use to detect these instances, is to stop updating posterior genotypes (**--no-posterior-update**) or use the nominal genotype 0, 1 and 2 (**--fix-genotype** option) and compare the Chi-square statistics with and without genotype correction. Cases where
-weakly significant QTLs become highly significant after model fitting should be treated with caution.
+weakly significant QTLs become highly significant with genotype error correction should be treated with caution.
 
 There are 4 options to incorporate genotype uncertainty in RASQUAL:
 
