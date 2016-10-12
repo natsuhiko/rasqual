@@ -3,12 +3,15 @@ RASQUAL (Robust Allele Specific QUAntification and quality controL) maps QTLs fo
 
 ## How to build & install
 
-Please make sure CLAPACK is installed in your environment (if you don't have it, then see below for installation tips).  To build and install RASQUAL, firstly go to the _source_ directory (*src*), then set environment variables appropriately to point to the CLAPACK library.  Finally use "make" to build and install RASQUAL which will be installed in "$RASQUALDIR/bin".
+**Please make sure CLAPACK and GSL (GNU Scientific Library) are installed in your environment** (if you don't have them, then see below for installation tips).  GSL is usually installed in /usr directory.  Please check /usr/include/gsl and /usr/lib/libgsl.a are existing.
+
+To build and install RASQUAL, firstly go to the _source_ directory (*src*), then set environment variables appropriately to point to the CLAPACK library and GSL.  Finally use "make" to build and install RASQUAL which will be installed in "$RASQUALDIR/bin".
 
 	RASQUALDIR=/path/to/rasqualdir/
 	cd $RASQUALDIR/src
-	export CFLAGS="-I/nfs/users/nfs_n/nk5/team170/Natsuhiko/CLAPACK-3.1.1.1/INCLUDE -I/nfs/users/nfs_n/nk5/team170/Natsuhiko/CLAPACK-3.1.1.1/F2CLIBS"
-	export LDFLAGS="-L/nfs/users/nfs_n/nk5/team170/Natsuhiko/CLAPACK-3.1.1.1 -L/nfs/users/nfs_n/nk5/team170/Natsuhiko/CLAPACK-3.1.1.1/F2CLIBS"
+	# Not run!  Please export your environment.
+	export CFLAGS="-I/path/to/your/CLAPACK-*.*.*.*/INCLUDE -I/path/to/your/CLAPACK-*.*.*.*/F2CLIBS -I/path/to/your/gsl-*.*/gsl"
+	export LDFLAGS="-L/path/to/your/CLAPACK-*.*.*.* -L/path/to/your/CLAPACK-*.*.*.*/F2CLIBS -I/path/to/your/gsl-*.*/lib"
 	make
 	make install
 
@@ -24,15 +27,15 @@ Using the example data files, you can use the following commands to map expressi
 
     # make sure tabix is installed in your environment
     cd $RASQUALDIR
-    tabix data/chr11.gz 11:2315000-2340000 | bin/rasqual -y data/Y.bin -k data/K.bin -n 24 -j 1 -l 409 -m 63 \
+    tabix data/chr11.gz 11:2315000-2340000 | bin/rasqual -y data/Y.bin -k data/K.bin -n 24 -j 1 -l 378 -m 62 \
         -s 2316875,2320655,2321750,2321914,2324112 -e 2319151,2320937,2321843,2323290,2324279 \
         -t -f C11orf21 -z
-    tabix data/chr11.gz 11:2315000-2340000 | bin/rasqual -y data/Y.bin -k data/K.bin -n 24 -j 2 -l 409 -m 61 \
+    tabix data/chr11.gz 11:2315000-2340000 | bin/rasqual -y data/Y.bin -k data/K.bin -n 24 -j 2 -l 378 -m 60 \
         -s 2323227,2323938,2324640,2325337,2328175,2329966,2330551,2331219,2334884,2335715,2338574,2339093 \
         -e 2323452,2324188,2324711,2325434,2328220,2330040,2330740,2331248,2334985,2337897,2338755,2339430 \
         -t -f TSPAN32 -z
 
-Sample size (in this example, *N*=24) is given by **-n** option, the feature ID is given by **-j** option (only two genes exist in this example, thereby j=1,2).  You need to provide the number of testing SNPs and feature SNPs in the *cis*-window *a priori* (**-l** and **-m**, respectively).  RASQUAL also requires the feature start and end positions (as comma separated values for more than one positions, e.g. such as for a union of exons in this example) as inputs (**-s** and **-e**, respectively).  By default, RASQUAL outputs QTL mapping results for all tested SNPs, but you can also specify only the lead QTL SNP (**-t** option).  In the output, you can also specify the feature name by **-f** option.  To take account of genotype uncertainty, imputation quality score (R square value) are used in this example (**-z** option; see the section below).  
+Sample size (in this example, *N*=24) is given by **-n** option and the feature ID is given by **-j** option.  Here only two genes exist in this example, thereby j=1, 2.  In reality, you may have e.g. >10,000 features in your data, of which you may want to map QTL e.g. for the 12,345th feature, you must set **-j 12345**.  You need to provide the number of testing SNPs and feature SNPs in the *cis*-window *a priori* (**-l** and **-m**, respectively).  RASQUAL also requires the feature start and end positions (as **comma separated values without space in ascending order** for more than one positions, e.g. such as for a union of exons in this example) as inputs (**-s** and **-e**, respectively).  By default, RASQUAL outputs QTL mapping results for all tested SNPs, but you can also specify only the lead QTL SNP (**-t** option).  In the output, you can also specify the feature name by **-f** option.  To take account of genotype uncertainty, imputation quality score (R square value) are used in this example (**-z** option; see the section below).  
 
 ## Output
 
@@ -47,7 +50,7 @@ On output, RASQUAL provides the following values for each tested SNP:
 7. Allele frequency (not MAF!)*
 8. HWE Chi-square statistic
 9. Imputation quality score (IA)
-10. Benjamini-Hochberg Q-value
+10. Log_10 Benjamini-Hochberg Q-value
 11. Chi square statistic (2 x log Likelihood ratio)*
 12. Effect size (Pi)
 13. Sequencing/mapping error rate (Delta)
@@ -62,7 +65,7 @@ On output, RASQUAL provides the following values for each tested SNP:
 22. Log likelihood of the null hypothesis
 23. Convergence status (0=success)
 24. Squared correlation between prior and posterior genotypes (fSNPs)
-25. Squared correlation between prior and posterior genotypes (rSNP)
+25. Squared correlation between prior and posterior genotypes (rSNP)*
 
 You may need columns with (*) for the downstream analysis.
 
@@ -74,16 +77,24 @@ You can find an example expression data for C11orf21 and TSPAN32 genes in the _d
 	RHOME=/software/R-3.0.0/bin/
 	$RHOME/R --vanilla --quiet --args data/Y.txt data/K.txt < R/txt2bin.R > log
 
+Note here that, the row number of the fragment count table corresponds to the feature ID given by **-j** option previously explained.  For example, if you set **-j 12345** in the RASQUAL command, you would map QTL for the 12,345th feature (row) from the top of the fragment count table.
+
 You will also need to prepare custom VCF files containing the allele specific counts of your target cellular trait at all SNPs.  The files have to contain an additional subfield, "AS", located within the genotype field consisting of two integers, the reference and alternative allele counts, separated by a comma.  For example, sample **_i_** is heterozygous at a SNP and has 1 and 10 reads overlapping the reference and alternative alleles respectively, the genotype field for the sample becomes
 
 	... FORMAT ... Sample_i ...
-	... GL:AS  ... 0|1:1,10 ...
+	... GT:AS  ... 0|1:1,10 ...
 
 An example VCF file (chr11.gz) can be found in the _data_ directory.  Note that, phased genotypes are required for QTL mapping with RASQUAL.  Currently, SNP genotypes are only used to map QTLs, but short INDELs and some form of structural variations will be able to use shortly.
 
 ## Genotype uncertainty
 
-To maximise the ability of RASQUAL, we recommend to incorporate uncertainty in imputed genotypes.  There are 4 options: 
+**Note on QC for genotype error correction:** 
+We have found that, in rare cases, RASQUAL may aggressively overcorrect genotyping errors to obtain a higher likelihood ratio.
+To detect this, we recommend that you always check the squared correlation between prior and posterior rSNP genotypes on the 25th column of the output. Cases where there is a very large change in genotypes between the prior and posterior should be treated with caution. 
+Another approach that you can use to detect these instances, is to stop updating posterior genotypes (**--no-posterior-update**) or use the nominal genotype 0, 1 and 2 (**--fix-genotype** option) and compare the Chi-square statistics with and without genotype correction. Cases where
+weakly significant QTLs become highly significant with genotype error correction should be treated with caution.
+
+There are 4 options to incorporate genotype uncertainty in RASQUAL:
 
 1. **Allelic probability** (AP) 
 
@@ -92,7 +103,7 @@ To maximise the ability of RASQUAL, we recommend to incorporate uncertainty in i
         ... FORMAT ... Sample_i      ...
         ... AP:AS  ... 0.0,-5.0:1,10 ...
 
-2. **Genotype likelihood** (GL)
+2. **Genotype likelihood** (GL & GP)
 
     You may also use genotype likelihood (in Log10 scale) from conventional genotype imputation in conjunction with phased genotype data:
 
@@ -116,7 +127,7 @@ To maximise the ability of RASQUAL, we recommend to incorporate uncertainty in i
     Imputation methods often provide a quality score for each SNP locus that approximates squared correlation coefficient between true and observed genotypes (*e.g.*, *R*^2 from MaCH or Beagle; *I*^2 from IMPUTE2 ).  RASQUAL can convert the score into genotyping error rate to handle uncertainly:
 
         ... INFO            FORMAT ... Sample_i ...
-        ... ...;RSQ=0.9;... GL:AS  ... 0|1:1,10 ...
+        ... ...;RSQ=0.9;... GT:AS  ... 0|1:1,10 ...
 
     If you want to prioritise RSQ, you need to specify **-z** option for RASQUAL (see above example).
 
@@ -138,13 +149,13 @@ Sample specific offset terms (K.txt) can be calculated from the count table.  Se
 	# With GC content; not run!
 	$RHOME/R --vanilla --quiet --args data/your.Y.txt data/gcc.txt < R/makeOffset.R > log
 
-Note that you need to prepare a GC content file (gcc.txt in this example) to apply GC correction for the read count at each feature.  The file is a vector of GC% values for all features as a text file (separated by either, a comma, a tab or a line break).  In order to obtain the GC% for each feature, we normally extract the reference sequence overlapping with the feature annotation, count G/C bases and then divide the count by the total feature length.
+Note that you need to prepare a GC content file (gcc.txt in this example) to apply GC correction for the read count at each feature.  The file is a vector of GC% values for all features as a text file (separated by either, a comma, a tab or a line break).  In order to obtain the GC% for each feature, we normally extract the reference sequence overlapping with the feature annotation, count G/C bases and then divide the count by the total feature length.  Note also that you may not convert the test data (Y.txt in the data directory) into K.txt because the offset was calculated and extracted from the complete expression data (>50K genes).
 
 ## Covariates
 
 Real data is usually affected by hidden confounding factors, such as sequencing batch, sample preparation date etc, that can reduce power to detect QTLs. RASQUAL handles covariates as an input (**-x** option).  The following is the same eQTL mapping example above, but with covariates:
 
-    tabix data/chr11.gz 11:2315000-2340000 | bin/rasqual -y data/Y.bin -k data/K.bin -n 24 -j 1 -l 409 -m 63 \
+    tabix data/chr11.gz 11:2315000-2340000 | bin/rasqual -y data/Y.bin -k data/K.bin -n 24 -j 1 -l 378 -m 62 \
         -s 2316875,2320655,2321750,2321914,2324112 -e 2319151,2320937,2321843,2323290,2324279 \
         -z -t -f C11orf21 \
         -x data/X.bin
@@ -160,7 +171,7 @@ Those confounding factors are not often observed but can be captured by principa
 
 Note that, the result of PCA is always sensitive to few outliers (just one or two), which explain almost all variance in the data.  Using those PCs as covariates hurts your QTL mapping result.  We strongly recommend to spend some time to explore and clean up your data first.
 
-## Installation tips for CLAPACK
+## Installation tips for CLAPACK and GSL
 
 You first need to get the latest library from http://www.netlib.org/clapack/.  Then, compile it like
 
@@ -177,16 +188,25 @@ When it has been done, you will find three archive files in the directory which 
 
 before compiling RASQUAL.
 
+You may also need to get GSL (GNU Scientific Library) from http://www.gnu.org/software/gsl/ (if it is not installed).  Then, compile it like
+
+	tar zxvf gsl-*.*.tar.gz
+	cd gsl-*.*
+	./configure --prefix=$PWD
+	make
+	make install
+
 ## Creating a VCF file with AS counts
 
-We provide a useful script to create a VCF file with AS counts from a master VCF file and a set of BAM files.  Before using the script you need to compile some C codes called from the script:
+We provide a useful script to create a VCF file with AS counts from a master VCF file and a set of BAM files.  To use the script you need to compile some C codes called from the script:
 
+	export RASQUALDIR=/path/to/rasqualdir/
 	cd $RASQUALDIR/src/ASVCF
 	make
 
 The command to produce the VCF with AS counts is:
 
-	sh $RASQUALDIR/src/ASVCF/createASVCF.sh bam.list.txt master.vcf.gz
+	sh ./createASVCF.sh bam.list.txt master.vcf.gz
 
 which creates *master.vcf.new.gz* in the same directory.  The *master.vcf.gz* must be tabix indexed and the *bam.list.txt* is a text file which contains absolute path to your set of BAMs from which AS counts are produced:
 
@@ -196,7 +216,7 @@ which creates *master.vcf.new.gz* in the same directory.  The *master.vcf.gz* mu
 	/path/to/your/bam/sample3.bam
 	...
 
-The order of the samples **MUST** be the same as that in the master VCF.  Before using the script, please make sure the latest tabix (http://www.htslib.org/doc/tabix.html) is installed in your environment. 
+The order of the samples **MUST** be the same as that in the master VCF.  The chromosome IDs in the master VCF **MUST** also be the same as in those BAM files.  Before using the script, please make sure the latest tabix (http://www.htslib.org/doc/tabix.html) is installed in your environment.
 
 Note that, our script doesn't filter out any AS read by means of QC criteria (depth of coverage, mapping quality, etc.).  You may also want to filter out some reads a priori, using GATK ASEReadCounter (https://www.broadinstitute.org/gatk/gatkdocs/org_broadinstitute_gatk_tools_walkers_rnaseq_ASEReadCounter.php).
 
@@ -208,7 +228,7 @@ The permutation test is also implemented in RASQUAL.  The **-r/--random-permutat
 
 ### Multithreading
 
-RASQUAL is now multithreaded in order to speed up execution times, which requires the **pthread** library.  You just need to specify the additional option **--n-thereads** to use this function.  Using the above example, you can use the following commands to map the eQTL with 10 threads:
+RASQUAL is now multithreaded in order to speed up execution times, which requires the **pthread** library.  You just need to specify the additional option **--n-threads** to use this function.  Using the above example, you can use the following commands to map the eQTL with 10 threads:
 
     tabix data/chr11.gz 11:2315000-2340000 | bin/rasqual -y data/Y.bin -k data/K.bin -n 24 -j 1 -l 409 -m 63 \
         -s 2316875,2320655,2321750,2321914,2324112 -e 2319151,2320937,2321843,2323290,2324279 \
@@ -224,7 +244,7 @@ To map subsidiary QTLs conditional on the lead QTL variant(s) can be performed w
 
     bin/rasqual ... -k2 rs0001:0.1,rs0002:0.2 ...
     
-You may introduce any number of variants with thier effect sizes (Pi values) as comma separated values where each variant ID and its Pi value have to be connected by colon (:).
+You may introduce any number of variants with their effect sizes (Pi values) as comma separated values where each variant ID and its Pi value have to be connected by colon (:).
 
 ## Warnings
 
