@@ -238,16 +238,15 @@ RASQUAL is now multithreaded in order to speed up execution times, which require
 
 To maximize power to detect QTLs, RASQUAL uses all fSNPs with MAF>0.0, pHWE>0.0 and imputation quality score RSQ>0.0.  However, RASQUAL takes ages to map QTLs with a number of fSNPs in a feature (e.g., long genes).  Therefore you may want to reduce the number of fSNPs with additional filters.  We introduced the following new options **--minor-allele-frequency-fsnp**, **--imputation-quality-fsnp** and **--hardy-weinberg-pvalue-fsnp** to eliminate some of fSNPs which are possibly not so informative.
         
-## Conditional analysis
+## Conditional analysis (UNDER DEVELOPMENT!)
+
+We found some issue on conditional analysis.  We will be updating the new version of RASQAUL solving the issue, soon.
 
 To map subsidiary QTLs conditional on the lead QTL variant(s) can be performed with the following option:
 
     bin/rasqual ... -k2 rs0001:0.1,rs0002:0.2 ...
     
 You may introduce any number of variants with their effect sizes (Pi values) as comma separated values where each variant ID and its Pi value have to be connected by colon (:).
-
-**Caution on conditional analysis:** 
-Currently, this feature may only work under **--no-posterior-update** option.  RASQUAL would try to fix genotyping erorr based on the difference between exptected/observed allelic imbalance in the AS signal.  However, RASQUAL is confused by the conditional effect on the lead QTL variant(s) to correctly estimate the genotype uncertainty.
 
 ## Warnings
 
