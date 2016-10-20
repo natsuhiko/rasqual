@@ -246,6 +246,9 @@ To map subsidiary QTLs conditional on the lead QTL variant(s) can be performed w
     
 You may introduce any number of variants with their effect sizes (Pi values) as comma separated values where each variant ID and its Pi value have to be connected by colon (:).
 
+**Caution on conditional analysis:** 
+Currently, this feature may only work under **--no-posterior-update** option.  RASQUAL would try to fix genotyping erorr based on the difference between exptected/observed allelic imbalance in the AS signal.  However, RASQUAL is confused by the conditional effect on the lead QTL variant(s) to correctly estimate the genotype uncertainty.
+
 ## Warnings
 
 To save the memory, each variant ID in the VCF file must be shorter than 100 characters; otherwise a buffer overflow happens.
