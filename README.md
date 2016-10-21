@@ -240,7 +240,7 @@ To maximize power to detect QTLs, RASQUAL uses all fSNPs with MAF>0.0, pHWE>0.0 
         
 ## Conditional analysis (UNDER DEVELOPMENT!)
 
-We found some issue on conditional analysis.  We will update the new version of RASQAUL by solving the issue, soon.
+_We found some issue on conditional analysis.  We will update the new version of RASQAUL by solving the issue, soon._
 
 To map subsidiary QTLs conditional on the lead QTL variant(s) can be performed with the following option:
 
