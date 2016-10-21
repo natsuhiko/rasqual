@@ -24,6 +24,7 @@ int parseScond(char* scond, char*** cs0, double** ce0){
     for(i=0; i<ncs; i++){
         offs += offs1;
         sscanf(scond+offs, "%[^,:]:%lf%n", cs[i], ce+i, &offs1);
+        //fprintf(stderr, "%s %lf\n", cs[i], ce[i]);
         offs1++;
     }
     (*cs0)=cs; (*ce0)=ce;
@@ -279,7 +280,7 @@ int main(int argc, char** argv){
     char* scond=NULL;
     for(i=0; i<argc-1; i++){if(strcmp(argv[i],"-y")==0 || strcmp(argv[i],"--feature-counts")==0){fy=fopen(argv[i+1],"rb"); break;}}
     for(i=0; i<argc-1; i++){if(strcmp(argv[i],"-k")==0 || strcmp(argv[i],"--sample-offsets")==0){fk=fopen(argv[i+1],"rb"); break;}}
-    for(i=0; i<argc-1; i++){if(strcmp(argv[i],"-k2")==0 || strcmp(argv[i],"--conditional-snps")==0){ scond=argv[i+1]; break;}}
+    for(i=0; i<argc-1; i++){if(strcmp(argv[i],"-k2")==0 || strcmp(argv[i],"--conditional-snps")==0){ scond=argv[i+1]; fprintf(stderr, "Sorry, conditional analysis is under development...Aborted.\n"); return 1; break;}}
     for(i=0; i<argc-1; i++){if(strcmp(argv[i],"-x")==0 || strcmp(argv[i],"--covariates")==0){if((fx=fopen(argv[i+1],"rb"))==NULL){fprintf(stderr, "Covariate file does not exists.\n"); return 1;}; break;}}
 
     if(fy==NULL || fk==NULL){fprintf(stderr, "input files are not specified!\n"); return -1;}
@@ -482,6 +483,7 @@ int main(int argc, char** argv){
                 //printM(Z+l*2*N, 2, N);
                 for(i=0; i<N*2; i++){
                     ki2[i] *= 2.0*( Z[l*2*N+i]*condEff[nco] + (1.0-Z[l*2*N+i])*(1.0-condEff[nco]) );
+                    //fprintf(stderr, "%lf %lf\n", ki2[i], Z[l*2*N+i]);
                 }
             }
         }
@@ -527,7 +529,7 @@ int main(int argc, char** argv){
         ki[i] *= ki2tot; 
         ki2[i*2+0] = ki2[i*2+0]/ki2tot;
         ki2[i*2+1] = ki2[i*2+1]/ki2tot;
-        //fprintf(stderr, "%lf %lf %lf\n", ki2[i*2]+ki2[i*2+1], ki2[i*2], ki2[i*2+1]); 
+        fprintf(stderr, "%lf %lf %lf \n", ki2[i*2]+ki2[i*2+1], ki2[i*2], ki2[i*2+1]); 
     }
     //printM(ki2, 2, 10);
     //return 0;
@@ -771,9 +773,9 @@ int main(int argc, char** argv){
 		for(l=0;l<L;l++){
 			if(fabs(exon[l])>1.5){// feature snp
 				if(l==maxCsnp){
-					gzprintf(postVCF, "%s\t%ld\t%s\t%c\t%c\t.\tLEAD_QTL_SNP\t%s;RSQ=1.0\tGT:GP:AP:AS\t", chrs[l], poss[l], rss[l], als[l][0], als[l][1], gid);
+					gzprintf(postVCF, "%s\t%ld\t%s\t%c\t%c\t.\tLEAD_QTL_SNP\tFID=%s;RSQ=1.0\tGT:GP:AP:AS\t", chrs[l], poss[l], rss[l], als[l][0], als[l][1], gid);
 				}else{
-					gzprintf(postVCF, "%s\t%ld\t%s\t%c\t%c\t.\t.\t%s;RSQ=1.0\tGT:GP:AP:AS\t", chrs[l], poss[l], rss[l], als[l][0], als[l][1], gid);
+					gzprintf(postVCF, "%s\t%ld\t%s\t%c\t%c\t.\t.\tFID=%s;RSQ=1.0\tGT:GP:AP:AS\t", chrs[l], poss[l], rss[l], als[l][0], als[l][1], gid);
 				}
 				zx = Zx+N*2*ll;
 				yx = Y+N*2*ll;
@@ -786,7 +788,7 @@ int main(int argc, char** argv){
 				}
 				ll++;
 			}else if(l==maxCsnp){
-				gzprintf(postVCF, "%s\t%ld\t%s\t%c\t%c\t.\tLEAD_QTL_SNP\t%s;RSQ=1.0\tGT:GP:AP:AS\t", chrs[l], poss[l], rss[l], als[l][0], als[l][1], gid);
+				gzprintf(postVCF, "%s\t%ld\t%s\t%c\t%c\t.\tLEAD_QTL_SNP\tFID=%s;RSQ=1.0\tGT:GP:AP:AS\t", chrs[l], poss[l], rss[l], als[l][0], als[l][1], gid);
 				for(i=0; i<N; i++){
 					gzprintf(postVCF, "%d|%d:%lf,%lf,%lf:%lf,%lf:%.0lf,%.0lf", 
 							 zc[i*2]>0.5?1:0, zc[i*2+1]>0.5?1:0 , 
