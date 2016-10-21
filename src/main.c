@@ -529,7 +529,7 @@ int main(int argc, char** argv){
         ki[i] *= ki2tot; 
         ki2[i*2+0] = ki2[i*2+0]/ki2tot;
         ki2[i*2+1] = ki2[i*2+1]/ki2tot;
-        fprintf(stderr, "%lf %lf %lf \n", ki2[i*2]+ki2[i*2+1], ki2[i*2], ki2[i*2+1]); 
+        //fprintf(stderr, "%lf %lf %lf \n", ki2[i*2]+ki2[i*2+1], ki2[i*2], ki2[i*2+1]); 
     }
     //printM(ki2, 2, 10);
     //return 0;

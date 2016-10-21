@@ -760,6 +760,7 @@ double getLkhdAll(double* y, double* Y, double* h0, double* h, double* H0, doubl
                     h[i0*J0+j0] = log(h0[i0*J0+j0]) + lgamma(thij+y[i0]) - lgamma(y[i0]+1.0) - lgamma(thij) + y[i0]*log(lmij) + (thij)*log(thij) - (y[i0]+thij)*log(lmij+thij);
                 }
                 lci += h[i0*J0+j0];
+                //if(i0==0){fprintf(stderr, "%lf ", h[i0*J0+j0]);}
             }
         }
         if(lci<-10.0){lci=-10.0;}
@@ -785,6 +786,7 @@ double getLkhdAll(double* y, double* Y, double* h0, double* h, double* H0, doubl
                                 - lbeta(       th[1]*ki[i1]*K2[j*2]*km[l],          th[1]*ki[i1]*K2[j*2+1]*km[l]);
                     H[i*J+j] = lcij;
                     lci += lcij;
+                    //if(i0==0&&l==0){fprintf(stderr, "%lf [%lf %lf] (%lf %lf)", H[i*J+j], Y[i*2], Y[i*2+1], th[1]*ki[i1]*K2[j*2]*km[l], th[1]*ki[i1]*K2[j*2+1]*km[l]);}
                 }
             }
             if(lci<-10.0){lci=-10.0;}
@@ -803,8 +805,12 @@ double getLkhdAll(double* y, double* Y, double* h0, double* h, double* H0, doubl
         for(l=0;l<Lx;l++){
             for(j0=0; j0<J0; j0++){ if(pYg[l*J0+j0]>0.0){
                 h[i0*J0+j0] += log(pYg[l*J0+j0]);
+                
             }}
         }
+        
+        
+        
         Lci=0.0;
         for(j0=0; j0<J0; j0++){if(h0[i0*J0+j0]>0.0){
             Lci += exp(h[i0*J0+j0]);
@@ -826,10 +832,12 @@ double getLkhdAll(double* y, double* Y, double* h0, double* h, double* H0, doubl
                 if(noPosteriorUpdate>0){
                 	H[i*J+j] = H0[i*J+j]; // no posterior update
                 }else{
-                    H[i*J+j] = ( exp(H[i*J+j]) )/(Lcli);
+                    H[i*J+j] = ( exp(H[i*J+j]) )/(Lcli); //if(l==1)fprintf(stderr, "%lf ", H[i*J+j]);
+                    //if(i0==0&&l==0){fprintf(stderr, "%lf ", H[i*J+j]);}
                 }
-            }else{H[i*J+j]=0.0;}}
+            }else{H[i*J+j]=0.0;}} //if(l==1)fprintf(stderr, "\n");
         }
+        //if(i0==0)fprintf(stderr ,"\n");
         // rSNP
         for(j0=0; j0<J0; j0++){
             if(h0[i0*J0+j0]>0.0 && Lci >0.0){
@@ -1553,11 +1561,6 @@ void getd2KdPhi2(double pi, double delta, double phi, double* K, double* w, doub
     K[7] = (pi)    *(1.0-delta)*(phi)*(1.0-phi)*(1.0-2.0*phi);
     expand(dipc, dipx, 10, K, w, K2);
 }
-
-
-
-
-
 
 
 
