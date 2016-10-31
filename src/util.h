@@ -51,7 +51,6 @@ long Fread(double* x, long sizeOf, long N, gzFile f);
 
 long imax(double* x, long n);
 //double max(double* x, long n);
-long lomax(long* x, long n);
 double doub(double x);
 
 double esum(double *x, long n, double y);
