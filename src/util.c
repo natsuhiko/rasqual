@@ -256,7 +256,7 @@ double amax(double* x, long n){
     return th;
 }
 
-long lomax(long* x, long n){
+/*long lomax(long* x, long n){
     long i;
     //long im=-1;
     long th = -1;
@@ -267,7 +267,7 @@ long lomax(long* x, long n){
         }
     }
     return th;
-}
+}*/
 
 
 double doub(double x){
