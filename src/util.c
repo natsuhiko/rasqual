@@ -256,20 +256,6 @@ double amax(double* x, long n){
     return th;
 }
 
-long lomax(long* x, long n){
-    long i;
-    //long im=-1;
-    long th = -1;
-    for(i=0; i<n; i++){
-        if(x[i]>th && isnan(x[i])==0 && isinf(x[i])==0){
-            //im = i;
-            th = x[i];
-        }
-    }
-    return th;
-}
-
-
 double doub(double x){
     return x*x;
 }
