@@ -4,13 +4,13 @@
 #include <string.h>
 //#include <cblas.h>
 #include <blaswrap.h>
-#include <gsl_cblas.h>
-#include <gsl_rng.h>
-#include <gsl_randist.h>
+#include <gsl/gsl_cblas.h>
+#include <gsl/gsl_rng.h>
+#include <gsl/gsl_randist.h>
 #include <f2c.h>
 #include <clapack.h>
-#include <gsl_sf_gamma.h>
-#include <gsl_sf_psi.h>
+#include <gsl/gsl_sf_gamma.h>
+#include <gsl/gsl_sf_psi.h>
 #include <zlib.h>
 #include <time.h>
 

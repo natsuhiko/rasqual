@@ -10,7 +10,7 @@ To build and install RASQUAL, firstly go to the _source_ directory (*src*), then
 	RASQUALDIR=/path/to/rasqualdir/
 	cd $RASQUALDIR/src
 	# Not run!  Please export your environment.
-	export CFLAGS="-I/path/to/your/CLAPACK-*.*.*.*/INCLUDE -I/path/to/your/CLAPACK-*.*.*.*/F2CLIBS -I/path/to/your/gsl-*.*/gsl"
+	export CFLAGS="-I/path/to/your/CLAPACK-*.*.*.*/INCLUDE -I/path/to/your/CLAPACK-*.*.*.*/F2CLIBS -I/path/to/your/gsl-*.*"
 	export LDFLAGS="-L/path/to/your/CLAPACK-*.*.*.* -L/path/to/your/CLAPACK-*.*.*.*/F2CLIBS -I/path/to/your/gsl-*.*/lib"
 	make
 	make install
