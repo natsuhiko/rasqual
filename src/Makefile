@@ -6,7 +6,7 @@ INTELLIB=/software/intel-tools-2015/lib/intel64
 
 CC=gcc
 CFLAGS := $(CFLAGS) -std=gnu99 -I/usr/include -I/usr/include/gsl -fpic -g -O2
-LDFLAGS := $(LDFLAGS) -lf2c -lblas -lgslcblas -llapack -lgsl -lm -lz -lpthread
+LDFLAGS := $(LDFLAGS) -lgslcblas -lgsl -llapack -lblas  -lm -lz -lpthread -lf2c
 
 PROGRAM = rasqual
 OBJS = usage.o parseVCF.o sort.o nbglm.o nbem.o util.o

@@ -17,10 +17,12 @@ To build and install RASQUAL, firstly go to the _source_ directory (*src*), then
 
 ## QTL mapping with RASQUAL
 
+This section describes how to prepare the input files for RASQUAL. If you prefer, Kaur Alasoo has now developed a set of tools in Python that hopefully simplify the process of creating RASQUAL input files <a href="https://github.com/kauralasoo/rasqual/tree/master/rasqualTools">here</a>.
 RASQUAL needs two input data files:
 
 1. A fragment (read) count table, with sample specific offsets (such as library size)
 2. A VCF file with \*phased\* SNP genotypes and allele-specific counts. 
+
 
 An example of each of these files can be found in the data directory. In the usage example below, RASQUAL takes SNP information from a tabix-indexed VCF file as standard input, while the count table and sample specific offsets are binary files (Y.bin and K.bin, respectively). Tabix-indexing is not strictly necessary but allows for genotype and allelic count information to be accessed quickly from the command line.
 Using the example data files, you can use the following commands to map expression QTLs for two genes (C11orf21 and TSPAN32) using RASQUAL:
@@ -228,7 +230,7 @@ The permutation test is also implemented in RASQUAL.  The **-r/--random-permutat
 
 ### Multithreading
 
-RASQUAL is now multithreaded in order to speed up execution times, which requires the **pthread** library.  You just need to specify the additional option **--n-threads** to use this function.  Using the above example, you can use the following commands to map the eQTL with 10 threads:
+RASQUAL is now multithreaded in order to speed up execution times - this requires the **pthread** library to be installed.  You need to specify the additional option **--n-threads** to use this function.  Using the above example, you can use the following commands to map the eQTL with 10 threads:
 
     tabix data/chr11.gz 11:2315000-2340000 | bin/rasqual -y data/Y.bin -k data/K.bin -n 24 -j 1 -l 409 -m 63 \
         -s 2316875,2320655,2321750,2321914,2324112 -e 2319151,2320937,2321843,2323290,2324279 \
@@ -236,18 +238,18 @@ RASQUAL is now multithreaded in order to speed up execution times, which require
 
 ### Filters for fSNPs
 
-To maximize power to detect QTLs, RASQUAL uses all fSNPs with MAF>0.0, pHWE>0.0 and imputation quality score RSQ>0.0.  However, RASQUAL takes ages to map QTLs with a number of fSNPs in a feature (e.g., long genes).  Therefore you may want to reduce the number of fSNPs with additional filters.  We introduced the following new options **--minor-allele-frequency-fsnp**, **--imputation-quality-fsnp** and **--hardy-weinberg-pvalue-fsnp** to eliminate some of fSNPs which are possibly not so informative.
+To maximize power to detect QTLs, RASQUAL uses all fSNPs with MAF>0.0, pHWE>0.0 and imputation quality score RSQ>0.0.  However, RASQUAL can take a long time to map QTLs with a large number of fSNPs in a feature (for example, in very long genes).  Therefore you may want to reduce the number of fSNPs with additional filters.  We introduced the following new options **--minor-allele-frequency-fsnp**, **--imputation-quality-fsnp** and **--hardy-weinberg-pvalue-fsnp** to eliminate some of fSNPs which may not contribute much information.
         
 ## Conditional analysis (UNDER DEVELOPMENT!)
 
-_We found some issue on conditional analysis.  We will update the new version of RASQAUL by solving the issue, soon._
+_There is currently an issue with conditional analysis using RASQUAL, and we recommend not using this option at the current time._
 
 To map subsidiary QTLs conditional on the lead QTL variant(s) can be performed with the following option:
 
     bin/rasqual ... -k2 rs0001:0.1,rs0002:0.2 ...
     
-You may introduce any number of variants with their effect sizes (Pi values) as comma separated values where each variant ID and its Pi value have to be connected by colon (:).
+You may introduce any number of variants with their effect sizes (Pi values) as comma separated values where each variant ID and its Pi value is separaed by a colon (:).
 
 ## Warnings
 
-To save the memory, each variant ID in the VCF file must be shorter than 100 characters; otherwise a buffer overflow happens.
+To save memory, each variant ID in the VCF file must be shorter than 100 characters.
