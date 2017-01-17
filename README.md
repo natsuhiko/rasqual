@@ -22,6 +22,7 @@ RASQUAL needs two input data files:
 1. A fragment (read) count table, with sample specific offsets (such as library size)
 2. A VCF file with \*phased\* SNP genotypes and allele-specific counts. 
 
+Kaur Alasoo has now developed a set of tools to more easily create the input files RASQUAL uses <a href="https://ssl.gstatic.com/docs/documents/images/kix-favicon6.ico">here</a>
 An example of each of these files can be found in the data directory. In the usage example below, RASQUAL takes SNP information from a tabix-indexed VCF file as standard input, while the count table and sample specific offsets are binary files (Y.bin and K.bin, respectively). Tabix-indexing is not strictly necessary but allows for genotype and allelic count information to be accessed quickly from the command line.
 Using the example data files, you can use the following commands to map expression QTLs for two genes (C11orf21 and TSPAN32) using RASQUAL:
 
