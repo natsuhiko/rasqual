@@ -30,7 +30,9 @@ void BackSolve(double* R, long p, double* y, double* x){
     
     long i, j;
 	clear1(x, p);
-	if(R[p*p-1]>0.0){ x[p-1] = y[p-1]/R[p*p-1];}
+	//if(R[p*p-1]>0.0){ 
+	x[p-1] = y[p-1]/R[p*p-1];
+	//}
     
 	double tm = 0.0;
     for(i=p-2; i>=0; i--){
@@ -38,7 +40,9 @@ void BackSolve(double* R, long p, double* y, double* x){
         for(j=p-1; j>i; j--){
             tm += R[p*j+i]*x[j];
         }
-		if(R[p*i+i]>0.0){x[i] = (y[i]-tm)/R[p*i+i];}
+		//if(R[p*i+i]>0.0){
+		x[i] = (y[i]-tm)/R[p*i+i];
+		//}
     }
 }
 
