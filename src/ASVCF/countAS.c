@@ -41,7 +41,12 @@ char* op;
 
 int main(int argc, char** argv){// 1000G.marker.gz -> rs pos A1 A2
 	op = (char*)calloc(100, sizeof(char));
-	if(argc==1){fprintf(stderr,"tabix tbxfile CHR | ./ase 1000G.marker.gz [-printFrag] [-overlap] > output\n"); return -1;}
+	if(argc==1){
+		fprintf(stderr,"Usage: tabix as_input_file CHR | %s bgzipped_vcf_file [-printFrag] [-overlap] > as_output\n\n", argv[0]);
+		fprintf(stderr,"AS input file format consists of 5 columns separated by TABs:\n");
+		fprintf(stderr,"  - chromosome\n  - start position (1-based)\n  - end position (1-based (only count length for [MDN=PX] CIGAR operators))\n  - CIGAR\n  - read sequence\n");
+		return -1;
+	}
 	
 	int i;
 	char* buf; buf = (char*)calloc(1000,sizeof(char));
@@ -56,7 +61,11 @@ int main(int argc, char** argv){// 1000G.marker.gz -> rs pos A1 A2
 	long N=0;
 	gzFile fmarker;
 	
-	if((fmarker = gzopen(argv[1], "rb6f"))==NULL){fprintf(stderr, "gzread failed. no file!\n"); return -1;}
+	if((fmarker = gzopen(argv[1], "rb6f"))==NULL){
+		fprintf(stderr, "Error: gzread failed to read \"%s\"!\n", argv[1]);
+		return -1;
+	}
+
 	long P=0;
 	//N = getLine(fmarker);
 	dim(fmarker, &buf, 1000*sizeof(char), &N, &P, 0);
