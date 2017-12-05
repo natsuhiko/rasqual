@@ -15,8 +15,7 @@ LDFLAGS := $(LDFLAGS)  -lm -lz
 .SUFFIXES: .c .o
 
 .PHONY: all
-all: parseCigar.o pasteFiles.o zpaste.o countAS.o
-	$(CC) -o parseCigar parseCigar.o
+all: pasteFiles.o zpaste.o countAS.o
 	$(CC) -o pasteFiles pasteFiles.o $(LDFLAGS)
 	$(CC) -o zpaste zpaste.o $(LDFLAGS)
 	$(CC) -o countAS countAS.o $(LDFLAGS)
@@ -25,4 +24,4 @@ all: parseCigar.o pasteFiles.o zpaste.o countAS.o
 	$(CC) $(CFLAGS) -c $<
 
 clean:
-	rm parseCigar pasteFiles zpaste countAS *.o
+	rm pasteFiles zpaste countAS *.o
