@@ -208,9 +208,17 @@ We provide a useful script to create a VCF file with AS counts from a master VCF
 
 The command to produce the VCF with AS counts is:
 
-	sh ./createASVCF.sh bam.list.txt master.vcf.gz
+	# Usage:
+	bash ./createASVCF.sh
+	# Usage: ./createASVCF.sh [paired_end|single_end] bam_list_file vcf_input_file vcf_output_file
+	
+	# For single-end reads:
+	bash ./createASVCF.sh single_end bam.list master.vcf.gz master.vcf.new.gz
+	
+	# For paired-end reads:
+	bash ./createASVCF.sh paired_end bam.list master.vcf.gz master.vcf.new.gz
 
-which creates *master.vcf.new.gz* in the same directory.  The *master.vcf.gz* must be tabix indexed and the *bam.list.txt* is a text file which contains absolute path to your set of BAMs from which AS counts are produced:
+which creates a *VCF output file*.  The *VCF inpuy file* must be tabix indexed and the *BAM list file* is a text file which contains absolute paths to your BAM files for which AS counts are produced:
 
 	# bam.list.txt
 	/path/to/your/bam/sample1.bam 
