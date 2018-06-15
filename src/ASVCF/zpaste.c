@@ -42,13 +42,19 @@ int readLine(gzFile* f, char* cells, char* buf, int i0, int* ret0){
 
 int main(int argc, char** argv){
 	int i,j;
-	if(argc==1){ fprintf(stderr, "./myPaste <File_1, ..., File_K> >  output\n"); }
+	if(argc==1){
+		fprintf(stderr, "Usage: %s <file_1.gz, ..., file_K.gz> > output\n", argv[0]);
+		return -1;
+	}
 	
 	int K = argc-1;
 	gzFile* fs;
 	fs = (gzFile*)calloc(K, sizeof(gzFile));
 	for(i=0; i<K; i++){
-		if((fs[i] = gzopen(argv[i+1], "rb6f"))==NULL){fprintf(stderr, "gzread failed. no %dth file!\n", i+1); return -1;}
+		if((fs[i] = gzopen(argv[i+1], "rb6f"))==NULL){
+			fprintf(stderr, "Error: gzread failed to read \"%s\" (%dth file)!\n", argv[i+1], i+1);
+			return -1;
+		}
 	}
 	fprintf(stderr,"%d files are read\n", K);
 	
