@@ -15,7 +15,8 @@ LDFLAGS := $(LDFLAGS)  -lm -lz
 .SUFFIXES: .c .o
 
 .PHONY: all
-all: pasteFiles.o zpaste.o countAS.o
+all: qcFilterBam.o pasteFiles.o zpaste.o countAS.o
+	$(CC) -o qcFilterBam qcFilterBam.o $(LDFLAGS)
 	$(CC) -o pasteFiles pasteFiles.o $(LDFLAGS)
 	$(CC) -o zpaste zpaste.o $(LDFLAGS)
 	$(CC) -o countAS countAS.o $(LDFLAGS)
@@ -24,4 +25,4 @@ all: pasteFiles.o zpaste.o countAS.o
 	$(CC) $(CFLAGS) -c $<
 
 clean:
-	rm pasteFiles zpaste countAS *.o
+	rm qcFilterBam pasteFiles zpaste countAS *.o
