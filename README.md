@@ -1,6 +1,10 @@
 # RASQUAL
 RASQUAL (Robust Allele Specific QUAntification and quality controL) maps QTLs for sequenced based cellular traits by combining population and allele-specific signals.
 
+## Updates
+
+09-08-2018	Introduced assay specific QC filters in *createVCF.sh*.
+
 ## How to build & install
 
 **Please make sure CLAPACK and GSL (GNU Scientific Library) are installed in your environment** (if you don't have them, then see below for installation tips).  GSL is usually installed in /usr directory.  Please check /usr/include/gsl and /usr/lib/libgsl.a are existing.
