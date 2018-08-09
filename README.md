@@ -3,7 +3,7 @@ RASQUAL (Robust Allele Specific QUAntification and quality controL) maps QTLs fo
 
 ## Updates
 
-09-08-2018	Introduced assay specific QC filters in *createVCF.sh*.
+09-08-2018 : Introduced assay specific QC filters in *createASVCF.sh*.
 
 ## How to build & install
 
@@ -214,13 +214,13 @@ The command to produce the VCF with AS counts is:
 
 	# Usage:
 	bash ./createASVCF.sh
-	# Usage: ./createASVCF.sh [paired_end|single_end] bam_list_file vcf_input_file vcf_output_file
+	# Usage: ./createASVCF.sh [paired_end|single_end] bam_list_file vcf_input_file vcf_output_file assay_type
 	
-	# For single-end reads:
-	bash ./createASVCF.sh single_end bam.list master.vcf.gz master.vcf.new.gz
+	# For single-end reads from RNA-seq:
+	bash ./createASVCF.sh single_end bam.list master.vcf.gz master.vcf.new.gz rna
 	
-	# For paired-end reads:
-	bash ./createASVCF.sh paired_end bam.list master.vcf.gz master.vcf.new.gz
+	# For paired-end reads form ATAC-seq:
+	bash ./createASVCF.sh paired_end bam.list master.vcf.gz master.vcf.new.gz atac
 
 which creates a *VCF output file*.  The *VCF inpuy file* must be tabix indexed and the *BAM list file* is a text file which contains absolute paths to your BAM files for which AS counts are produced:
 
@@ -232,7 +232,7 @@ which creates a *VCF output file*.  The *VCF inpuy file* must be tabix indexed a
 
 The order of the samples **MUST** be the same as that in the master VCF.  The chromosome IDs in the master VCF **MUST** also be the same as in those BAM files.  Before using the script, please make sure the latest tabix (http://www.htslib.org/doc/tabix.html) is installed in your environment.
 
-Note that, our script doesn't filter out any AS read by means of QC criteria (depth of coverage, mapping quality, etc.).  You may also want to filter out some reads a priori, using GATK ASEReadCounter (https://www.broadinstitute.org/gatk/gatkdocs/org_broadinstitute_gatk_tools_walkers_rnaseq_ASEReadCounter.php).
+Note that, assay_type specifies the minimum and maximum fragment length to filter out extremely short/long paired-end fragments and can be omitted in general. The latest createASVCF.sh filter out AS read by means of QC criteria (mapping quality, etc.).  You may also want to filter out some reads a priori, using GATK ASEReadCounter (https://www.broadinstitute.org/gatk/gatkdocs/org_broadinstitute_gatk_tools_walkers_rnaseq_ASEReadCounter.php).
 
 ## Permutation test
 
