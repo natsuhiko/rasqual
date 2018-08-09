@@ -1,7 +1,8 @@
 #!/bin/bash
 
-if [ ${#@} -ne 4 ] ; then
-    printf 'Usage: %s [paired_end|single_end] bam_list_file vcf_input_file vcf_output_file\n' "${0}" > /dev/stderr;
+if [ ${#@} -le 3 ] ; then
+    printf '\nUsage: %s [paired_end|single_end] bam_list_file vcf_input_file vcf_output_file assay_type\n' "${0}" > /dev/stderr;
+    printf '\n       assay_type can be \"atac\", \"rna\", or alternatively not specified (general).\n\n' > /dev/stderr;
     exit 1;
 fi
 
@@ -10,14 +11,28 @@ PAIRED_OR_SINGLE_END="${1}";
 BAM_LIST_FILENAME="${2}";
 VCF_INPUT_FILENAME="${3}";
 VCF_OUTPUT_FILENAME="${4}";
+ASSAY_TYPE="${5}"
+SINGLE_END="";
 
 if [ "${PAIRED_OR_SINGLE_END}" = "single_end" ] ; then
-    is_paired_end=0;
+    SINGLE_END="-singleEnd";
 elif [ "${PAIRED_OR_SINGLE_END}" = "paired_end" ] ; then
-    is_paired_end=1;
+    SINGLE_END="";
 else
     printf 'Error: Specify read type: "single_end" or "paired_end"\n' > /dev/stderr;
     exit 1;
+fi
+
+MIN_INSERT=1
+MAX_INSERT=270000000
+if [ "${ASSAY_TYPE}" = "atac" ] ; then
+    printf 'Assay type : ATAC-seq\n' > /dev/stderr;
+    MIN_INSERT=37;
+    MAX_INSERT=10000;
+elif [ "${ASSAY_TYPE}" = "rna" ] ; then
+    printf 'Assay type : RNA-seq\n' > /dev/stderr;
+    MIN_INSERT=37;
+    MAX_INSERT=2473537
 fi
 
 if [ ! -f "${BAM_LIST_FILENAME}" ] ; then
@@ -103,43 +118,10 @@ for CHR in $(tabix -l "${VCF_INPUT_FILENAME}") ; do
 
         # Filter out secondary alignments from the BAM file.
         samtools view -F 0x0100 "${BAM_FILENAME}" "${CHR}:${START}-${END}" \
-            | awk \
-                -F '\t' \
-                -v is_paired_end="${is_paired_end}" \
-                '
-                {
-                    # Assign variables to the needed columns from the SAM file.
-                    rname = $3;
-                    pos = $4;
-                    cigar = $6;
-                    rnext = $7;
-                    seq = $10;
-
-                    # If the reads are paired-end, check if they map both to the same chromosome.
-                    if ( is_paired_end == 0 || (is_paired_end == 1 && rnext == "=") ) {
-                        cigar_parsing_tmp = cigar;
-                        reference_length = 0;
-
-                        # Parse CIGAR string to calculate the length the read will contain in the reference sequence.
-                        while (match(cigar_parsing_tmp, /[0-9]+[MIDNSH=PX]/)) {
-                            # Extract the numeric value before the CIGAR operator.
-                            sub_cigar_length = substr(cigar_parsing_tmp, RSTART, RLENGTH -1);
-                            # Extract the CIGAR operator (MIDNSH=PX).
-                            cigar_operator = substr(cigar_parsing_tmp, RLENGTH, 1);
-
-                            if (cigar_operator ~ /^[MDN=PX]$/) {
-                                # Only consider the length of the reference.
-                                reference_length += int(sub_cigar_length);
-                            }
-
-                            # Remove already processed part of the CIGAR string.
-                            cigar_parsing_tmp = substr(cigar_parsing_tmp, RSTART + RLENGTH);
-                        }
-
-                        # Output AS input file format.
-                        print rname "\t" pos "\t" pos + reference_length - 1 "\t" cigar "\t" seq;
-                    }
-                }' \
+            | awk '$7=="="{print}' \
+            | sort -k 1 \
+            | "${RASQUALDIR}/src/ASVCF/qcFilterBam" stdin -skipMissing F -maxMismatch 3 -maxGapOpen 0 -maxBestHit 1 -minQual 10 -minInsert "${MIN_INSERT}" -maxInsert "${MAX_INSERT}" "${SINGLE_END}" \
+            | sort -k 2 -n \
             | "${RASQUALDIR}/src/ASVCF/countAS" "${TMP_VCF_FILENAME}" \
             | awk -F '\t' '{ print $5 "," $6; }' \
             | gzip \

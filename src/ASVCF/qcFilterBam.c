@@ -1,23 +1,13 @@
 //
 //  qcFilterBam.c
 //  
-//
-//  Created by Natsuhiko Kumasaka on 17/06/2013.
-//  Copyright (c) 2013 __MyCompanyName__. All rights reserved.
-//
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-//#include "common.h"
-//#include "linefile.h"
-//#include "hash.h"
-//#include "options.h"
-//#include "localmem.h"
 #include "qcFilterBam.h"
 
 
-//static char const rcsid[] = "$Id: newProg.c,v 1.30 2010/03/24 21:18:33 hiram Exp $";
 
 int bestHitsN,gapOpensN,mismatchesN;
 //unsigned short 
@@ -30,25 +20,6 @@ char* tag=NULL;
 char* val=NULL;
 char* strBuf=NULL;
 
-/*
-static struct optionSpec options[] = {
-    //{"readSize",OPTION_INT},
-    {"minQual",OPTION_INT},
-    {"minInsert",OPTION_INT},
-    {"maxInsert",OPTION_INT},
-    {"maxMismatch",OPTION_INT},
-    {"maxGapOpen",OPTION_INT},
-    {"maxBestHit",OPTION_INT},
-    //{"oFormat",OPTION_STRING},
-    //{"hashSize",OPTION_INT},
-    {"skipMissing",OPTION_STRING},
-    {"singleEnd",OPTION_BOOLEAN},
-    {"bowtie",OPTION_BOOLEAN},
-    //{"sortedByName",OPTION_BOOLEAN},
-    //{"fragment",OPTION_BOOLEAN},
-    {NULL, 0},
-};
-*/
 
 void usage()
 /* Explain usage and exit. */
@@ -58,20 +29,15 @@ void usage()
              "usage:\n"
              "   qcFilterBam [OPTIONS] <stdin> \n"
              "options:\n"
-             //"   -readSize=XXX - read size (default 75bp)\n"
              "   -minQual XXX - minimum quality score (default 0)\n"
              "   -minInsert XXX - minimum insertSize score (default 0)\n"
              "   -maxInsert XXX - maximum insertSize score (default 1e7)\n"
              "   -maxMismatch XXX - maximum no. mismatches (default 3)\n"
              "   -maxGapOpen XXX - maximum no. gap opens (default 0)\n"
              "   -maxBestHit XXX - maximum no. best hits in genome (default 1)\n"
-             //"   -oFormat=XXX - Output format (xb|sam)\n"
-             //"   -hashSize=XXX - Size of hash to store reads (default 2^27=134217728 fragments) - reduce to save memory, but only if the number of reads is small\n"
              "   -skipMissing (T|F) - Retain reads with missing tags (default is T - TRUE: skip reads with missing tags)\n"
              "   -singleEnd - Single end reads, ignores insert, read orientation and same chromosome flags\n"
              "   -bowtie - Alignments by bowtie, skips checks for X0 field\n"
-             //"   -sortedByName - BAM with \"samtools sort -n\"\n"
-             //"   -fragment - Creating fragment based tabix (default false)\n"
              );
 }
 
@@ -107,8 +73,6 @@ void copyRow(char *newRow[MAXROW], char *row[MAXROW], int wc) {
     for(i=0;i<wc;i++) {
         if(strlen(row[i])>MAXFIELD){
 	    row[i][MAXFIELD-1]='\0';
-	    //int j; for(j=0;j<wc;j++) {fprintf(stderr,"%s\t",row[j]);}fprintf(stderr, "\n");
-            //errAbort("Field %s exceeds max string length %d",row[i],MAXFIELD);
 	}
         strcpy(newRow[i],row[i]);
     }
@@ -432,7 +396,8 @@ void qcFilterBam(char *inFile) {
                 if(row[2][0]=='c'){chr_offset=3;}
 		int bitFlag = atoi(row[1]);
 		char strnd = (bitFlag & 16) == 0 ? '+' : '-';
-                printf("%s\t%ld\t%ld\t%s\t%s\t%c\t%s\n",row[2]+chr_offset,coord,coord+getLenFromCigar(row[5])-1,row[5],row[9],strnd,row[0]);
+                //printf("%s\t%ld\t%ld\t%s\t%s\t%c\t%s\n",row[2]+chr_offset,coord,coord+getLenFromCigar(row[5])-1,row[5],row[9],strnd,row[0]);
+                printf("%s\t%ld\t%ld\t%s\t%s\n",row[2]+chr_offset,coord,coord+getLenFromCigar(row[5])-1,row[5],row[9]);
             }
         }
     }
