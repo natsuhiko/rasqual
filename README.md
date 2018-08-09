@@ -232,7 +232,7 @@ which creates a *VCF output file*.  The *VCF inpuy file* must be tabix indexed a
 
 The order of the samples **MUST** be the same as that in the master VCF.  The chromosome IDs in the master VCF **MUST** also be the same as in those BAM files.  Before using the script, please make sure the latest tabix (http://www.htslib.org/doc/tabix.html) is installed in your environment.
 
-Note that, assay_type specifies the minimum and maximum fragment length to filter out extremely short/long paired-end fragments and can be omitted in general. The latest createASVCF.sh filter out AS read by means of QC criteria (mapping quality, etc.).  You may also want to filter out some reads a priori, using GATK ASEReadCounter (https://www.broadinstitute.org/gatk/gatkdocs/org_broadinstitute_gatk_tools_walkers_rnaseq_ASEReadCounter.php).
+Note that, *assay_type* specifies the minimum and maximum fragment length to filter out extremely short/long paired-end fragments and can be omitted in general. The latest createASVCF.sh can filter out AS read by means of QC criteria (mapping quality, max number of mismatches, etc.). See the usage of *qcFilterBam* in the ASVCF directory.  You may also want to filter out reads a priori using other software, such as GATK ASEReadCounter (https://www.broadinstitute.org/gatk/gatkdocs/org_broadinstitute_gatk_tools_walkers_rnaseq_ASEReadCounter.php).
 
 ## Permutation test
 
