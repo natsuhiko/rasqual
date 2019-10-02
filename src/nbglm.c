@@ -105,6 +105,38 @@ double getLkhdGlm(double* y, double* X, double* ki, double* w, long N0, long P, 
 
 
 
+double olm(double* y, double* X, double* ki, double* w, long N0, long P, double* beta, double* work){
+    double* Q;
+    double* R;
+    double* z;
+    double* gamma;
+    double dN=0.0;
+    clear1(work, N0*P+P*P+N0+P);
+    Q     = work;
+    R     = work+N0*P;
+    z     = work+N0*P+P*P;
+    gamma = work+N0*P+P*P+N0;
+    long i, j;
+    for(i=0; i<N0; i++){
+        z[i]=log((y[i]+1.0)/ki[i])*w[i];
+        for(j=0; j<P; j++){
+            Q[i+j*N0] = X[i+j*N0]*w[i];
+        }
+        dN += w[i];
+    }
+    QR(Q, N0, P, R);
+    cblas_dgemv(CblasColMajor, CblasTrans, N0, P, 1.0, Q, N0, z, 1, 0.0, gamma, 1);
+    BackSolve(R, P, gamma, beta);
+    double v=0.0;
+    for(i=0; i<N0; i++){
+        for(j=0; j<P; j++){
+            z[i] -= X[i+j*N0]*beta[j]*w[i];
+        }
+        v += z[i]*z[i]/(dN-(double)P);
+    }
+    return v;
+}
+
 
 // M : num of alleles not num of xSNP
 // J : num of genotype statt
@@ -371,7 +403,7 @@ double nbglm(double* y, double* X, double* ki, double* dki, double* w, long N0, 
             if(verbose3>0){fprintf(stderr, "*%ld\t%lf\t%lf\t%lf\n", i, dki[i], dki[i]*exp(beta[0]), y[i]/dki[i]);} 
             //dki[i]=1.0; w[i]=0.0;// masking strange samples
         }else{
-            if(verbose3>1){fprintf(stderr, "*%ld\t%lf\t%lf\t%lf\n", i, dki[i], dki[i]*exp(beta[0]), y[i]/dki[i]);}
+            if(verbose3>1){fprintf(stderr, " %ld\t%lf\t%lf\t%lf\n", i, dki[i], dki[i]*exp(beta[0]), y[i]/dki[i]);}
         }
         dki[i] /= ki[i];
     }

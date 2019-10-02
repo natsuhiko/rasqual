@@ -45,9 +45,10 @@ int rbinom(double mu, double th){
 
 // len(IPIV) N+1
 // len(WORK) N*N
-void solveLapack(double* A, double* b, int N, integer* ipiv, double* work)
+double solveLapack(double* A, double* b, int N, integer* ipiv, double* work)
 {
     // solving A^T x = b
+    int i;
     integer lwork = 2*N*N;
     integer info;
     char uplo = 'L';
@@ -56,10 +57,12 @@ void solveLapack(double* A, double* b, int N, integer* ipiv, double* work)
     integer ldb = 10;
     integer nrhs = 1;
     dsytrf_(&uplo, &n, A, &lda, (integer*)ipiv, work, &lwork, &info);
+    double det=1.0; for(i=0; i<N; i++){ det *= A[i+i*lda]; }
     //fprintf(stderr, "%ld ", info);
     dsytrs_(&uplo, &n, &nrhs, A, &lda, (integer*)ipiv, b, &ldb, &info);
     //fprintf(stderr, "%ld \n", info);
     //dgetri_(&N,A,&N,IPIV,WORK,&LWORK,&INFO);
+    return det;
 }
 
 void inverseLapack(double* A, int N, integer* ipiv, double* work){
@@ -73,14 +76,16 @@ void inverseLapack(double* A, int N, integer* ipiv, double* work){
     dsytri_(&uplo, &n, A, &lda, (integer*)ipiv, work, &info);
 }
 
-void getStepSize5(double* H, double* g, double* step, integer* ipiv){
+double getStepSize5(double* H, double* g, double* step, integer* ipiv){
 	cblas_dcopy(5, g, 1, step, 1);
-	solveLapack(H, step, 5, ipiv, H+50);
+	double det = solveLapack(H, step, 5, ipiv, H+50);
+        return det;
 }
 
-void getStepSize6(double* H, double* g, double* step, integer* ipiv){
+double getStepSize6(double* H, double* g, double* step, integer* ipiv){
     cblas_dcopy(6, g, 1, step, 1);
-    solveLapack(H, step, 6, ipiv, H+36);
+    double det = solveLapack(H, step, 6, ipiv, H+36);
+    return det;
 }
 
 double pchisq(double q, double k){// lower = F
@@ -414,6 +419,17 @@ void printL(double* m, long n, long p){
             }else{
                 fprintf(stderr, "*********** ");
             }
+        }
+        fprintf(stderr, "\n");
+    }
+}
+
+
+void printM2(double* m, long n, long p, long ldm){
+    long i,j;
+    for(i=0; i<n; i++){
+        for(j=0; j<p; j++){
+            fprintf(stderr, "%lf ", m[i+j*ldm]);
         }
         fprintf(stderr, "\n");
     }

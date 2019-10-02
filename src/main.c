@@ -124,7 +124,7 @@ int main(int argc, char** argv){
     if(verbose2>10){
         fprintf(stderr, "\n");
         fprintf(stderr, "#################################\n");
-        fprintf(stderr, "#          RASQUAL v 1.0        #\n");
+        fprintf(stderr, "#          RASQUAL v 1.1        #\n");
         fprintf(stderr, "#################################\n");
         fprintf(stderr, "\n");
     }
@@ -192,7 +192,7 @@ int main(int argc, char** argv){
     hetType=0;
     for(i=0; i<argc-1; i++){if(strcmp(argv[i],"-hetType")==0){hetType=atoi(argv[i+1]);}}
     // force to fit model
-    int forced=0;
+    forced=0;
     for(i=0; i<argc; i++){if(strcmp(argv[i],"--force")==0){forced=1;}}//atoi(argv[i+1]);}}
     // print result
     int printAll=1;
@@ -251,7 +251,7 @@ int main(int argc, char** argv){
     for(i=0; i<argc-1; i++){if(strcmp(argv[i],"-n")==0 || strcmp(argv[i],"--sample-size")==0){N=atoi(argv[i+1]); break;}}
     if(N==0){fprintf(stderr, "Sample size is inappropriate\n"); return -1;}
 
-    // Sample weights
+    // Sample weights to create subset of samples (not ZINB weights)
     double* w=NULL;	w=(double*)calloc(N, sizeof(double)); for(i=0; i<N; i++){w[i]=1.0;}
 
     //if(verbose>10){printDouble(w,N);}
@@ -275,13 +275,17 @@ int main(int argc, char** argv){
     }
 
     FILE* fy=NULL; // total fragment counts
+    FILE* fweights=NULL; // ZINB weight files
     FILE* fk=NULL; // offset for Negative Binomial
     FILE* fx=NULL; // covariates
+    FILE* fx2=NULL; // covariates for each feature
     char* scond=NULL;
     for(i=0; i<argc-1; i++){if(strcmp(argv[i],"-y")==0 || strcmp(argv[i],"--feature-counts")==0){fy=fopen(argv[i+1],"rb"); break;}}
+    for(i=0; i<argc-1; i++){if(strcmp(argv[i],"--zinb-weights")==0){fweights=fopen(argv[i+1],"rb"); break;}}
     for(i=0; i<argc-1; i++){if(strcmp(argv[i],"-k")==0 || strcmp(argv[i],"--sample-offsets")==0){fk=fopen(argv[i+1],"rb"); break;}}
     for(i=0; i<argc-1; i++){if(strcmp(argv[i],"-k2")==0 || strcmp(argv[i],"--conditional-snps")==0){ scond=argv[i+1]; fprintf(stderr, "Sorry, conditional analysis is under development...Aborted.\n"); return 1; break;}}
     for(i=0; i<argc-1; i++){if(strcmp(argv[i],"-x")==0 || strcmp(argv[i],"--covariates")==0){if((fx=fopen(argv[i+1],"rb"))==NULL){fprintf(stderr, "Covariate file does not exists.\n"); return 1;}; break;}}
+    for(i=0; i<argc-1; i++){if(strcmp(argv[i],"-x2")==0 || strcmp(argv[i],"--covariates_feature")==0){if((fx2=fopen(argv[i+1],"rb"))==NULL){fprintf(stderr, "Covariate file does not exists.\n"); return 1;}; break;}}
 
     if(fy==NULL || fk==NULL){fprintf(stderr, "input files are not specified!\n"); return -1;}
     int freadres;
@@ -293,7 +297,7 @@ int main(int argc, char** argv){
         X = (double*)calloc(N*P, sizeof(double));
     }else{
         P = ncol(fx, N)+1;
-        X = (double*)calloc(N*P, sizeof(double));
+        X = (double*)calloc(N*(P+(fx2==NULL ? 0 : 1)), sizeof(double));
         freadres = fread(X+N, sizeof(double), N*(P-1), fx);
         for(i=1; i<P; i++){
             double m = mean(X+N*i, N);
@@ -303,14 +307,34 @@ int main(int argc, char** argv){
                 //X[i*N+j] /= ss;
             }
         }
+        if(fx2!=NULL){
+            fseek(fx2, N*(K-1)*sizeof(double), SEEK_SET);
+            freadres = fread(X+N*P, sizeof(double), N, fx2);
+            for(j=0; j<N; j++){ X[N*P+j] = log(X[N*P+j]+0.01); }
+            double m = mean(X+N*P, N);
+            for(j=0; j<N; j++){ X[N*P+j] -= m; }
+            fclose(fx2);
+            P++;
+        }
     }
-	for(i=0; i<N; i++){ X[i] = 1.0; }
-	for(i=0; i<argc-1; i++){if(strcmp(argv[i],"-p")==0 || strcmp(argv[i],"--number-of-covariates")==0){P=atoi(argv[i+1])+1;}} // # of covs after change
-	// fragment count
-	double* y=NULL;   y = (double*)calloc(N, sizeof(double));
-	fseek(fy, N*(K-1)*sizeof(double), SEEK_SET);
-	freadres = fread(y, sizeof(double), N, fy);
-	
+    for(i=0; i<N; i++){ X[i] = 1.0; }
+    for(i=0; i<argc-1; i++){if(strcmp(argv[i],"-p")==0 || strcmp(argv[i],"--number-of-covariates")==0){P=atoi(argv[i+1])+1;}} // # of covs after change
+    
+    // fragment count
+    double* y=NULL;   y = (double*)calloc(N, sizeof(double));
+    fseek(fy, N*(K-1)*sizeof(double), SEEK_SET);
+    freadres = fread(y, sizeof(double), N, fy);
+    
+    // ZINB weights
+    double* weights=NULL;   weights = (double*)calloc(N, sizeof(double));
+    if(fweights!=NULL){
+        fseek(fweights, N*(K-1)*sizeof(double), SEEK_SET);
+        freadres = fread(weights, sizeof(double), N, fweights);
+    }else{
+        for(i=0; i<N; i++){ weights[i]=1.0; }
+    }
+    if(verbose2>0){ fprintf(stderr, "ZINB weights: "); for(i=0; i<N; i++){ printf("%lf, ", weights[i]); }printf("\n"); }
+//for(i=0; i<N; i++){ printf("%lf, ", y[i]); }printf("\n");
     // allele specific offsets (k2[i*2]+k2[i*2+1])/ 2 -> sample offset
     double* ki2=NULL;  ki2 = (double*)calloc(N*2+randomize*M*N*2, sizeof(double));
     for(i=0; i<2*N; i++){ki2[i] = 1.0;}
@@ -405,13 +429,13 @@ int main(int argc, char** argv){
 	double* rsq=NULL;     rsq= (double*)calloc(L+2, sizeof(double));
 	double* crs=NULL;     crs= (double*)calloc(L+2, sizeof(double));
 	char** rss=NULL;      rss = (char**)calloc(L+2, sizeof(char*));
-	char** als=NULL;	  als = (char**)calloc(L+2, sizeof(char*));
+	char*** als=NULL;	  als = (char***)calloc(L+2, sizeof(char**));
 	char** chrs=NULL;	  chrs =(char**)calloc(L+2, sizeof(char*));
     if(exon==NULL || poss==NULL || afs==NULL || hwes==NULL || ias==NULL || rsq==NULL || crs==NULL || rss==NULL || als==NULL || chrs==NULL){fprintf(stderr, "memory allocation error (Z, Y, km)...aborted.\n");return 1;}
 	for(l=0; l<L+2; l++){//fprintf(stderr, "%ld ", l);
-		als[l] = (char*)calloc(2, sizeof(char)); 
+		als[l] = (char**)calloc(2, sizeof(char*)); 
 		rss[l] = NULL;  
-		rss[l] = (char*)calloc(100, sizeof(char));
+		rss[l] = (char*)calloc(200, sizeof(char));
 		if(rss[l]==NULL){return -1;}
 		chrs[l] = (char*)calloc(100, sizeof(char)); 
 	}
@@ -433,18 +457,18 @@ int main(int argc, char** argv){
     while(parseLine(chrs[l], &pos, rss[l], als[l], &vinfo, dip, gen, gl, ap, ase, N, genType)>0){
         if(csnp!=NULL){ if(strcmp(rss[l],csnp)==0){ maxCsnp=l;} }
 
-        afs[l] = getAF(gen,w,N);
+        afs[l] = getWAF(gen,w,N);
         if(allelicProbEstByErrorRate>0 || noGL>0){
-            hwes[l] = getHWE(dip,w,N);
+            hwes[l] = getWHWE(dip,w,N);
         }else{
-            hwes[l] = getHWEfromAP(ap, dip, w, N);
+            hwes[l] = getWHWEfromAP(ap, dip, w, N);
         }
-        ias[l] = getIAfromAP(ap, gl, w, N); 
+        ias[l] = getWIAfromAP(ap, gl, w, N); 
         rsq[l] = vinfo.RSQ;
         // jkl
-        if(verbose3>1){fprintf(stderr, "%lf %lf %lf %lf\n", afs[l], hwes[l], ias[l], rsq[l]);}
+        if(verbose3>1){fprintf(stderr, "af=%lf hwe=%lf ia=%lf rsq=%lf\n", afs[l], hwes[l], ias[l], rsq[l]);}
         if(rsq[l]<0.0){rsq[l]=ias[l];}
-        crs[l] = getCR(gen,w,N); 
+        crs[l] = getWCR(gen,w,N); 
         poss[l]=pos;
 
         ep = afs[l]*(1-afs[l])*(1.0-rsq[l]);
@@ -500,6 +524,7 @@ int main(int argc, char** argv){
                 asaf[1] += Y[m*2*N+i*2+1];
                 km[m] += (Y[m*2*N+i*2]+Y[m*2*N+i*2+1])/ki[i]/((tot*150)/cdnLen);
                 //Y1 += (Y[m*2*N+i*2]+Y[m*2*N+i*2+1])/(double)N;
+                //if(strcmp(rss[l],csnp)==0){ fprintf(stderr, "%d %d\t", ase[i*2], ase[i*2+1]);}
             }
             //if((asaf[0]+asaf[1])>0.0){asaf[1]=asaf[1]/(asaf[0]+asaf[1]);}else{asaf[1]=0.0;};
             asgaf[0]/=asgaf[1];
@@ -584,7 +609,7 @@ int main(int argc, char** argv){
 	double* pbeta=NULL;           pbeta        = (double*)calloc(L+2, sizeof(double));
 	double* ptheta=NULL;          ptheta       = (double*)calloc(L+2, sizeof(double));
 	double* pasr=NULL;            pasr         = (double*)calloc(L+2, sizeof(double));
-	double* ptval=NULL;           ptval        = (double*)calloc(L+2, sizeof(double));
+	double* ptval=NULL;           ptval        = (double*)calloc(L+4, sizeof(double));
 	double* pkld=NULL;            pkld         = (double*)calloc(2*(L+2)+1, sizeof(double));
 	int* pitr=NULL;               pitr	       = (int*)calloc(L+2, sizeof(int));
 	int* pbound=NULL;             pbound       = (int*)calloc(L+2, sizeof(int));
@@ -602,14 +627,15 @@ int main(int argc, char** argv){
     double* work; work = (double*)calloc((2*N+3*P)*(P+2), sizeof(double));
     double* dki;  dki = ki+N+randomize*m*N; //(double*)calloc(N, sizeof(double));
     betaGlm[0] = pbeta[L];
-    double lkhdNullglm = nbglm(y, X, ki, dki, w, N, P, betaGlm, ptheta+L, 0, work);
+    olm(y, X, ki, weights, N, P, betaGlm, work);
+    double lkhdNullglm = nbglm(y, X, ki, dki, weights, N, P, betaGlm, ptheta+L, 0, work);
     if(verbose3>0){
         fprintf(stderr, "Glm. results:\n");
         fprintf(stderr, "Lkhd GLM=%lf Theta=%lf\n", lkhdNullglm, ptheta[L]);
         printM(betaGlm, 1, P);
-        printM(y,1,84);	
-        printM(ki,1,84);
-        printM(dki,1,84);
+        fprintf(stderr,"y  =");printM(y,1,N);	
+        fprintf(stderr,"ki= ");printM(ki,1,N);
+        fprintf(stderr,"dki=");printM(dki,1,N);
         fprintf(stderr, "\n");
     }
     pbeta[L] = betaGlm[0];
@@ -617,10 +643,10 @@ int main(int argc, char** argv){
     for(i=0; i<N; i++){dki[i] /= mdki;}
      
     //randomization
-    if(randomize>0){ randomPerm(y, Y, Z, ki, ki2, exon, L, N, m); }
+    if(randomize>0){ randomPerm(y, Y, Z, ki, ki2, exon, L, N, m, weights); }
     
 	// Null
-	ASEQTLALL(y, Y, Z, X, P, ki, ki2, w, km, exon, L, N, m, rss, lkhdDiff, ppi, pdelta, pphi, pbeta, ptheta, pasr, pitr, pbound, ptval, pkld);
+	ASEQTLALL(y, Y, Z, X, P, ki, ki2, w, km, exon, L, N, m, rss, lkhdDiff, ppi, pdelta, pphi, pbeta, ptheta, pasr, pitr, pbound, ptval, pkld, weights);
 	if(verbose3>0){fprintf(stderr, "Fitting null hypothesis finished.\n");}
     
     // Alternative    
@@ -630,13 +656,14 @@ int main(int argc, char** argv){
         if(verbose3>0){fprintf(stderr, "\nN of threads: %ld\n\n", nthreads);}
         for(i=0; i<nthreads; i++){
             ri[i].y = y;
+            ri[i].weights = weights; // ZINB weights
             ri[i].Y = Y;
             ri[i].Z = Z;
             ri[i].X = X;
             ri[i].P = P;
             ri[i].ki = ki;
             ri[i].ki2 = ki2;
-            ri[i].w = w;
+            ri[i].w = w; // subset of samples
             ri[i].km = km;
             ri[i].exon = exon;
             ri[i].L = L;
@@ -670,7 +697,7 @@ int main(int argc, char** argv){
         }
     }else{
         //fprintf(stderr, "main=%lf\n", ptheta[2]);
-        ASEQTLALL_ALT(y, Y, Z, X, P, ki, ki2, w, km, exon, L, N, m, rss, lkhdDiff, ppi, pdelta, pphi, pbeta, ptheta, pasr, pitr, pbound, ptval, pkld, maxCsnp<0 ? 0 : maxCsnp, maxCsnp<0 ? L : maxCsnp+1, tested, 1);
+        ASEQTLALL_ALT(y, Y, Z, X, P, ki, ki2, w, km, exon, L, N, m, rss, lkhdDiff, ppi, pdelta, pphi, pbeta, ptheta, pasr, pitr, pbound, ptval, pkld, maxCsnp<0 ? 0 : maxCsnp, maxCsnp<0 ? L : maxCsnp+1, tested, 1, weights);
     }
     
 	
@@ -689,7 +716,7 @@ int main(int argc, char** argv){
 	afs[L] = afs[L+1] = 0.5; rsq[L] = rsq[L+1]=1.0; hwes[L]=hwes[L+1]=0.0;
 	if(Null==0){for(l=0; l<L; l++){
         //fprintf(stderr, "main %ld\n", l);
-        //if(exon[l]>=0.0)printf("%s\t%s\t%s\t%ld\t%c\t%c\t%lf\t%lf\t%lf\t%lf\t%3.22lf\t%lf\t%ld\t%ld\n", gid, rss[l], chr, poss[l], als[l][0], als[l][1], afs[l], hwes[l], ias[l], rsq[l], lkhdDiff[l], ppi[l], m, l);
+        //if(exon[l]>=0.0)printf("%s\t%s\t%s\t%ld\t%s\t%s\t%lf\t%lf\t%lf\t%lf\t%3.22lf\t%lf\t%ld\t%ld\n", gid, rss[l], chr, poss[l], als[l][0], als[l][1], afs[l], hwes[l], ias[l], rsq[l], lkhdDiff[l], ppi[l], m, l);
 		if(afs[l]>MAF && afs[l]<1.0-MAF && rsq[l]>RSQ && (hwes[l]<HWE||noPriorGenotype==1) && isTestReg(chrs[l], chr0, TSS, TSSPROX, poss[l]) ){// && (pbound[l+1]+pbound[l+1+L])<1 && ptheta[l+1]<=ptheta[l+1+L]){
 			//printf("%ld %lf\n", poss[l],lkhdDiff[l]);
 			if(round(maxld*100000)<round(lkhdDiff[l]*100000)){
@@ -726,11 +753,11 @@ int main(int argc, char** argv){
 			if(abs(exon[l0])>0.5){
                 //fprintf(stderr, "main %ld\n", l0);
                 if(exon[l0]>0.5){
-                    printf("%s\t%s\t%s\t%ld\t%c\t%c\t%lf\t%lf\t%lf\t%.10lf\t%.10lf\t%lf\t%lf\t%lf\t%lf\t%ld\t%ld\t%ld\t%d\t%d\t%ld\t%lf\t%d\t%lf\t%lf\n", gid, rss[l], chrs[l], poss[l], als[l][0], als[l][1], afs[l], hwes[l], //ias[l], 
+                    printf("%s\t%s\t%s\t%ld\t%s\t%s\t%lf\t%lf\t%lf\t%.10lf\t%.10lf\t%lf\t%lf\t%lf\t%lf\t%ld\t%ld\t%ld\t%d\t%d\t%ld\t%lf\t%d\t%lf\t%lf\n", gid, rss[l], chrs[l], poss[l], als[l][0], als[l][1], afs[l], hwes[l], //ias[l], 
                            rsq[l], 
                            qval[l],
                            lkhdDiff[l],
-                           ppi[l], pdelta[l], pphi[l], ptheta[l], l, m, numOfLoci, pitr[l], pitr[0], maxlr<0?-1:poss[maxlr], lkhdDiff[L], pbound[l]+pbound[L], pkld[l*2], pkld[l*2+1]);
+                           ppi[l], pdelta[l], pphi[l], ptheta[l], l, m, numOfLoci, pitr[l], pitr[0], maxlr<0?-1:poss[maxlr], ptval[l], pbound[l]+pbound[L], pkld[l*2], pkld[l*2+1]);
                 }
 				l++;
 			}
@@ -739,25 +766,25 @@ int main(int argc, char** argv){
 		if(l<0){// no max lkhd
 			printf("%s\trs\t%s\t0\tN\tN\t-1.0\t-1.0\t-1.0\t0.0\t-1.0\t-1.0\t-1.0\t-1.0\t-1.0\t%ld\t%ld\t%ld\t-1\t-1\t-1\t-1\t-1\t0.0\n", gid, chrs[0], l,m,numOfLoci);
 		}else if(l<L){// normal
-			printf("%s\t%s\t%s\t%ld\t%c\t%c\t%lf\t%lf\t%lf\t%.10lf\t%.10lf\t%lf\t%lf\t%lf\t%lf\t%lf\t%ld\t%ld\t%d\t%d\t%ld\t%lf\t%d\t%lf\t%lf\n", 
+			printf("%s\t%s\t%s\t%ld\t%s\t%s\t%lf\t%lf\t%lf\t%.10lf\t%.10lf\t%lf\t%lf\t%lf\t%lf\t%lf\t%ld\t%ld\t%d\t%d\t%ld\t%lf\t%d\t%lf\t%lf\n", 
 				   gid, rss[l], chrs[l], poss[l], als[l][0], als[l][1], afs[l], hwes[l], //ias[l], 
                    rsq[l], 
                    minBH,
 				   lkhdDiff[l], 
                    ppi[l], pdelta[l], pphi[l], ptheta[l], pbeta[l], m, numOfLoci, pitr[l], pitr[0], 
-				   maxlr<0?-1:poss[maxlr], lkhdDiff[L], pbound[l]+pbound[L], pkld[l*2], pkld[l*2+1]);
+				   maxlr<0?-1:poss[maxlr], ptval[l], pbound[l]+pbound[L], pkld[l*2], pkld[l*2+1]);
 		}else if(l==L){// null lkhd
 			printf("%s\tAI\t%s\t-1\tN\tN\t-1.0\t-1.0\t-1.0\t0.0\t%.10lf\t%lf\t%lf\t%lf\t%lf\t%ld\t%ld\t%ld\t%d\t%d\t%ld\t%lf\t%d\t%lf\t%lf\n", 
                    gid, chrs[l],  
                    0.0,  ppi[L], pdelta[L], pphi[L], ptheta[L], l, m, numOfLoci, pitr[L], pitr[L], 
-                   maxlr<0?-1:poss[maxlr], lkhdDiff[L], pbound[L], pkld[L*2], pkld[L*2+1]);
+                   maxlr<0?-1:poss[maxlr], ptval[L], pbound[L], pkld[L*2], pkld[L*2+1]);
 		}
 	}
 	if(testImprinting>0){
 		printf("%s\tIMP\t%s\t-1\tN\tN\t-1.0\t-1.0\t-1.0\t0.0\t%.10lf\t%lf\t%lf\t%lf\t%lf\t%ld\t%ld\t%ld\t%d\t%d\t%ld\t%lf\t%d\t%lf\t%lf\n", 
                gid, chrs[0], 
                lkhdDiff[L+1], ppi[L+1], pdelta[L+1], pphi[L+1], ptheta[L+1], l, m, numOfLoci, pitr[L+1], pitr[L+1], 
-               maxlr<0?-1:poss[maxlr], lkhdDiff[L], pbound[L+1]+pbound[L], pkld[(L+1)*2], pkld[(L+1)*2+1]);
+               maxlr<0?-1:poss[maxlr], ptval[L+1], pbound[L+1]+pbound[L], pkld[(L+1)*2], pkld[(L+1)*2+1]);
 	}
     if(nthreads>1)pthread_mutex_destroy( &mutex );
     
@@ -773,9 +800,9 @@ int main(int argc, char** argv){
 		for(l=0;l<L;l++){
 			if(fabs(exon[l])>1.5){// feature snp
 				if(l==maxCsnp){
-					gzprintf(postVCF, "%s\t%ld\t%s\t%c\t%c\t.\tLEAD_QTL_SNP\tFID=%s;RSQ=1.0\tGT:GP:AP:AS\t", chrs[l], poss[l], rss[l], als[l][0], als[l][1], gid);
+					gzprintf(postVCF, "%s\t%ld\t%s\t%s\t%s\t.\tLEAD_QTL_SNP\tFID=%s;RSQ=1.0\tGT:GP:AP:AS\t", chrs[l], poss[l], rss[l], als[l][0], als[l][1], gid);
 				}else{
-					gzprintf(postVCF, "%s\t%ld\t%s\t%c\t%c\t.\t.\tFID=%s;RSQ=1.0\tGT:GP:AP:AS\t", chrs[l], poss[l], rss[l], als[l][0], als[l][1], gid);
+					gzprintf(postVCF, "%s\t%ld\t%s\t%s\t%s\t.\t.\tFID=%s;RSQ=1.0\tGT:GP:AP:AS\t", chrs[l], poss[l], rss[l], als[l][0], als[l][1], gid);
 				}
 				zx = Zx+N*2*ll;
 				yx = Y+N*2*ll;
@@ -788,7 +815,7 @@ int main(int argc, char** argv){
 				}
 				ll++;
 			}else if(l==maxCsnp){
-				gzprintf(postVCF, "%s\t%ld\t%s\t%c\t%c\t.\tLEAD_QTL_SNP\tFID=%s;RSQ=1.0\tGT:GP:AP:AS\t", chrs[l], poss[l], rss[l], als[l][0], als[l][1], gid);
+				gzprintf(postVCF, "%s\t%ld\t%s\t%s\t%s\t.\tLEAD_QTL_SNP\tFID=%s;RSQ=1.0\tGT:GP:AP:AS\t", chrs[l], poss[l], rss[l], als[l][0], als[l][1], gid);
 				for(i=0; i<N; i++){
 					gzprintf(postVCF, "%d|%d:%lf,%lf,%lf:%lf,%lf:%.0lf,%.0lf", 
 							 zc[i*2]>0.5?1:0, zc[i*2+1]>0.5?1:0 , 

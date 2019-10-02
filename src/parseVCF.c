@@ -89,7 +89,19 @@ double getRsqHap(int* dip1, int* dip2, long N){
 	return rsq;
 }
 
-double getAF(double* gen, double* w, long N){
+double getAF(double* gen, long N){
+	long i;
+	double res=0.0;
+	double denom=0.0;
+	for(i=0; i<N; i++){if(gen[i]>=0.0){
+		res += gen[i];
+		denom += 1.0;
+	}}
+	res/=(denom*2);
+	return res;
+	//if(res>0.5){return 1.0-res;}else{return res;}
+}
+double getWAF(double* gen, double* w, long N){
 	long i;
 	double res=0.0;
 	double denom=0.0;
@@ -101,17 +113,45 @@ double getAF(double* gen, double* w, long N){
 	return res;
 	//if(res>0.5){return 1.0-res;}else{return res;}
 }
-double getIAfromAP(double* ap, double* gl, double* w, long N){
+double getIAfromAP(double* ap, double* gl, long N){
 	int i;
 	for(i=0; i<N; i++){
 		gl[i*3]   = (1.0-ap[i*2])*(1.0-ap[i*2+1]);
 		gl[i*3+1] = (1.0-ap[i*2])*ap[i*2+1] + ap[i*2]*(1.0-ap[i*2+1]);
 		gl[i*3+2] = ap[i*2]*ap[i*2+1];
 	}
-	return getIA(gl, w, N);
+	return getIA(gl, N);
+}
+double getWIAfromAP(double* ap, double* gl, double* w, long N){
+	int i;
+	for(i=0; i<N; i++){
+		gl[i*3]   = (1.0-ap[i*2])*(1.0-ap[i*2+1]);
+		gl[i*3+1] = (1.0-ap[i*2])*ap[i*2+1] + ap[i*2]*(1.0-ap[i*2+1]);
+		gl[i*3+2] = ap[i*2]*ap[i*2+1];
+	}
+	return getWIA(gl, w, N);
 }
 
-double getIA(double* gl, double* w, long N){
+double getIA(double* gl, long N){
+	long i;
+	double IA=0.0;
+	double tot=0.0;
+	double th=0.0;
+	for(i=0; i<N; i++){if(gl[i*3]>=0.0){
+		th += (gl[i*3+2]+gl[i*3+1]/2.0);
+		tot+= 1.0;
+	}}
+	th /= tot;
+	if(th<=0.0 || th>=1.0){
+		return 1.0;
+	}
+	for(i=0; i<N; i++){if(gl[i*3]>=0.0){
+		IA += (4.0*gl[i*3+2]+gl[i*3+1] - pow(2.0*gl[i*3+2]+gl[i*3+1],2.0))/2.0/th/(1.0-th);
+	}}
+	IA /= tot;
+	return 1.0-IA;
+}
+double getWIA(double* gl, double* w, long N){
 	long i;
 	double IA=0.0;
 	double tot=0.0;
@@ -131,16 +171,43 @@ double getIA(double* gl, double* w, long N){
 	return 1.0-IA;
 }
 
-double getHWEfromAP(double* ap, int* dip, double* w, long N){
+double getWHWEfromAP(double* ap, int* dip, double* w, long N){
 	int i;
 	for(i=0; i<N; i++){
 		dip[i*2]   = ap[i*2]>0.5   ? 1 : 0;
 		dip[i*2+1] = ap[i*2+1]>0.5 ? 1 : 0;
 	}
-	return getHWE(dip, w, N);
+	return getWHWE(dip, w, N);
+}
+double getHWEfromAP(double* ap, int* dip, long N){
+	int i;
+	for(i=0; i<N; i++){
+		dip[i*2]   = ap[i*2]>0.5   ? 1 : 0;
+		dip[i*2+1] = ap[i*2+1]>0.5 ? 1 : 0;
+	}
+	return getHWE(dip, N);
 }
 
-double getHWE(int* dip, double* w, long N){
+double getHWE(int* dip, long N){
+	long i;
+	double g0, g1, g2;
+	g0=g1=g2=0.0;
+	double tot=0.0;
+	for(i=0; i<N; i++){
+		if((dip[i*2]+dip[i*2+1])==0){
+			g0 += 1.0;tot += 1.0;
+		}else if((dip[i*2]+dip[i*2+1])==1){
+			g1 += 1.0;tot += 1.0;
+		}else if((dip[i*2]+dip[i*2+1])==2){
+			g2 += 1.0;tot += 1.0;
+		}
+	}
+	double p = (g1+g2*2)/(2*tot);
+	double q = 1.0-p;
+	double f = pow(g2-p*p*tot,2.0)/p/p/tot + pow(g1-2.0*p*q*tot,2.0)/2.0/p/q/tot + pow(g0-q*q*tot,2.0)/q/q/tot;
+	return f;
+}
+double getWHWE(int* dip, double* w, long N){
 	long i;
 	double g0, g1, g2;
 	g0=g1=g2=0.0;
@@ -159,7 +226,7 @@ double getHWE(int* dip, double* w, long N){
 	double f = pow(g2-p*p*tot,2.0)/p/p/tot + pow(g1-2.0*p*q*tot,2.0)/2.0/p/q/tot + pow(g0-q*q*tot,2.0)/q/q/tot;
 	return f;
 }
-double getCR(double* gen, double* w, long N){
+double getWCR(double* gen, double* w, long N){
 	long i;
 	double cr=0.0;
 	double tot=0.0;
@@ -168,6 +235,18 @@ double getCR(double* gen, double* w, long N){
 			cr += w[i];
 		}
 		tot += w[i];
+	}
+	return cr/tot;
+}
+double getCR(double* gen, long N){
+	long i;
+	double cr=0.0;
+	double tot=0.0;
+	for(i=0; i<N; i++){
+		if(gen[i]>=0.0){
+			cr += 1.0;
+		}
+		tot += 1.0;
 	}
 	return cr/tot;
 }
@@ -206,6 +285,7 @@ int parseCell(char* cell, int* dip, double* gl, double* ap, long* ase, double* d
 	int i, ii0=0, k=0;
 	for(i=0; i<strlen(cell)+1; i++){
 		if(cell[i]==':' || cell[i]=='\0'){
+            //if(cell[i]==':'){fprintf(stderr, "%s ", cell+ii0);}else{fprintf(stderr, "%s\n", cell+ii0);}
 			if(i-ii0>0){
 				if(formatID[k]==FORMAT_GT){
 					if(cell[ii0]=='.'){
@@ -220,7 +300,7 @@ int parseCell(char* cell, int* dip, double* gl, double* ap, long* ase, double* d
 				}else if(formatID[k]==FORMAT_GL || formatID[k]==FORMAT_PP){
 					sscanf(cell+ii0, "%lf,%lf,%lf", gl, gl+1, gl+2);
 					if(formatID[k]==FORMAT_PP){
-						if(gl[0]<0.0 || gl[1]<0.0 || gl[2]<0.0 || gl[0]>1.0 || gl[1]>1.0 || gl[2]>1.0){fprintf(stderr, "Posterior Probability (%lf, %lf, %lf) is not in the appropriate range [0,1]...\n", gl[0], gl[1], gl[2]);}
+						if(gl[0]<0.0 || gl[1]<0.0 || gl[2]<0.0 || gl[0]>1.0 || gl[1]>1.0 || gl[2]>1.0){fprintf(stderr, "Posterior Probability (%lf, %lf, %lf) is not in the appropriate range [0,1]...\n", gl[0], gl[1], gl[2]); int j; for(j=0; j<3; j++){if(gl[j]>1.0){gl[j]=1.0;}}  }
 						if(gl[0]<1.0e-5){gl[0]=1.0e-5;}
 						if(gl[1]<1.0e-5){gl[1]=1.0e-5;}
 						if(gl[2]<1.0e-5){gl[2]=1.0e-5;}
@@ -344,12 +424,12 @@ int existFlag(int* formatID, int nfield, int flag){
 
 
 // STDIN
-int parseLine(char* chr, long* pos, char* rs, char* al, VCF_info* vinfo, int* dip, double* dose, double* gl, double* ap, long* ase, long N, int genType){
+int parseLine(char* chr, long* pos, char* rs, char** al, VCF_info* vinfo, int* dip, double* dose, double* gl, double* ap, long* ase, long N, int genType){
 	return parseLine0(chr, pos, rs, al, vinfo, dip, dose, gl, ap, ase, N, genType, stdin);
 }
 
 
-int parseLine0(char* chr, long* pos, char* rs, char* al, VCF_info* vinfo, int* dip, double* dose, double* gl, double* ap, long* ase, long N, int genType, FILE *fp){
+int parseLine0(char* chr, long* pos, char* rs, char** al, VCF_info* vinfo, int* dip, double* dose, double* gl, double* ap, long* ase, long N, int genType, FILE *fp){
 	int i=0,j=0,l=0;
 	int nfield=0;
 	int warningFlag=0;
@@ -366,9 +446,9 @@ int parseLine0(char* chr, long* pos, char* rs, char* al, VCF_info* vinfo, int* d
 				}else if(ncol==2){
 					strcpy(rs, cell);
 				}else if(ncol==3){
-					al[0]=cell[0];
+					al[0]=(char*)calloc(strlen(cell)+1, sizeof(char)); strcpy(al[0], cell);
 				}else if(ncol==4){
-					al[1]=cell[0];
+					al[1]=(char*)calloc(strlen(cell)+1, sizeof(char)); strcpy(al[1], cell);
 				}else if(ncol==7){
 					parseInfo(cell, vinfo);
 				}else if(ncol==8){
@@ -435,8 +515,10 @@ int parseInfo(char* str, VCF_info* vinfo){
 			vinfo->VT=VT_SNP;
 		}else if(startWith("RSQ=",infostr)==0){
 			sscanf(infostr, "RSQ=%lf", &(vinfo->RSQ));
-		}else if(startWith("AF=",infostr)==0){
-			sscanf(infostr, "AF=%lf", &(vinfo->AF));
+        }else if(startWith("AF=",infostr)==0){
+            sscanf(infostr, "AF=%lf", &(vinfo->AF));
+        }else if(startWith("DR2=",infostr)==0){
+            sscanf(infostr, "DR2=%lf", &(vinfo->RSQ));
 		}else if(startWith("IMP2=",infostr)==0){
 			sscanf(infostr, "IMP2=%lf,%lf,%lf", &(vinfo->AF), &(vinfo->RSQ), &(vinfo->CER));
 		}
