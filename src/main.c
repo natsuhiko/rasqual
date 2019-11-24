@@ -495,7 +495,7 @@ int main(int argc, char** argv){
         }
         
         // testing SNPs
-        if(afs[l]>MAF && afs[l]<1.0-MAF && rsq[l]>RSQ && (hwes[l]<HWE||noPriorGenotype==1) && isTestReg(chrs[l], chr0, TSS, TSSPROX, pos)){// tested
+        if(afs[l]>=MAF && afs[l]<=(1.0-MAF) && rsq[l]>RSQ && (hwes[l]<HWE||noPriorGenotype==1) && isTestReg(chrs[l], chr0, TSS, TSSPROX, pos)){// tested
             exon[l]=1.0; numOfLoci++;
         }else{
             exon[l]=-1.0;
@@ -513,7 +513,7 @@ int main(int argc, char** argv){
         }
         
         // feature SNPs
-        if(ASE>0 && isExon(pos, starts, ends, nexon) && afs[l]>fMAF && afs[l]<(1.0-fMAF) && (hwes[l]<fHWE||noPriorGenotype==1) && rsq[l]>fRSQ && isSameChr(chrs[l],chr0)>0){
+        if(ASE>0 && isExon(pos, starts, ends, nexon) && afs[l]>=fMAF && afs[l]<=(1.0-fMAF) && (hwes[l]<fHWE||noPriorGenotype==1) && rsq[l]>fRSQ && isSameChr(chrs[l],chr0)>0){
             km[m] = asgaf[0] = asgaf[1] = asaf[0] = asaf[1] = 0.0;
             for(i=0; i<N; i++){
                 Y[m*2*N+i*2]   = (double)ase[i*2];
@@ -717,7 +717,7 @@ int main(int argc, char** argv){
 	if(Null==0){for(l=0; l<L; l++){
         //fprintf(stderr, "main %ld\n", l);
         //if(exon[l]>=0.0)printf("%s\t%s\t%s\t%ld\t%s\t%s\t%lf\t%lf\t%lf\t%lf\t%3.22lf\t%lf\t%ld\t%ld\n", gid, rss[l], chr, poss[l], als[l][0], als[l][1], afs[l], hwes[l], ias[l], rsq[l], lkhdDiff[l], ppi[l], m, l);
-		if(afs[l]>MAF && afs[l]<1.0-MAF && rsq[l]>RSQ && (hwes[l]<HWE||noPriorGenotype==1) && isTestReg(chrs[l], chr0, TSS, TSSPROX, poss[l]) ){// && (pbound[l+1]+pbound[l+1+L])<1 && ptheta[l+1]<=ptheta[l+1+L]){
+		if(afs[l]>=MAF && afs[l]<=(1.0-MAF) && rsq[l]>RSQ && (hwes[l]<HWE||noPriorGenotype==1) && isTestReg(chrs[l], chr0, TSS, TSSPROX, poss[l]) ){// && (pbound[l+1]+pbound[l+1+L])<1 && ptheta[l+1]<=ptheta[l+1+L]){
 			//printf("%ld %lf\n", poss[l],lkhdDiff[l]);
 			if(round(maxld*100000)<round(lkhdDiff[l]*100000)){
 				numOfTies=0;
