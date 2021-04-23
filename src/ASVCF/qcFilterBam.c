@@ -9,6 +9,7 @@
 
 
 
+
 int bestHitsN,gapOpensN,mismatchesN;
 //unsigned short 
 int minQual,minInsert,maxMismatch,maxGapOpen,maxBestHit,singleEnd=0,bowtie=1;//,hashSize,sortedByName=0,fragment=0;
