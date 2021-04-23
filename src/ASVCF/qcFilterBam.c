@@ -195,10 +195,14 @@ void getFieldTagAndValue(char *f, char *tag, char *val) {
   strcpy(strBuf,f);
   ch = strtok(strBuf,delim);
   strcpy(tag,ch);
-  for(i=0;i<2;i++) {
+  while(ch != NULL){
     ch = strtok(NULL,delim);
+    if(ch!=NULL){strcpy(val,ch);}else{break;}
   }
-  strcpy(val,ch);
+  //for(i=0;i<2;i++) {
+  //  ch = strtok(NULL,delim);
+  //}
+  //strcpy(val,ch);
 }
 
 
