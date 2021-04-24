@@ -333,7 +333,7 @@ int main(int argc, char** argv){
     }else{
         for(i=0; i<N; i++){ weights[i]=1.0; }
     }
-    if(verbose2>0){ fprintf(stderr, "ZINB weights: "); for(i=0; i<N; i++){ printf("%lf, ", weights[i]); }printf("\n"); }
+    if(verbose2>0){ fprintf(stderr, "ZINB weights: "); for(i=0; i<N; i++){ fprintf(stderr, "%lf, ", weights[i]); }fprintf(stderr, "\n"); }
 //for(i=0; i<N; i++){ printf("%lf, ", y[i]); }printf("\n");
     // allele specific offsets (k2[i*2]+k2[i*2+1])/ 2 -> sample offset
     double* ki2=NULL;  ki2 = (double*)calloc(N*2+randomize*M*N*2, sizeof(double));
