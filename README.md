@@ -222,7 +222,7 @@ The command to produce the VCF with AS counts is:
 	# For paired-end reads form ATAC-seq:
 	bash ./createASVCF.sh paired_end bam.list master.vcf.gz master.vcf.new.gz atac
 
-which creates a *VCF output file*.  The *VCF inpuy file* must be tabix indexed and the *BAM list file* is a text file which contains absolute paths to your BAM files for which AS counts are produced:
+which creates a *VCF output file*.  The *VCF input file* must be tabix indexed and the *BAM list file* is a text file which contains absolute paths to your BAM files for which AS counts are produced:
 
 	# bam.list.txt
 	/path/to/your/bam/sample1.bam 
@@ -232,7 +232,7 @@ which creates a *VCF output file*.  The *VCF inpuy file* must be tabix indexed a
 
 The order of the samples **MUST** be the same as that in the master VCF.  The chromosome IDs in the master VCF **MUST** also be the same as in those BAM files.  Before using the script, please make sure the latest tabix (http://www.htslib.org/doc/tabix.html) is installed in your environment.
 
-Note that, *assay_type* specifies the minimum and maximum fragment length to filter out extremely short/long paired-end fragments and can be omitted in general. The latest createASVCF.sh can filter out AS read by means of QC criteria (mapping quality, max number of mismatches, etc.). See the usage of *qcFilterBam* in the ASVCF directory.  You may also want to filter out reads a priori using other software, such as GATK ASEReadCounter (https://www.broadinstitute.org/gatk/gatkdocs/org_broadinstitute_gatk_tools_walkers_rnaseq_ASEReadCounter.php).
+Note that, *assay_type* specifies the minimum and maximum fragment length to filter out extremely short/long paired-end fragments and can be omitted in general. The latest createASVCF.sh can filter out AS read by means of QC criteria (mapping quality, max number of mismatches, etc.). See the usage of *qcFilterBam* in the ASVCF directory.  You may also want to filter out reads a priori using other software, such as GATK ASEReadCounter (https://gatk.broadinstitute.org/hc/en-us/articles/4409924859675-ASEReadCounter).
 
 ## Permutation test
 
